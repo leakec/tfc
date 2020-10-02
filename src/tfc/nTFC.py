@@ -8,8 +8,7 @@ from jax.interpreters import ad, batching, xla
 from jax.ops import index_update, index
 from jax.lib import xla_client
 
-from TFCUtils import TFCPrint
-TFCPrint()
+from .utils import TFCPrint
 
 class ProcessingOrder:
 

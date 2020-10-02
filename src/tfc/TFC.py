@@ -9,7 +9,7 @@ from jax import core, abstract_arrays, jvp
 from jax.interpreters import ad, batching, xla
 from jax.lib import xla_client
 
-from TFCUtils import TFCPrint
+from .utils import TFCPrint
 
 class ComponentConstraintGraph:
 
