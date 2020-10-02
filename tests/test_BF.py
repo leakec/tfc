@@ -1,0 +1,286 @@
+import os,sys
+sourcePath = os.path.join("..","src","build","bin")
+sys.path.append(sourcePath)
+
+from jax.config import config
+config.update('jax_enable_x64', True)
+import jax.numpy as np
+from jax import vmap, grad
+
+from BF import CP, LeP, LaP, HoPpro, HoPphy, FS, ELMSigmoid, ELMTanh, ELMSin, ELMSwish
+from TFCUtils import egrad
+
+def test_CP():
+    from pOP import CP as pCP
+    x = np.linspace(0,5,num=10)
+    cp1 = CP(x,np.array([],dtype=np.int32),5,1.)
+    cp2 = CP(x,np.array([],dtype=np.int32),10,1.)
+    Fc1 = cp1.H(x,0,False,False)
+    Fc2 = cp2.H(x,3,False,False)
+
+    x = x.reshape(10,1)
+    Fp1 = pCP(x,4)
+    Fp2 = pCP(x,9,d=3)
+
+    assert(np.linalg.norm(Fc1-Fp1,ord='fro') < 1e-14)
+    assert(np.linalg.norm(Fc2-Fp2,ord='fro') < 1e-14)
+
+def test_LeP():
+    from pOP import LeP as pLeP
+    x = np.linspace(-1.,1.,num=10)
+    lep1 = LeP(x,np.array([],dtype=np.int32),5,1.)
+    lep2 = LeP(x,np.array([],dtype=np.int32),10,1.)
+    Fc1 = lep1.H(x,0,False,False)
+    Fc2 = lep2.H(x,3,False,False)
+
+    x = x.reshape(10,1)
+    Fp1 = pLeP(x,4)
+    Fp2 = pLeP(x,9,d=3)
+
+    assert(np.linalg.norm(Fc1-Fp1,ord='fro') < 1e-14)
+    assert(np.linalg.norm(Fc2-Fp2,ord='fro') < 1e-14)
+
+def test_LaP():
+    from pOP import LaP as pLaP
+    x = np.linspace(0,5,num=10)
+    lap1 = LaP(x,np.array([],dtype=np.int32),5,1.)
+    lap2 = LaP(x,np.array([],dtype=np.int32),10,1.)
+    Fc1 = lap1.H(x,0,False,False)
+    Fc2 = lap2.H(x,3,False,False)
+
+    x = x.reshape(10,1)
+    Fp1 = pLaP(x,4)
+    Fp2 = pLaP(x,9,d=3)
+
+    assert(np.linalg.norm(Fc1-Fp1,ord='fro') < 1e-14)
+    assert(np.linalg.norm(Fc2-Fp2,ord='fro') < 1e-14)
+
+def test_HoPpro():
+    from pOP import HoPpro as pHoPpro
+    x = np.linspace(0,5,num=10)
+    hoppro1 = HoPpro(x,np.array([],dtype=np.int32),5,1.)
+    hoppro2 = HoPpro(x,np.array([],dtype=np.int32),10,1.)
+    Fc1 = hoppro1.H(x,0,False,False)
+    Fc2 = hoppro2.H(x,3,False,False)
+
+    x = x.reshape(10,1)
+    Fp1 = pHoPpro(x,4)
+    Fp2 = pHoPpro(x,9,d=3)
+
+    assert(np.linalg.norm(Fc1-Fp1,ord='fro') < 1e-14)
+    assert(np.linalg.norm(Fc2-Fp2,ord='fro') < 1e-14)
+
+def test_HoPphy():
+    from pOP import HoPphy as pHoPphy
+    x = np.linspace(0,5,num=10)
+    hopphy1 = HoPphy(x,np.array([],dtype=np.int32),5,1.)
+    hopphy2 = HoPphy(x,np.array([],dtype=np.int32),10,1.)
+    Fc1 = hopphy1.H(x,0,False,False)
+    Fc2 = hopphy2.H(x,3,False,False)
+
+    x = x.reshape(10,1)
+    Fp1 = pHoPphy(x,4)
+    Fp2 = pHoPphy(x,9,d=3)
+
+    assert(np.linalg.norm(Fc1-Fp1,ord='fro') < 1e-14)
+    assert(np.linalg.norm(Fc2-Fp2,ord='fro') < 1e-14)
+
+def test_FS():
+    from pOP import FS as pFS
+    x = np.linspace(0,5,num=10)
+    fs1 = FS(x,np.array([],dtype=np.int32),5,1.)
+    fs2 = FS(x,np.array([],dtype=np.int32),10,1.)
+    Fc1 = fs1.H(x,0,False,False)
+    Fc2 = fs2.H(x,1,False,False)
+    Fc3 = fs2.H(x,2,False,False)
+    Fc4 = fs2.H(x,3,False,False)
+    Fc5 = fs2.H(x,4,False,False)
+
+    x = x.reshape(10,1)
+    Fp1 = pFS(x,4)
+    Fp2 = pFS(x,9,d=1)
+    Fp3 = pFS(x,9,d=2)
+    Fp4 = pFS(x,9,d=3)
+    Fp5 = pFS(x,9,d=4)
+
+    assert(np.linalg.norm(Fc1-Fp1,ord='fro') < 1e-14)
+    assert(np.linalg.norm(Fc2-Fp2,ord='fro') < 1e-14)
+    assert(np.linalg.norm(Fc3-Fp3,ord='fro') < 1e-14)
+    assert(np.linalg.norm(Fc4-Fp4,ord='fro') < 1e-14)
+    assert(np.linalg.norm(Fc5-Fp5,ord='fro') < 1e-14)
+
+def test_ELMSigmoid():
+    x = np.linspace(0,5,num=10)
+    elm = ELMSigmoid(x,np.array([],dtype=np.int32),10,1.)
+    Fc1 = elm.H(x,0,False,False)
+    Fc2 = elm.H(x,1,False,False)
+    Fc3 = elm.H(x,2,False,False)
+    Fc4 = elm.H(x,3,False,False)
+    Fc5 = elm.H(x,4,False,False)
+    Fc6 = elm.H(x,5,False,False)
+    Fc7 = elm.H(x,6,False,False)
+    Fc8 = elm.H(x,7,False,False)
+    Fc9 = elm.H(x,8,False,False)
+
+    x = x.reshape(10,1)
+    x = np.ones((10,10))*x
+    w = elm.w.reshape(1,10)
+    b = elm.b.reshape(1,10)
+    sig = lambda x: 1./(1.+np.exp(-w*x-b))
+    dsig = egrad(sig)
+    d2sig = egrad(dsig)
+    d3sig = egrad(d2sig)
+    d4sig = egrad(d2sig)
+    #d5sig = egrad(d2sig)
+    #d6sig = egrad(d2sig)
+    #d7sig = egrad(d2sig)
+    #d8sig = egrad(d2sig)
+    #d9sig = egrad(d2sig)
+
+    Fp1 = sig(x)
+    Fp2 = dsig(x)
+    Fp3 = d2sig(x)
+    Fp4 = d3sig(x)
+    #Fp5 = d4sig(x)
+    #Fp6 = d5sig(x)
+    #Fp7 = d6sig(x)
+    #Fp8 = d7sig(x)
+    #Fp9 = d8sig(x)
+
+    assert(np.linalg.norm(Fc1-Fp1,ord='fro') < 1e-14)
+    assert(np.linalg.norm(Fc2-Fp2,ord='fro') < 1e-14)
+    assert(np.linalg.norm(Fc3-Fp3,ord='fro') < 5e-10)
+    assert(np.linalg.norm(Fc4-Fp4,ord='fro') < 5e-10)
+    #assert(np.linalg.norm(Fc5-Fp5,ord='fro') < 5e-10)
+    #assert(np.linalg.norm(Fc6-Fp6,ord='fro') < 1e-10)
+    #assert(np.linalg.norm(Fc7-Fp7,ord='fro') < 1e-10)
+    #assert(np.linalg.norm(Fc8-Fp8,ord='fro') < 5e-10)
+    #assert(np.linalg.norm(Fc9-Fp9,ord='fro') < 1e-12)
+
+def test_ELMTanh():
+    x = np.linspace(0,5,num=10)
+    elm = ELMTanh(x,np.array([],dtype=np.int32),10,1.)
+    Fc1 = elm.H(x,0,False,False)
+    Fc2 = elm.H(x,1,False,False)
+    Fc3 = elm.H(x,2,False,False)
+    Fc4 = elm.H(x,3,False,False)
+    Fc5 = elm.H(x,4,False,False)
+    Fc6 = elm.H(x,5,False,False)
+    Fc7 = elm.H(x,6,False,False)
+    Fc8 = elm.H(x,7,False,False)
+    Fc9 = elm.H(x,8,False,False)
+
+    x = x.reshape(10,1)
+    x = np.ones((10,10))*x
+    w = elm.w.reshape(1,10)
+    b = elm.b.reshape(1,10)
+    Tanh = lambda x: np.tanh(w*x + b)
+    dTanh = egrad(Tanh)
+    d2Tanh = egrad(dTanh)
+    d3Tanh = egrad(d2Tanh)
+    d4Tanh = egrad(d3Tanh)
+    #d5Tanh = egrad(d4Tanh)
+    #d6Tanh = egrad(d5Tanh)
+    #d7Tanh = egrad(d6Tanh)
+    #d8Tanh = egrad(d7Tanh)
+    #d9Tanh = egrad(d8Tanh)
+
+    Fp1 = Tanh(x)
+    Fp2 = dTanh(x)
+    Fp3 = d2Tanh(x)
+    Fp4 = d3Tanh(x)
+    #Fp5 = d4Tanh(x)
+    #Fp6 = d5Tanh(x)
+    #Fp7 = d6Tanh(x)
+    #Fp8 = d7Tanh(x)
+    #Fp9 = d8Tanh(x)
+
+    assert(np.linalg.norm(Fc1-Fp1,ord='fro') < 1e-14)
+    assert(np.linalg.norm(Fc2-Fp2,ord='fro') < 1e-14)
+    assert(np.linalg.norm(Fc3-Fp3,ord='fro') < 5e-14)
+    assert(np.linalg.norm(Fc4-Fp4,ord='fro') < 5e-10)
+    #assert(np.linalg.norm(Fc5-Fp5,ord='fro') < 5e-10)
+    #assert(np.linalg.norm(Fc6-Fp6,ord='fro') < 1e-9)
+    #assert(np.linalg.norm(Fc7-Fp7,ord='fro') < 5e-9)
+    #assert(np.linalg.norm(Fc8-Fp8,ord='fro') < 5e-9)
+    #assert(np.linalg.norm(Fc9-Fp9,ord='fro') < 1e-12)
+
+def test_ELMSin():
+    x = np.linspace(0,5,num=10)
+    elm = ELMSin(x,np.array([],dtype=np.int32),10,1.)
+    Fc1 = elm.H(x,0,False,False)
+    Fc2 = elm.H(x,1,False,False)
+    Fc3 = elm.H(x,2,False,False)
+    Fc4 = elm.H(x,3,False,False)
+    Fc5 = elm.H(x,4,False,False)
+
+    x = x.reshape(10,1)
+    x = np.ones((10,10))*x
+    w = elm.w.reshape(1,10)
+    b = elm.b.reshape(1,10)
+    sin = lambda x: np.sin(w*x + b)
+    dsin = egrad(sin)
+    d2sin = egrad(dsin)
+    d3sin = egrad(d2sin)
+    d4sin = egrad(d3sin)
+    d5sin = egrad(d4sin)
+
+    Fp1 = sin(x)
+    Fp2 = dsin(x)
+    Fp3 = d2sin(x)
+    Fp4 = d3sin(x)
+    Fp5 = d4sin(x)
+
+    assert(np.linalg.norm(Fc1-Fp1,ord='fro') < 1e-14)
+    assert(np.linalg.norm(Fc2-Fp2,ord='fro') < 1e-14)
+    assert(np.linalg.norm(Fc3-Fp3,ord='fro') < 5e-14)
+    assert(np.linalg.norm(Fc4-Fp4,ord='fro') < 5e-12)
+    assert(np.linalg.norm(Fc5-Fp5,ord='fro') < 5e-12)
+
+def test_ELMSwish():
+    x = np.linspace(0,5,num=10)
+    elm = ELMSwish(x,np.array([],dtype=np.int32),10,1.)
+    Fc1 = elm.H(x,0,False,False)
+    Fc2 = elm.H(x,1,False,False)
+    Fc3 = elm.H(x,2,False,False)
+    Fc4 = elm.H(x,3,False,False)
+    Fc5 = elm.H(x,4,False,False)
+    Fc6 = elm.H(x,5,False,False)
+    Fc7 = elm.H(x,6,False,False)
+    Fc8 = elm.H(x,7,False,False)
+    Fc9 = elm.H(x,8,False,False)
+
+    x = x.reshape(10,1)
+    x = np.ones((10,10))*x
+    w = elm.w.reshape(1,10)
+    b = elm.b.reshape(1,10)
+    swish = lambda x: (w*x+b) * (1./(1.+np.exp(-w*x-b)))
+    dswish = egrad(swish)
+    d2swish = egrad(dswish)
+    d3swish = egrad(d2swish)
+    d4swish = egrad(d3swish)
+    d5swish = egrad(d4swish)
+    #d6swish = egrad(d5swish)
+    #d7swish = egrad(d6swish)
+    #d8swish = egrad(d7swish)
+    #d9swish = egrad(d8swish)
+
+    Fp1 = swish(x)
+    Fp2 = dswish(x)
+    Fp3 = d2swish(x)
+    Fp4 = d3swish(x)
+    Fp5 = d4swish(x)
+    #Fp6 = d5swish(x)
+    #Fp7 = d6swish(x)
+    #Fp8 = d7swish(x)
+    #Fp9 = d8swish(x)
+
+    assert(np.linalg.norm(Fc1-Fp1,ord='fro') < 1e-14)
+    assert(np.linalg.norm(Fc2-Fp2,ord='fro') < 1e-13)
+    assert(np.linalg.norm(Fc3-Fp3,ord='fro') < 5e-10)
+    assert(np.linalg.norm(Fc4-Fp4,ord='fro') < 5e-10)
+    assert(np.linalg.norm(Fc5-Fp5,ord='fro') < 5e-9)
+    #assert(np.linalg.norm(Fc6-Fp6,ord='fro') < 5e-9)
+    #assert(np.linalg.norm(Fc7-Fp7,ord='fro') < 5e-9)
+    #assert(np.linalg.norm(Fc8-Fp8,ord='fro') < 1e-9)
+    # assert(np.linalg.norm(Fc9-Fp9,ord='fro') < 1e-12)
