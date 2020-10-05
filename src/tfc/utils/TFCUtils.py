@@ -6,16 +6,6 @@ from colorama import Style as style
 from collections import OrderedDict
 from functools import partial
 
-import pickle
-import numpy as onp
-import matplotlib as matplotlib
-
-# Change matplotlib backend to allow fig.show()
-matplotlib.use("TkAgg")
-
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-
 from jax.config import config
 config.update('jax_enable_x64', True)
 import numpy as onp
@@ -45,7 +35,7 @@ class TFCPrint:
         print(fg.YELLOW+style.BRIGHT+stringIn)
         print(style.RESET_ALL,end="")
 
-def egradSimple(g,j=0):
+def egrad(g,j=0):
         """ This function mimics egrad from autograd. """
         def wrapped(*args):
             tans = tuple([onp.ones(args[i].shape) if i == j else onp.zeros(args[i].shape) for i in range(len(args)) ])
@@ -63,7 +53,7 @@ def zerosRobust(val):
     """ Returns zeros_like val, but can handle arrays and dictionaries. """
     return onp.zeros(val.shape)
 
-def egrad(g,j=0):
+def egradRobust(g,j=0):
     """ This function mimics egrad from autograd, but can also handle dictionaries. """
     if g.__qualname__ == 'jit.<locals>.f_jitted':
         g = g.__wrapped__
@@ -381,7 +371,7 @@ def NLLS(xiInit,res,*args,J=None,cond=None,body=None,tol=1e-13,maxIter=50,method
         val = {'xi':xiInit,'dxi':dxi,'it':0}
 
         start = timer()
-        val = nlls(val).block_until_ready()
+        val = nlls(val)
         val['dxi'].block_until_ready()
         stop = timer()
 
@@ -390,163 +380,3 @@ def NLLS(xiInit,res,*args,J=None,cond=None,body=None,tol=1e-13,maxIter=50,method
         val = {'xi':xiInit,'dxi':dxi,'it':0}
         val = nlls(val)
         return val['xi'],val['it']
-
-class MakePlot():
-
-    def __init__(self,xlabs,ylabs,twinYlabs=None,titles=None,zlabs=None,name='name'):
-        # Set the fontsizes and family
-        smallSize = 16
-        mediumSize = 18
-        largeSize = 18
-        plt.rc('font', size=smallSize)
-        plt.rc('axes', titlesize=mediumSize)
-        plt.rc('axes', labelsize=largeSize)
-        plt.rc('xtick', labelsize=mediumSize)
-        plt.rc('ytick', labelsize=mediumSize)
-        plt.rc('legend', fontsize=smallSize)
-        plt.rc('figure', titlesize=largeSize)
-
-        # Create figure and store basic labels
-        self.fig = plt.figure()
-        self._name = name
-
-        # Consistify all label types
-        if isinstance(xlabs,onp.ndarray):
-            pass
-        elif isinstance(xlabs,str):
-            xlabs = onp.array([[xlabs]])
-        elif isinstance(xlabs,tuple) or isinstance(xlabs,list):
-            xlabs = onp.array(xlabs)
-        else:
-            TFCPrint.Error("The xlabels provided are not of a valid type. Please provide valid xlabels")
-        if len(xlabs.shape) == 1:
-            xlabs = onp.expand_dims(xlabs,1)
-
-        if isinstance(ylabs,onp.ndarray):
-            pass
-        elif isinstance(ylabs,str):
-            ylabs = onp.array([[ylabs]])
-        elif isinstance(ylabs,tuple) or isinstance(ylabs,list):
-            ylabs = onp.array(ylabs)
-        else:
-            TFCPrint.Error("The ylabels provided are not of a valid type. Please provide valid ylabels")
-        if len(ylabs.shape) == 1:
-            ylabs = onp.expand_dims(ylabs,1)
-
-        if not zlabs is None:
-            if isinstance(zlabs,onp.ndarray):
-                pass
-            elif isinstance(zlabs,str):
-                zlabs = onp.array([[zlabs]])
-            elif isinstance(zlabs,tuple) or isinstance(zlabs,list):
-                zlabs = onp.array(zlabs)
-            else:
-                TFCPrint.Error("The zlabels provided are not of a valid type. Please provide valid zlabels")
-            if len(zlabs.shape) == 1:
-                zlabs = onp.expand_dims(zlabs,1)
-
-        if titles is not None:
-            if isinstance(titles,onp.ndarray):
-                pass
-            elif isinstance(titles,str):
-                titles = onp.array([[titles]])
-            elif isinstance(titles,tuple) or isinstance(titles,list):
-                titles = onp.array(titles)
-            else:
-                TFCPrint.Error("The titles provided are not of a valid type. Please provide valid titles.")
-            if len(titles.shape) == 1:
-                titles = onp.expand_dims(titles,1)
-
-        if twinYlabs is not None:
-            if isinstance(twinYlabs,onp.ndarray):
-                pass
-            elif isinstance(twinYlabs,str):
-                twinYlabs = onp.array([[twinYlabs]])
-            elif isinstance(twinYlabs,tuple) or isinstance(twinYlabs,list):
-                twinYlabs = onp.array(twinYlabs)
-            else:
-                TFCPrint.Error("The twin ylabels provided are not of a valid type. Please provide valid twin ylabels")
-            if len(twinYlabs.shape) == 1:
-                twinYlabs = onp.expand_dims(twinYlabs,1)
-
-
-        # Create all subplots and add labels
-        if zlabs is None:
-            n = xlabs.shape
-            self.ax = list()
-            count = 0
-            for j in range(n[0]):
-                for k in range(n[1]):
-                    if xlabs[j,k] is None:
-                        continue
-                    self.ax.append(self.fig.add_subplot(n[0],n[1],j*n[1]+k+1))
-                    self.ax[count].set_xlabel(xlabs[j,k])
-                    self.ax[count].set_ylabel(ylabs[j,k])
-                    count += 1
-        else:
-            n = xlabs.shape
-            self.ax = list()
-            count = 0
-            for j in range(n[0]):
-                for k in range(n[1]):
-                    if xlabs[j,k] is None:
-                        continue
-                    self.ax.append(self.fig.add_subplot(n[0],n[1],j*n[1]+k+1,projection='3d'))
-                    self.ax[count].set_xlabel(xlabs[j,k])
-                    self.ax[count].set_ylabel(ylabs[j,k])
-                    self.ax[count].set_zlabel(zlabs[j,k])
-                    count += 1
-        
-        if twinYlabs is not None:
-            self.twinAx = list()
-            count = 0
-            for j in range(n[0]):
-                for k in range(n[1]):
-                    if xlabs[j,k] is None:
-                        continue
-                    self.twinAx.append(self.ax[count].twinx())
-                    self.twinAx[count].set_ylabel(twinYlabs[j,k])
-                    count += 1
-
-        # Add titles if desired
-        if titles is not None:
-            count = 0
-            for j in range(n[0]):
-                for k in range(n[1]):
-                    if titles[j,k] is None:
-                        continue
-                    self.ax[count].set_title(titles[j,k])
-                    count += 1
-
-        # Set tight layout for the figure
-        self.fig.tight_layout()
-
-    def FullScreen(self):
-
-        # Get screensize
-        import tkinter as tk
-        root = tk.Tk()
-        width = root.winfo_screenwidth()
-        height = root.winfo_screenheight()
-
-        # Get dpi and set new figsize
-        dpi = float(self.fig.get_dpi())
-        self.fig.set_size_inches(width/dpi,height/dpi)
-
-    def PartScreen(self,width,height):
-
-        # Get screensize
-        self.fig.set_size_inches(width,height)
-
-    def show(self):
-        self.fig.show()
-
-    def save(self,fileName,trans=True,fileType='pdf'):
-        self.fig.savefig(fileName+'.'+fileType, bbox_inches='tight', pad_inches = 0, dpi = 300, format=fileType, transparent=trans)
-
-    def savePickle(self,fileName):
-        pickle.dump(self.fig,open(fileName+'.pickle','wb'))
-
-    def saveAll(self,fileName):
-        self.save(fileName)
-        self.savePickle(fileName)
