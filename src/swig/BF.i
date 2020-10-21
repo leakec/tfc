@@ -27,7 +27,7 @@
 
 // Apply typemaps to allow hooks into Python
 %apply (int* IN_ARRAY1, int DIM1){(int* d, int dDim0),(int* nCin, int ncDim0),(int* useVal, int useValDim0)};
-%apply (double* IN_ARRAY1, int DIM1){(double* x, int in),(double* cin, int cDim0),(double* arrIn, int nIn),(double* zin, int zDim0)};
+%apply (double* IN_ARRAY1, int DIM1){(double* x, int n),(double* cin, int cDim0),(double* arrIn, int nIn),(double* zin, int zDim0),(double* x0in, int x0Dim0),(double* xf, int xfDim0)};
 %apply (int* IN_ARRAY2, int DIM1, int DIM2){(int* nCin, int ncDim0, int ncDim1)};
 %apply (double* IN_ARRAY2, int DIM1, int DIM2){(double* zin, int zDim0, int zDim1),(double* x, int in, int xDim1),(double* arrIn, int dimIn, int nIn)};
 
@@ -35,6 +35,14 @@
 %apply (double** ARGOUTVIEWM_ARRAY1, int* DIM1){(double** arrOut, int* nOut)};
 
 // Add getter and setter methods 
+
+%extend nBasisFunc{
+    %rename(_getC) getC(double** arrOut, int* nOut);
+
+    %pythoncode %{
+        c = property(_getC)
+    %}
+};
 
 %extend ELM{
     %rename(_getW) getW(double** arrOut, int* nOut);

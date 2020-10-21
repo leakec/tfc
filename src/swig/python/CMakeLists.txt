@@ -37,3 +37,8 @@ configure_file(${SETUP_PY_IN} ${SETUP_PY_OUT})
 add_custom_target(install-BF-python
 		DEPENDS _BF
         COMMAND python ${SETUP_PY_OUT} install)
+
+# Copy necessary files to the proper directories
+file(RELATIVE_PATH DST_DIR ${SRC_DIR} "${TFC_INSTALL_DIR}/utils")
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/BF.py DESTINATION ${DST_DIR} COMPONENT "PY")
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/_BFSwig.so DESTINATION ${DST_DIR} COMPONENT "PY")

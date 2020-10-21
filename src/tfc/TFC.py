@@ -9,102 +9,7 @@ from jax import core, abstract_arrays, jvp
 from jax.interpreters import ad, batching, xla
 from jax.lib import xla_client
 
-from .utils import TFCPrint
-
-class ComponentConstraintGraph:
-
-    def __init__(self,N,E):
-
-        # Check that all edges are connected to valid nodes
-        self.nNodes = len(N)
-        self.nEdges = len(E)
-        for k in range(self.nEdges):
-            if not (E[k]['node0'] in N and E[k]['node1'] in N):
-                TFCPrint.Error("Error either "+E[k]['node0']+" or "+E[k]['node1']+" is not a valid node. Make sure they appear in the nodes list.")
-
-        # Create all possible source/target pairs. This tells whether node0 is the target or source, node1 will be the opposite.
-        import itertools 
-        self.targets = list(itertools.product([0, 1], repeat=self.nEdges))
-
-        # Find all targets that are valid trees
-        self.goodTargets = []
-        for j in range(len(self.targets)):
-            flag = True
-            adj = onp.zeros((self.nNodes,self.nNodes),dtype=np.int32)
-            for k in range(self.nNodes):
-                kNode = N[k]
-                sources = []
-                targets = []
-                for g in range(self.nEdges):
-                    if E[g]['node0'] == kNode:
-                        if self.targets[j][g]:
-                            adj[N.index(E[g]['node1']),N.index(E[g]['node0'])] = 1
-                    elif E[g]['node1'] == kNode:
-                        if not self.targets[j][g]:
-                            adj[N.index(E[g]['node0']),N.index(E[g]['node1'])] = 1
-            if np.all(np.linalg.matrix_power(adj,self.nNodes) == 0):
-                self.goodTargets.append(j)
-
-        # Save nodes and edges for use later
-        self.N = N
-        self.E = E
-
-    def SaveTrees(self,outputDir,allTrees=False,savePDFs=False):
-        import os
-        from Html import HTML, Dot
-
-        if allTrees:
-            targets = self.targets
-        else:
-            targets = [self.targets[k] for k in self.goodTargets]
-
-        n = len(targets)
-
-        #: Create the main dot file 
-        mainDot = Dot(os.path.join(outputDir,'dotFiles','main'),'main')
-        mainDot.dot.node_attr.update(shape='box')
-        for k in range(n):
-            mainDot.dot.node('tree'+str(k),'Tree '+str(k),href=os.path.join('htmlFiles','tree'+str(k)+'.html'))
-        mainDot.Render()
-
-        #: Create the main file HTML
-        mainHtml = HTML(os.path.join(outputDir,'main.html'))
-        with mainHtml.tag('html'):
-            with mainHtml.tag('body'):
-                with mainHtml.tag('style'):
-                    mainHtml.doc.asis(mainHtml.centerClass)
-                mainHtml.doc.stag('img',src=os.path.join('dotFiles','main.svg'),usemap='#main',klass='center')
-                mainHtml.doc.asis(mainHtml.ReadFile(os.path.join(outputDir,'dotFiles','main.cmapx')))
-        mainHtml.WriteFile()
-
-        #: Create the tree dot files
-        for k in range(n):
-            treeDot = Dot(os.path.join(outputDir,'dotFiles','tree'+str(k)),'tree'+str(k))
-            treeDot.dot.attr(bgcolor='transparent')
-            treeDot.dot.node_attr.update(shape='box')
-            for j in range(self.nNodes):
-                treeDot.dot.node(self.N[j],self.N[j])
-            for j in range(self.nEdges):
-                if not targets[k][j]:
-                    treeDot.dot.edge(self.E[j]['node0'],self.E[j]['node1'],label=self.E[j]['name'])
-                else:
-                    treeDot.dot.edge(self.E[j]['node1'],self.E[j]['node0'],label=self.E[j]['name'])
-
-            if savePDFs:
-                treeDot.Render(formats=['cmapx','svg','pdf'])
-            else:
-                treeDot.Render()
-
-        #: Create the tree HTML files
-        for k in range(n):
-            treeHtml = HTML(os.path.join(outputDir,'htmlFiles','tree'+str(k)+'.html'))
-            with treeHtml.tag('html'):
-                with treeHtml.tag('body'):
-                    with treeHtml.tag('style'):
-                        treeHtml.doc.asis(treeHtml.centerClass)
-                    treeHtml.doc.stag('img',src=os.path.join('..','dotFiles','tree'+str(k)+'.svg'),usemap='#tree'+str(k),klass='center')
-                    treeHtml.doc.asis(treeHtml.ReadFile(os.path.join(outputDir,'dotFiles','tree'+str(k)+'.cmapx')))
-            treeHtml.WriteFile()
+from .utils.TFCUtils import TFCPrint
 
 # Custom name generator
 def NameGen():
@@ -113,7 +18,6 @@ def NameGen():
         NameGen.persist = 0
     NameGen.persist += 1
     return "TFC"+str(NameGen.persist)
-
 
 ##
 #This is the univariate TFC class. It acts as a container that holds:
@@ -141,13 +45,10 @@ class TFC:
     #    * c - This argument acts as the constant in the linear map that maps the DE domain to the basis function domain.
     #    * x0 - This optional argument specifies the beginning of the DE domain. The default value "None" will result in a DE domain that begins at 0.
     #    * z - This optional argument is used to specify the basis function domain discretization. The default value will result in the typical collocation discretiztaion. 
-    def __init__(self,N,nC,deg,basis='CP',c=0.,x0=None,z=None):
+    def __init__(self,N,nC,deg,basis='CP',x0=None,xf=None,z=None):
 
         # Generate a custom name
         self.name = NameGen()
-
-        # Initialize TFCPrint
-        TFCPrint()
 
         # Store givens
         self.N = N
@@ -169,85 +70,82 @@ class TFC:
         else:
             self.x0 = x0
 
-        if c==0:
-            TFCPrint.Error("The value of c you have entered is invalid. Please enter a valid value for c.")
-            sys.exit()
+        if xf is None:
+            self.xf = 0.
         else:
-            self.c = c
-
-        # Calculate z points and corresponding x
-        if z is None:
-            if self.basis in ['CP','LeP']:
-                n = self.N-1
-                I = np.linspace(0,n,n+1)
-                self.z = np.cos(np.pi*(n-I)/float(n))
-                self.x = (self.z+1.)/self.c+self.x0
-            elif self.basis == 'FS':
-                self.z = np.linspace(-np.pi,np.pi,num=self.N)
-                self.x = (self.z+np.pi)/self.c+self.x0
-            else:
-                self.z = np.linspace(0.,1.,num=self.N)
-                self.x = self.z/self.c+self.x0
-        else:
-            if not z.shape[0] == self.N:
-                TFCPrint.Error("Input vector z is not the correct size.")
-            self.z = z.flatten()
-            if self.basis in ['CP','LeP']:
-                self.x = (self.z+1.)/self.c+self.x0
-            elif self.basis == 'FS':
-                self.x = (self.z+np.pi)/self.c+self.x0
-            else:
-                self.x = self.z/self.c+self.x0
+            self.xf = xf
 
         # Setup the basis function
         if self.basis == 'CP':
-            from BF import CP
-            self.basisClass = CP(self.z,self.nC,self.deg+1,self.c)
+            from .utils.BF import CP
+            self.basisClass = CP(self.x0,self.xf,self.nC,self.deg+1)
+            z0 = -1.; zf = 1.
         elif self.basis == 'LeP':
-            from BF import LeP
-            self.basisClass = LeP(self.z,self.nC,self.deg+1,self.c)
+            from .utils.BF import LeP
+            self.basisClass = LeP(self.x0,self.xf,self.nC,self.deg+1)
+            z0 = -1.; zf = 1.
         elif self.basis == 'FS':
-            from BF import FS
-            self.basisClass = FS(self.z,self.nC,self.deg+1,self.c)
+            from .utils.BF import FS
+            self.basisClass = FS(self.x0,self.xf,self.nC,self.deg+1)
+            z0 = -np.pi; zf = np.pi
+        elif self.basis == 'ELMReLU':
+            from .utils.BF import ELMReLU
+            self.basisClass = ELMReLU(self.x0,self.xf,self.nC,self.deg+1)
+            z0 = 0.; zf = 1.
         elif self.basis == 'ELMSigmoid':
-            from BF import ELMSigmoid
-            self.basisClass = ELMSigmoid(self.z,self.nC,self.deg+1,self.c)
+            from .utils.BF import ELMSigmoid
+            self.basisClass = ELMSigmoid(self.x0,self.xf,self.nC,self.deg+1)
+            z0 = 0.; zf = 1.
         elif self.basis == 'ELMTanh':
-            from BF import ELMTanh
-            self.basisClass = ELMTanh(self.z,self.nC,self.deg+1,self.c)
+            from .utils.BF import ELMTanh
+            self.basisClass = ELMTanh(self.x0,self.xf,self.nC,self.deg+1)
+            z0 = 0.; zf = 1.
         elif self.basis == 'ELMSin':
-            from BF import ELMSin
-            self.basisClass = ELMSin(self.z,self.nC,self.deg+1,self.c)
+            from .utils.BF import ELMSin
+            self.basisClass = ELMSin(self.x0,self.xf,self.nC,self.deg+1)
+            z0 = 0.; zf = 1.
         elif self.basis == 'ELMSwish':
-            from BF import ELMSwish
-            self.basisClass = ELMSwish(self.z,self.nC,self.deg+1,self.c)
+            from .utils.BF import ELMSwish
+            self.basisClass = ELMSwish(self.x0,self.xf,self.nC,self.deg+1)
+            z0 = 0.; zf = 1.
         else:
             TFCPrint.Error("Invalid basis selection. Please select a valid basis")
+
+        self.c = self.basisClass.c
+
+        # Calculate z points and corresponding x
+        if self.basis in ['CP','LeP']:
+            n = self.N-1
+            I = np.linspace(0,n,n+1)
+            self.z = np.cos(np.pi*(n-I)/float(n))
+            self.x = (self.z-z0)/self.c+self.x0
+        else:
+            self.z = np.linspace(z0,zf,num=self.N)
+            self.x = (self.z-z0)/self.c+self.x0
 
         self.SetupJax()
 
     ## This function returns the a JAX function that returns a matrix of the basis functions evaluated at each discretization point.
     #  This function can be automatically differentiated via JAX commands. The returned function pointer has the following arguments:
-    #     * x - The discretization points. Note that if useVal=False, then this argument is not used. The TFC.z points are used instead.
+    #     * x - The discretization points. 
     #     * full - This optional boolean argument when set to True will ignore the basis functions removed by the nC argument in the TFC constructor. The default is False.
-    #     * useVal - This optional boolean argument when set to True will use the values of x passed into the function. Otherwise, it will use the TFC.z points. Note that this behavior is desired as many times we want to compute dH/dx even though H is really a function of z. Using useVal=False (the default) this desired behavior is achieved. 
-    def H(self,x,full=False,useVal=False):
-        return self.Hjax(x,full=full,useVal=useVal)
-    def dH(self,x,full=False,useVal=False):
+    def H(self,x,full=False):
+        return self.Hjax(x,full=full)
+    def dH(self,x,full=False):
         """ This function returns a pointer to the deriative of H. See documentation of H for more details. """
-        return self.dHjax(x,full=full,useVal=useVal)
-    def d2H(self,x,full=False,useVal=False):
+        return self.dHjax(x,full=full)
+    def d2H(self,x,full=False):
         """ This function returns a pointer to the second deriative of H. See documentation of H for more details. """
-        return self.d2Hjax(x,full=full,useVal=useVal)
-    def d3H(self,x,full=False,useVal=False):
+        return self.d2Hjax(x,full=full)
+    def d3H(self,x,full=False):
         """ This function returns a pointer to the third deriative of H. See documentation of H for more details. """
-        return self.d3Hjax(x,full=full,useVal=useVal)
-    def d4H(self,x,full=False,useVal=False):
+        return self.d3Hjax(x,full=full)
+    def d4H(self,x,full=False):
         """ This function returns a pointer to the fourth deriative of H. See documentation of H for more details. """
-        return self.d4Hjax(x,full=full,useVal=useVal)
-    def d8H(self,x,full=False,useVal=False):
+        return self.d4Hjax(x,full=full)
+    def d8H(self,x,full=False):
         """ This function returns a pointer to the eighth deriative of H. See documentation of H for more details. """
-        return self.d8Hjax(x,full=full,useVal=useVal)
+        return self.d8Hjax(x,full=full)
 
     def RepMat(self,varIn,dim=1):
         """ This function is used to replicate a vector along the dimension specified by dim to create a matrix
@@ -318,44 +216,44 @@ class TFC:
         d7H_p = core.Primitive("d7H")
         d8H_p = core.Primitive("d8H")
 
-        def Hjax(x,full=False,useVal=False):
-            return H_p.bind(x,full=full,useVal=useVal)
-        def dHjax(x,full=False,useVal=False):
-            return dH_p.bind(x,full=full,useVal=useVal)
-        def d2Hjax(x,full=False,useVal=False):
-            return d2H_p.bind(x,full=full,useVal=useVal)
-        def d3Hjax(x,full=False,useVal=False):
-            return d3H_p.bind(x,full=full,useVal=useVal)
-        def d4Hjax(x,full=False,useVal=False):
-            return d4H_p.bind(x,full=full,useVal=useVal)
-        def d5Hjax(x,full=False,useVal=False):
-            return d5H_p.bind(x,full=full,useVal=useVal)
-        def d6Hjax(x,full=False,useVal=False):
-            return d6H_p.bind(x,full=full,useVal=useVal)
-        def d7Hjax(x,full=False,useVal=False):
-            return d7H_p.bind(x,full=full,useVal=useVal)
-        def d8Hjax(x,full=False,useVal=False):
-            return d8H_p.bind(x,full=full,useVal=useVal)
+        def Hjax(x,full=False):
+            return H_p.bind(x,full=full)
+        def dHjax(x,full=False):
+            return dH_p.bind(x,full=full)
+        def d2Hjax(x,full=False):
+            return d2H_p.bind(x,full=full)
+        def d3Hjax(x,full=False):
+            return d3H_p.bind(x,full=full)
+        def d4Hjax(x,full=False):
+            return d4H_p.bind(x,full=full)
+        def d5Hjax(x,full=False):
+            return d5H_p.bind(x,full=full)
+        def d6Hjax(x,full=False):
+            return d6H_p.bind(x,full=full)
+        def d7Hjax(x,full=False):
+            return d7H_p.bind(x,full=full)
+        def d8Hjax(x,full=False):
+            return d8H_p.bind(x,full=full)
 
         # Implicit translation
-        def H_impl(x,full=False,useVal=False):
-            return self.basisClass.H(x.flatten(),0,full,useVal)
-        def dH_impl(x,full=False,useVal=False):
-            return self.basisClass.H(x.flatten(),1,full,useVal)
-        def d2H_impl(x,full=False,useVal=False):
-            return self.basisClass.H(x.flatten(),2,full,useVal)
-        def d3H_impl(x,full=False,useVal=False):
-            return self.basisClass.H(x.flatten(),3,full,useVal)
-        def d4H_impl(x,full=False,useVal=False):
-            return self.basisClass.H(x.flatten(),4,full,useVal)
-        def d5H_impl(x,full=False,useVal=False):
-            return self.basisClass.H(x.flatten(),5,full,useVal)
-        def d6H_impl(x,full=False,useVal=False):
-            return self.basisClass.H(x.flatten(),6,full,useVal)
-        def d7H_impl(x,full=False,useVal=False):
-            return self.basisClass.H(x.flatten(),7,full,useVal)
-        def d8H_impl(x,full=False,useVal=False):
-            return self.basisClass.H(x.flatten(),8,full,useVal)
+        def H_impl(x,full=False):
+            return self.basisClass.H(x.flatten(),0,full)
+        def dH_impl(x,full=False):
+            return self.basisClass.H(x.flatten(),1,full)
+        def d2H_impl(x,full=False):
+            return self.basisClass.H(x.flatten(),2,full)
+        def d3H_impl(x,full=False):
+            return self.basisClass.H(x.flatten(),3,full)
+        def d4H_impl(x,full=False):
+            return self.basisClass.H(x.flatten(),4,full)
+        def d5H_impl(x,full=False):
+            return self.basisClass.H(x.flatten(),5,full)
+        def d6H_impl(x,full=False):
+            return self.basisClass.H(x.flatten(),6,full)
+        def d7H_impl(x,full=False):
+            return self.basisClass.H(x.flatten(),7,full)
+        def d8H_impl(x,full=False):
+            return self.basisClass.H(x.flatten(),8,full)
         
         H_p.def_impl(H_impl)
         dH_p.def_impl(dH_impl)
@@ -368,11 +266,8 @@ class TFC:
         d8H_p.def_impl(d8H_impl)
 
         # Abstract evaluation
-        def H_abstract_eval(x,full=False,useVal=False):
-            if useVal:
-                dim0 = x.shape[0]
-            else: 
-                dim0 = self.basisClass.n
+        def H_abstract_eval(x,full=False):
+            dim0 = x.shape[0]
             if full:
                 dim1 = self.basisClass.m
             else:
@@ -390,15 +285,12 @@ class TFC:
         d8H_p.def_abstract_eval(H_abstract_eval)
 
         # XLA compilation
-        def H_xla(c,x,full=False,useVal=False):
+        def H_xla(c,x,full=False):
             c = _unpack_builder(c)
             x_shape = c.get_shape(x)
             dims = x_shape.dimensions()
             dtype = x_shape.element_type()
-            if useVal:
-                dim0 = dims[0]
-            else: 
-                dim0 = self.basisClass.n
+            dim0 = dims[0]
             if full:
                 dim1 = self.basisClass.m
             else:
@@ -407,20 +299,16 @@ class TFC:
                                                             x,
                                                             _constant_s32_scalar(c,0),
                                                             _constant_bool(c,full),
-                                                            _constant_bool(c,useVal),
                                                             _constant_s32_scalar(c,dim0),
                                                             _constant_s32_scalar(c,dim1)
                                                          ),
                                                          xla_client.Shape.array_shape(dtype,(dim0,dim1)))
-        def dH_xla(c,x,full=False,useVal=False):
+        def dH_xla(c,x,full=False):
             c = _unpack_builder(c)
             x_shape = c.get_shape(x)
             dims = x_shape.dimensions()
             dtype = x_shape.element_type()
-            if useVal:
-                dim0 = dims[0]
-            else: 
-                dim0 = self.basisClass.n
+            dim0 = dims[0]
             if full:
                 dim1 = self.basisClass.m
             else:
@@ -429,20 +317,16 @@ class TFC:
                                                             x,
                                                             _constant_s32_scalar(c,1),
                                                             _constant_bool(c,full),
-                                                            _constant_bool(c,useVal),
                                                             _constant_s32_scalar(c,dim0),
                                                             _constant_s32_scalar(c,dim1)
                                                          ),
                                                          xla_client.Shape.array_shape(dtype,(dim0,dim1)))
-        def d2H_xla(c,x,full=False,useVal=False):
+        def d2H_xla(c,x,full=False):
             c = _unpack_builder(c)
             x_shape = c.get_shape(x)
             dims = x_shape.dimensions()
             dtype = x_shape.element_type()
-            if useVal:
-                dim0 = dims[0]
-            else: 
-                dim0 = self.basisClass.n
+            dim0 = dims[0]
             if full:
                 dim1 = self.basisClass.m
             else:
@@ -451,20 +335,16 @@ class TFC:
                                                             x,
                                                             _constant_s32_scalar(c,2),
                                                             _constant_bool(c,full),
-                                                            _constant_bool(c,useVal),
                                                             _constant_s32_scalar(c,dim0),
                                                             _constant_s32_scalar(c,dim1)
                                                          ),
                                                          xla_client.Shape.array_shape(dtype,(dim0,dim1)))
-        def d3H_xla(c,x,full=False,useVal=False):
+        def d3H_xla(c,x,full=False):
             c = _unpack_builder(c)
             x_shape = c.get_shape(x)
             dims = x_shape.dimensions()
             dtype = x_shape.element_type()
-            if useVal:
-                dim0 = dims[0]
-            else: 
-                dim0 = self.basisClass.n
+            dim0 = dims[0]
             if full:
                 dim1 = self.basisClass.m
             else:
@@ -473,20 +353,16 @@ class TFC:
                                                             x,
                                                             _constant_s32_scalar(c,3),
                                                             _constant_bool(c,full),
-                                                            _constant_bool(c,useVal),
                                                             _constant_s32_scalar(c,dim0),
                                                             _constant_s32_scalar(c,dim1)
                                                          ),
                                                          xla_client.Shape.array_shape(dtype,(dim0,dim1)))
-        def d4H_xla(c,x,full=False,useVal=False):
+        def d4H_xla(c,x,full=False):
             c = _unpack_builder(c)
             x_shape = c.get_shape(x)
             dims = x_shape.dimensions()
             dtype = x_shape.element_type()
-            if useVal:
-                dim0 = dims[0]
-            else: 
-                dim0 = self.basisClass.n
+            dim0 = dims[0]
             if full:
                 dim1 = self.basisClass.m
             else:
@@ -495,20 +371,16 @@ class TFC:
                                                             x,
                                                             _constant_s32_scalar(c,4),
                                                             _constant_bool(c,full),
-                                                            _constant_bool(c,useVal),
                                                             _constant_s32_scalar(c,dim0),
                                                             _constant_s32_scalar(c,dim1)
                                                          ),
                                                          xla_client.Shape.array_shape(dtype,(dim0,dim1)))
-        def d5H_xla(c,x,full=False,useVal=False):
+        def d5H_xla(c,x,full=False):
             c = _unpack_builder(c)
             x_shape = c.get_shape(x)
             dims = x_shape.dimensions()
             dtype = x_shape.element_type()
-            if useVal:
-                dim0 = dims[0]
-            else: 
-                dim0 = self.basisClass.n
+            dim0 = dims[0]
             if full:
                 dim1 = self.basisClass.m
             else:
@@ -517,20 +389,16 @@ class TFC:
                                                             x,
                                                             _constant_s32_scalar(c,5),
                                                             _constant_bool(c,full),
-                                                            _constant_bool(c,useVal),
                                                             _constant_s32_scalar(c,dim0),
                                                             _constant_s32_scalar(c,dim1)
                                                          ),
                                                          xla_client.Shape.array_shape(dtype,(dim0,dim1)))
-        def d6H_xla(c,x,full=False,useVal=False):
+        def d6H_xla(c,x,full=False):
             c = _unpack_builder(c)
             x_shape = c.get_shape(x)
             dims = x_shape.dimensions()
             dtype = x_shape.element_type()
-            if useVal:
-                dim0 = dims[0]
-            else: 
-                dim0 = self.basisClass.n
+            dim0 = dims[0]
             if full:
                 dim1 = self.basisClass.m
             else:
@@ -539,20 +407,16 @@ class TFC:
                                                             x,
                                                             _constant_s32_scalar(c,6),
                                                             _constant_bool(c,full),
-                                                            _constant_bool(c,useVal),
                                                             _constant_s32_scalar(c,dim0),
                                                             _constant_s32_scalar(c,dim1)
                                                          ),
                                                          xla_client.Shape.array_shape(dtype,(dim0,dim1)))
-        def d7H_xla(c,x,full=False,useVal=False):
+        def d7H_xla(c,x,full=False):
             c = _unpack_builder(c)
             x_shape = c.get_shape(x)
             dims = x_shape.dimensions()
             dtype = x_shape.element_type()
-            if useVal:
-                dim0 = dims[0]
-            else: 
-                dim0 = self.basisClass.n
+            dim0 = dims[0]
             if full:
                 dim1 = self.basisClass.m
             else:
@@ -561,20 +425,16 @@ class TFC:
                                                             x,
                                                             _constant_s32_scalar(c,7),
                                                             _constant_bool(c,full),
-                                                            _constant_bool(c,useVal),
                                                             _constant_s32_scalar(c,dim0),
                                                             _constant_s32_scalar(c,dim1)
                                                          ),
                                                          xla_client.Shape.array_shape(dtype,(dim0,dim1)))
-        def d8H_xla(c,x,full=False,useVal=False):
+        def d8H_xla(c,x,full=False):
             c = _unpack_builder(c)
             x_shape = c.get_shape(x)
             dims = x_shape.dimensions()
             dtype = x_shape.element_type()
-            if useVal:
-                dim0 = dims[0]
-            else: 
-                dim0 = self.basisClass.n
+            dim0 = dims[0]
             if full:
                 dim1 = self.basisClass.m
             else:
@@ -583,7 +443,6 @@ class TFC:
                                                             x,
                                                             _constant_s32_scalar(c,8),
                                                             _constant_bool(c,full),
-                                                            _constant_bool(c,useVal),
                                                             _constant_s32_scalar(c,dim0),
                                                             _constant_s32_scalar(c,dim1)
                                                          ),
@@ -600,24 +459,24 @@ class TFC:
         xla.backend_specific_translations['cpu'][d8H_p] = d8H_xla
 
         # Define batching translation
-        def H_batch(vec,batch,full=False,useVal=False):
-            return Hjax(*vec,full=full,useVal=useVal), batch[0]
-        def dH_batch(vec,batch,full=False,useVal=False):
-            return dHjax(*vec,full=full,useVal=useVal), batch[0]
-        def d2H_batch(vec,batch,full=False,useVal=False):
-            return d2Hjax(*vec,full=full,useVal=useVal), batch[0]
-        def d3H_batch(vec,batch,full=False,useVal=False):
-            return d3Hjax(*vec,full=full,useVal=useVal), batch[0]
-        def d4H_batch(vec,batch,full=False,useVal=False):
-            return d4Hjax(*vec,full=full,useVal=useVal), batch[0]
-        def d5H_batch(vec,batch,full=False,useVal=False):
-            return d5Hjax(*vec,full=full,useVal=useVal), batch[0]
-        def d6H_batch(vec,batch,full=False,useVal=False):
-            return d6Hjax(*vec,full=full,useVal=useVal), batch[0]
-        def d7H_batch(vec,batch,full=False,useVal=False):
-            return d7Hjax(*vec,full=full,useVal=useVal), batch[0]
-        def d8H_batch(vec,batch,full=False,useVal=False):
-            return d8Hjax(*vec,full=full,useVal=useVal), batch[0]
+        def H_batch(vec,batch,full=False):
+            return Hjax(*vec,full=full), batch[0]
+        def dH_batch(vec,batch,full=False):
+            return dHjax(*vec,full=full), batch[0]
+        def d2H_batch(vec,batch,full=False):
+            return d2Hjax(*vec,full=full), batch[0]
+        def d3H_batch(vec,batch,full=False):
+            return d3Hjax(*vec,full=full), batch[0]
+        def d4H_batch(vec,batch,full=False):
+            return d4Hjax(*vec,full=full), batch[0]
+        def d5H_batch(vec,batch,full=False):
+            return d5Hjax(*vec,full=full), batch[0]
+        def d6H_batch(vec,batch,full=False):
+            return d6Hjax(*vec,full=full), batch[0]
+        def d7H_batch(vec,batch,full=False):
+            return d7Hjax(*vec,full=full), batch[0]
+        def d8H_batch(vec,batch,full=False):
+            return d8Hjax(*vec,full=full), batch[0]
 
         batching.primitive_batchers[H_p] = H_batch
         batching.primitive_batchers[dH_p] = dH_batch
@@ -630,7 +489,7 @@ class TFC:
         batching.primitive_batchers[d8H_p] = d8H_batch
 
         # Define jacobain vector product
-        def H_jvp(arg_vals,arg_tans,full=False,useVal=False):
+        def H_jvp(arg_vals,arg_tans,full=False):
             x = arg_vals[0]
             dx = arg_tans[0]
             if not (dx is ad.Zero):
@@ -640,21 +499,18 @@ class TFC:
                     flag = onp.any(dx != 0)
                 if flag:
                     if len(dx.shape) == 1:
-                        out_tans = dHjax(x.flatten(),full=full,useVal=useVal)*np.expand_dims(dx,1)
+                        out_tans = dHjax(x.flatten(),full=full)*np.expand_dims(dx,1)
                     else:
-                        out_tans = dHjax(x.flatten(),full=full,useVal=useVal)*dx
+                        out_tans = dHjax(x.flatten(),full=full)*dx
             else:
-                if useVal:
-                    dim0 = x.shape[0]
-                else: 
-                    dim0 = self.basisClass.n
+                dim0 = x.shape[0]
                 if full:
                     dim1 = self.basisClass.m
                 else:
                     dim1 = self.basisClass.m-self.basisClass.numC
                 out_tans = np.zeros((dim0,dim1))
-            return (Hjax(x.flatten(),full=full,useVal=useVal),out_tans)
-        def dH_jvp(arg_vals,arg_tans,full=False,useVal=False):
+            return (Hjax(x.flatten(),full=full),out_tans)
+        def dH_jvp(arg_vals,arg_tans,full=False):
             x = arg_vals[0]
             dx = arg_tans[0]
             if not (dx is ad.Zero):
@@ -664,21 +520,18 @@ class TFC:
                     flag = onp.any(dx != 0)
                 if flag:
                     if len(dx.shape) == 1:
-                        out_tans = d2Hjax(x.flatten(),full=full,useVal=useVal)*np.expand_dims(dx,1)
+                        out_tans = d2Hjax(x.flatten(),full=full)*np.expand_dims(dx,1)
                     else:
-                        out_tans = d2Hjax(x.flatten(),full=full,useVal=useVal)*dx
+                        out_tans = d2Hjax(x.flatten(),full=full)*dx
             else:
-                if useVal:
-                    dim0 = x.shape[0]
-                else: 
-                    dim0 = self.basisClass.n
+                dim0 = x.shape[0]
                 if full:
                     dim1 = self.basisClass.m
                 else:
                     dim1 = self.basisClass.m-self.basisClass.numC
                 out_tans = np.zeros((dim0,dim1))
-            return (dHjax(x.flatten(),full=full,useVal=useVal),out_tans)
-        def d2H_jvp(arg_vals,arg_tans,full=False,useVal=False):
+            return (dHjax(x.flatten(),full=full),out_tans)
+        def d2H_jvp(arg_vals,arg_tans,full=False):
             x = arg_vals[0]
             dx = arg_tans[0]
             if not (dx is ad.Zero):
@@ -688,21 +541,18 @@ class TFC:
                     flag = onp.any(dx != 0)
                 if flag:
                     if len(dx.shape) == 1:
-                        out_tans = d3Hjax(x.flatten(),full=full,useVal=useVal)*np.expand_dims(dx,1)
+                        out_tans = d3Hjax(x.flatten(),full=full)*np.expand_dims(dx,1)
                     else:
-                        out_tans = d3Hjax(x.flatten(),full=full,useVal=useVal)*dx
+                        out_tans = d3Hjax(x.flatten(),full=full)*dx
             else:
-                if useVal:
-                    dim0 = x.shape[0]
-                else: 
-                    dim0 = self.basisClass.n
+                dim0 = x.shape[0]
                 if full:
                     dim1 = self.basisClass.m
                 else:
                     dim1 = self.basisClass.m-self.basisClass.numC
                 out_tans = np.zeros((dim0,dim1))
-            return (d2Hjax(x.flatten(),full=full,useVal=useVal),out_tans)
-        def d3H_jvp(arg_vals,arg_tans,full=False,useVal=False):
+            return (d2Hjax(x.flatten(),full=full),out_tans)
+        def d3H_jvp(arg_vals,arg_tans,full=False):
             x = arg_vals[0]
             dx = arg_tans[0]
             if not (dx is ad.Zero):
@@ -712,21 +562,18 @@ class TFC:
                     flag = onp.any(dx != 0)
                 if flag:
                     if len(dx.shape) == 1:
-                        out_tans = d4Hjax(x.flatten(),full=full,useVal=useVal)*np.expand_dims(dx,1)
+                        out_tans = d4Hjax(x.flatten(),full=full)*np.expand_dims(dx,1)
                     else:
-                        out_tans = d4Hjax(x.flatten(),full=full,useVal=useVal)*dx
+                        out_tans = d4Hjax(x.flatten(),full=full)*dx
             else:
-                if useVal:
-                    dim0 = x.shape[0]
-                else: 
-                    dim0 = self.basisClass.n
+                dim0 = x.shape[0]
                 if full:
                     dim1 = self.basisClass.m
                 else:
                     dim1 = self.basisClass.m-self.basisClass.numC
                 out_tans = np.zeros((dim0,dim1))
-            return (d3Hjax(x.flatten(),full=full,useVal=useVal),out_tans)
-        def d4H_jvp(arg_vals,arg_tans,full=False,useVal=False):
+            return (d3Hjax(x.flatten(),full=full),out_tans)
+        def d4H_jvp(arg_vals,arg_tans,full=False):
             x = arg_vals[0]
             dx = arg_tans[0]
             if not (dx is ad.Zero):
@@ -736,21 +583,18 @@ class TFC:
                     flag = onp.any(dx != 0)
                 if flag:
                     if len(dx.shape) == 1:
-                        out_tans = d5Hjax(x.flatten(),full=full,useVal=useVal)*np.expand_dims(dx,1)
+                        out_tans = d5Hjax(x.flatten(),full=full)*np.expand_dims(dx,1)
                     else:
-                        out_tans = d5Hjax(x.flatten(),full=full,useVal=useVal)*dx
+                        out_tans = d5Hjax(x.flatten(),full=full)*dx
             else:
-                if useVal:
-                    dim0 = x.shape[0]
-                else: 
-                    dim0 = self.basisClass.n
+                dim0 = x.shape[0]
                 if full:
                     dim1 = self.basisClass.m
                 else:
                     dim1 = self.basisClass.m-self.basisClass.numC
                 out_tans = np.zeros((dim0,dim1))
-            return (d4Hjax(x.flatten(),full=full,useVal=useVal),out_tans)
-        def d5H_jvp(arg_vals,arg_tans,full=False,useVal=False):
+            return (d4Hjax(x.flatten(),full=full),out_tans)
+        def d5H_jvp(arg_vals,arg_tans,full=False):
             x = arg_vals[0]
             dx = arg_tans[0]
             if not (dx is ad.Zero):
@@ -760,21 +604,18 @@ class TFC:
                     flag = onp.any(dx != 0)
                 if flag:
                     if len(dx.shape) == 1:
-                        out_tans = d6Hjax(x.flatten(),full=full,useVal=useVal)*np.expand_dims(dx,1)
+                        out_tans = d6Hjax(x.flatten(),full=full)*np.expand_dims(dx,1)
                     else:
-                        out_tans = d6Hjax(x.flatten(),full=full,useVal=useVal)*dx
+                        out_tans = d6Hjax(x.flatten(),full=full)*dx
             else:
-                if useVal:
-                    dim0 = x.shape[0]
-                else: 
-                    dim0 = self.basisClass.n
+                dim0 = x.shape[0]
                 if full:
                     dim1 = self.basisClass.m
                 else:
                     dim1 = self.basisClass.m-self.basisClass.numC
                 out_tans = np.zeros((dim0,dim1))
-            return (d5Hjax(x.flatten(),full=full,useVal=useVal),out_tans)
-        def d6H_jvp(arg_vals,arg_tans,full=False,useVal=False):
+            return (d5Hjax(x.flatten(),full=full),out_tans)
+        def d6H_jvp(arg_vals,arg_tans,full=False):
             x = arg_vals[0]
             dx = arg_tans[0]
             if not (dx is ad.Zero):
@@ -784,21 +625,18 @@ class TFC:
                     flag = onp.any(dx != 0)
                 if flag:
                     if len(dx.shape) == 1:
-                        out_tans = d7Hjax(x.flatten(),full=full,useVal=useVal)*np.expand_dims(dx,1)
+                        out_tans = d7Hjax(x.flatten(),full=full)*np.expand_dims(dx,1)
                     else:
-                        out_tans = d7Hjax(x.flatten(),full=full,useVal=useVal)*dx
+                        out_tans = d7Hjax(x.flatten(),full=full)*dx
             else:
-                if useVal:
-                    dim0 = x.shape[0]
-                else: 
-                    dim0 = self.basisClass.n
+                dim0 = x.shape[0]
                 if full:
                     dim1 = self.basisClass.m
                 else:
                     dim1 = self.basisClass.m-self.basisClass.numC
                 out_tans = np.zeros((dim0,dim1))
-            return (d6Hjax(x.flatten(),full=full,useVal=useVal),out_tans)
-        def d7H_jvp(arg_vals,arg_tans,full=False,useVal=False):
+            return (d6Hjax(x.flatten(),full=full),out_tans)
+        def d7H_jvp(arg_vals,arg_tans,full=False):
             x = arg_vals[0]
             dx = arg_tans[0]
             if not (dx is ad.Zero):
@@ -808,20 +646,17 @@ class TFC:
                     flag = onp.any(dx != 0)
                 if flag:
                     if len(dx.shape) == 1:
-                        out_tans = d8Hjax(x.flatten(),full=full,useVal=useVal)*np.expand_dims(dx,1)
+                        out_tans = d8Hjax(x.flatten(),full=full)*np.expand_dims(dx,1)
                     else:
-                        out_tans = d8Hjax(x.flatten(),full=full,useVal=useVal)*dx
+                        out_tans = d8Hjax(x.flatten(),full=full)*dx
             else:
-                if useVal:
-                    dim0 = x.shape[0]
-                else: 
-                    dim0 = self.basisClass.n
+                dim0 = x.shape[0]
                 if full:
                     dim1 = self.basisClass.m
                 else:
                     dim1 = self.basisClass.m-self.basisClass.numC
                 out_tans = np.zeros((dim0,dim1))
-            return (d7Hjax(x.flatten(),full=full,useVal=useVal),out_tans)
+            return (d7Hjax(x.flatten(),full=full),out_tans)
 
         ad.primitive_jvps[H_p] = H_jvp
         ad.primitive_jvps[dH_p] = dH_jvp
@@ -843,8 +678,6 @@ class TFC:
 ##
 # This class combines TFC classes together so that multiple basis functions can be used 
 # simultaneously in the solution. Note, that this class is not yet complete.
-# TODO: If the two classes have different z values, then H0 = H(z[0],useVal=True) is not
-# what we want.
 class HybridTFC:
 
     def __init__(self,tfcClasses):
@@ -852,39 +685,21 @@ class HybridTFC:
             TFCPrint.Error("Not all TFC classes provided have the same number of points.")
         self._tfcClasses = tfcClasses
 
-    def H(self,x,full=False,useVal=False):
+    def H(self,x,full=False):
         """ This function returns a pointer to a concatenated matrix of the H matrices for each of the tfcClasses provided at initialization. """
-        if useVal and (isinstance(x,tuple) or isinstance(x,list)):
-            return np.hstack([k.Hjax(x[j],full=full,useVal=useVal) for j,k in enumerate(self._tfcClasses)])
-        else:
-            return np.hstack([k.Hjax(x,full=full,useVal=useVal) for k in self._tfcClasses])
-    def dH(self,x,full=False,useVal=False):
+        return np.hstack([k.Hjax(x,full=full) for j,k in enumerate(self._tfcClasses)])
+    def dH(self,x,full=False):
         """ This function returns a pointer to the deriative of H. See documentation of H for more details. """
-        if useVal and (isinstance(x,tuple) or isinstance(x,list)):
-            return np.hstack([k.dHjax(x[j],full=full,useVal=useVal) for j,k in enumerate(self._tfcClasses)])
-        else:
-            return np.hstack([k.dHjax(x,full=full,useVal=useVal) for k in self._tfcClasses])
-    def d2H(self,x,full=False,useVal=False):
+        return np.hstack([k.dHjax(x,full=full) for j,k in enumerate(self._tfcClasses)])
+    def d2H(self,x,full=False):
         """ This function returns a pointer to the second deriative of H. See documentation of H for more details. """
-        if useVal and (isinstance(x,tuple) or isinstance(x,list)):
-            return np.hstack([k.d2Hjax(x[j],full=full,useVal=useVal) for j,k in enumerate(self._tfcClasses)])
-        else:
-            return np.hstack([k.d2Hjax(x,full=full,useVal=useVal) for k in self._tfcClasses])
-    def d3H(self,x,full=False,useVal=False):
+        return np.hstack([k.d2Hjax(x,full=full) for j,k in enumerate(self._tfcClasses)])
+    def d3H(self,x,full=False):
         """ This function returns a pointer to the third deriative of H. See documentation of H for more details. """
-        if useVal and (isinstance(x,tuple) or isinstance(x,list)):
-            return np.hstack([k.d3Hjax(x[j],full=full,useVal=useVal) for j,k in enumerate(self._tfcClasses)])
-        else:
-            return np.hstack([k.d3Hjax(x,full=full,useVal=useVal) for k in self._tfcClasses])
-    def d4H(self,x,full=False,useVal=False):
+        return np.hstack([k.d3Hjax(x,full=full) for j,k in enumerate(self._tfcClasses)])
+    def d4H(self,x,full=False):
         """ This function returns a pointer to the fourth deriative of H. See documentation of H for more details. """
-        if useVal and (isinstance(x,tuple) or isinstance(x,list)):
-            return np.hstack([k.d4Hjax(x[j],full=full,useVal=useVal) for j,k in enumerate(self._tfcClasses)])
-        else:
-            return np.hstack([k.d4Hjax(x,full=full,useVal=useVal) for k in self._tfcClasses])
-    def d8H(self,x,full=False,useVal=False):
+        return np.hstack([k.d4Hjax(x,full=full) for j,k in enumerate(self._tfcClasses)])
+    def d8H(self,x,full=False):
         """ This function returns a pointer to the eighth deriative of H. See documentation of H for more details. """
-        if useVal and (isinstance(x,tuple) or isinstance(x,list)):
-            return np.hstack([k.d8Hjax(x[j],full=full,useVal=useVal) for j,k in enumerate(self._tfcClasses)])
-        else:
-            return np.hstack([k.d8Hjax(x,full=full,useVal=useVal) for k in self._tfcClasses])
+        return np.hstack([k.d8Hjax(x,full=full) for j,k in enumerate(self._tfcClasses)])

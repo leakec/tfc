@@ -18,9 +18,4 @@ set_target_properties(BF PROPERTIES
 	   				     PUBLIC_HEADER "BF.h"
 						 CXX_STANDARD 17)
 
-install(TARGETS BF 
-        RUNTIME DESTINATION bin
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib/static
-        PUBLIC_HEADER DESTINATION include)
-
+install(TARGETS BF)

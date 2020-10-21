@@ -8,7 +8,7 @@ matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-from TFCUtils import TFCPrint
+from .TFCUtils import TFCPrint
 TFCPrint()
 
 class MakePlot():

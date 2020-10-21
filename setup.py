@@ -2,7 +2,7 @@ from cmaketools import setup
 
 setup(
     name="TFC",
-    version="0.0.1",
+    version="0.0.2",
     author="Carl Leake",
     author_email="leakec57@gmail.com",
     description="A test package for TFC.",

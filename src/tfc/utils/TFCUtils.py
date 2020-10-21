@@ -23,6 +23,7 @@ class TFCPrint:
         """ This function is the constructor. It initializes the colorama class. """
         initColorama()
 
+    @staticmethod
     def Error(stringIn):
         """ This function prints errors. It prints the text in 'stringIn' in bright red and
             exits the program."""
@@ -30,6 +31,7 @@ class TFCPrint:
         print(style.RESET_ALL,end="")
         sys.exit()
 
+    @staticmethod
     def Warning(stringIn):
         """ This function prints warnings. It prints the text in 'stringIn' in bright yellow."""
         print(fg.YELLOW+style.BRIGHT+stringIn)
@@ -304,7 +306,7 @@ register_pytree_node(
 # - printOut: Currently this option is not implemented. If JAX allows printing in JIT-ed functions,
 #             then it will dislpay the value of max(abs(res)) at each iteration.
 
-def NLLS(xiInit,res,*args,J=None,cond=None,body=None,tol=1e-13,maxIter=50,method='pinv',timer=False,printOut=False):
+def NLLS(xiInit,res,*args,J=None,cond=None,body=None,tol=1e-13,maxIter=50,method='pinv',timer=False,printOut=False,timerType='process_time'):
 
     if timer and printOut:
         TFCPrint.Warning("Warning, you have both the timer and printer on in the nonlinear least-squares.\nThe time will be longer than optimal due to the printout.")
@@ -364,7 +366,8 @@ def NLLS(xiInit,res,*args,J=None,cond=None,body=None,tol=1e-13,maxIter=50,method
         dxi = np.ones_like(xiInit)
 
     if timer:
-        from time import process_time as timer
+        import time
+        timer = getattr(time,timerType)
         val = {'xi':xiInit,'dxi':dxi,'it':maxIter-1}
         nlls(val)['dxi'].block_until_ready()
 
@@ -380,3 +383,98 @@ def NLLS(xiInit,res,*args,J=None,cond=None,body=None,tol=1e-13,maxIter=50,method
         val = {'xi':xiInit,'dxi':dxi,'it':0}
         val = nlls(val)
         return val['xi'],val['it']
+
+class ComponentConstraintGraph:
+
+    def __init__(self,N,E):
+
+        # Check that all edges are connected to valid nodes
+        self.nNodes = len(N)
+        self.nEdges = len(E)
+        for k in range(self.nEdges):
+            if not (E[k]['node0'] in N and E[k]['node1'] in N):
+                TFCPrint.Error("Error either "+E[k]['node0']+" or "+E[k]['node1']+" is not a valid node. Make sure they appear in the nodes list.")
+
+        # Create all possible source/target pairs. This tells whether node0 is the target or source, node1 will be the opposite.
+        import itertools 
+        self.targets = list(itertools.product([0, 1], repeat=self.nEdges))
+
+        # Find all targets that are valid trees
+        self.goodTargets = []
+        for j in range(len(self.targets)):
+            flag = True
+            adj = onp.zeros((self.nNodes,self.nNodes),dtype=np.int32)
+            for k in range(self.nNodes):
+                kNode = N[k]
+                sources = []
+                targets = []
+                for g in range(self.nEdges):
+                    if E[g]['node0'] == kNode:
+                        if self.targets[j][g]:
+                            adj[N.index(E[g]['node1']),N.index(E[g]['node0'])] = 1
+                    elif E[g]['node1'] == kNode:
+                        if not self.targets[j][g]:
+                            adj[N.index(E[g]['node0']),N.index(E[g]['node1'])] = 1
+            if np.all(np.linalg.matrix_power(adj,self.nNodes) == 0):
+                self.goodTargets.append(j)
+
+        # Save nodes and edges for use later
+        self.N = N
+        self.E = E
+
+    def SaveTrees(self,outputDir,allTrees=False,savePDFs=False):
+        import os
+        from Html import HTML, Dot
+
+        if allTrees:
+            targets = self.targets
+        else:
+            targets = [self.targets[k] for k in self.goodTargets]
+
+        n = len(targets)
+
+        #: Create the main dot file 
+        mainDot = Dot(os.path.join(outputDir,'dotFiles','main'),'main')
+        mainDot.dot.node_attr.update(shape='box')
+        for k in range(n):
+            mainDot.dot.node('tree'+str(k),'Tree '+str(k),href=os.path.join('htmlFiles','tree'+str(k)+'.html'))
+        mainDot.Render()
+
+        #: Create the main file HTML
+        mainHtml = HTML(os.path.join(outputDir,'main.html'))
+        with mainHtml.tag('html'):
+            with mainHtml.tag('body'):
+                with mainHtml.tag('style'):
+                    mainHtml.doc.asis(mainHtml.centerClass)
+                mainHtml.doc.stag('img',src=os.path.join('dotFiles','main.svg'),usemap='#main',klass='center')
+                mainHtml.doc.asis(mainHtml.ReadFile(os.path.join(outputDir,'dotFiles','main.cmapx')))
+        mainHtml.WriteFile()
+
+        #: Create the tree dot files
+        for k in range(n):
+            treeDot = Dot(os.path.join(outputDir,'dotFiles','tree'+str(k)),'tree'+str(k))
+            treeDot.dot.attr(bgcolor='transparent')
+            treeDot.dot.node_attr.update(shape='box')
+            for j in range(self.nNodes):
+                treeDot.dot.node(self.N[j],self.N[j])
+            for j in range(self.nEdges):
+                if not targets[k][j]:
+                    treeDot.dot.edge(self.E[j]['node0'],self.E[j]['node1'],label=self.E[j]['name'])
+                else:
+                    treeDot.dot.edge(self.E[j]['node1'],self.E[j]['node0'],label=self.E[j]['name'])
+
+            if savePDFs:
+                treeDot.Render(formats=['cmapx','svg','pdf'])
+            else:
+                treeDot.Render()
+
+        #: Create the tree HTML files
+        for k in range(n):
+            treeHtml = HTML(os.path.join(outputDir,'htmlFiles','tree'+str(k)+'.html'))
+            with treeHtml.tag('html'):
+                with treeHtml.tag('body'):
+                    with treeHtml.tag('style'):
+                        treeHtml.doc.asis(treeHtml.centerClass)
+                    treeHtml.doc.stag('img',src=os.path.join('..','dotFiles','tree'+str(k)+'.svg'),usemap='#tree'+str(k),klass='center')
+                    treeHtml.doc.asis(treeHtml.ReadFile(os.path.join(outputDir,'dotFiles','tree'+str(k)+'.cmapx')))
+            treeHtml.WriteFile()

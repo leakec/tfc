@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <math.h>
+#include <float.h>
 #include <Python.h>
 #ifdef HAS_CUDA
 	#include <cuda.h>
@@ -18,8 +19,11 @@
 class BasisFunc{
 
 	public:
-		/** Independent variable mapped linearly to the domain of the basis function. */
-		double* z;
+		/** Beginning of the basis function domain. */
+		double z0;
+
+		/** Start of the problem domain. */
+		double x0;
 
 		/** Multiplier in the linear domain map. */
 		double c;
@@ -29,9 +33,6 @@ class BasisFunc{
 
 		/** Number of basis functions to be removed. */
 		int numC;
-
-		/** Number of points in the independent variable discretization. */
-		int n; 
 
 		/** Number of basis functions to use. */
 		int m;
@@ -60,7 +61,7 @@ class BasisFunc{
 		 * 		- Stores variables based on user supplied givens
 		 * 		- Stores a pointer to itself using static variables
 		 * 		- Creates PyCapsule for xla function. */
-		BasisFunc(double* zin, int zDim0, int* nCin, int ncDim0, int min, double cin);
+		BasisFunc(double x0in, double xf, int* nCin, int ncDim0, int min, double z0in=0., double zf=DBL_MAX);
 
 		/** Dummy empty constructor allows derived classes without calling constructor explicitly. */
 		BasisFunc(){};
@@ -79,7 +80,7 @@ class BasisFunc{
 		 *  		- If true, uses the x values given
 		 *  		- If false, uses the z values from the class
 		 *  Note that this function is used to hook into Python, thus the extra arguments. */
-		virtual void H(double* x, int in, const int d, int* nOut, int* mOut, double** F,  bool full, bool useVal);
+		virtual void H(double* x, int n, const int d, int* nOut, int* mOut, double** F,  bool full);
 
 		/** This function is an XLA version of the basis function. */
 		virtual void xla(void* out, void** in);
@@ -126,8 +127,8 @@ void xlaWrapper(void* out, void** in);
 class CP: virtual public BasisFunc {
 	public:
 		/** CP class constructor. Calls BasisFunc class constructor. See BasisFunc class for more details. */
-		CP(double* zin, int zDim0, int* nCin, int ncDim0, int min, double cin):
-		  BasisFunc(zin,zDim0,nCin,ncDim0,min,cin){};
+		CP(double x0, double xf, int* nCin, int ncDim0, int min):
+		  BasisFunc(x0,xf,nCin,ncDim0,min,-1.,1.){};
 
 		/** Dummy CP class constructor. Used only in n-dimensions. */
 		CP(){};
@@ -148,8 +149,8 @@ class CP: virtual public BasisFunc {
 class LeP: virtual public BasisFunc {
 	public:
 		/** LeP class constructor. Calls BasisFunc class constructor. See BasisFunc class for more details. */
-		LeP(double* zin, int zDim0, int* nCin, int ncDim0, int min, double cin):
-		  BasisFunc(zin,zDim0,nCin,ncDim0,min,cin){};
+		LeP(double x0, double xf, int* nCin, int ncDim0, int min):
+		  BasisFunc(x0,xf,nCin,ncDim0,min,-1.,1.){};
 
 		/** Dummy LeP class constructor. Used only in n-dimensions. */
 		LeP(){};
@@ -170,8 +171,8 @@ class LeP: virtual public BasisFunc {
 class LaP: public BasisFunc {
 	public:
 		/** LaP class constructor. Calls BasisFunc class constructor. See BasisFunc class for more details. */
-		LaP(double* zin, int zDim0, int* nCin, int ncDim0, int min, double cin):
-		  BasisFunc(zin,zDim0,nCin,ncDim0,min,cin){};
+		LaP(double x0, double xf, int* nCin, int ncDim0, int min):
+		  BasisFunc(x0,xf,nCin,ncDim0,min){};
 		/** LaP class destructor.*/
 		~LaP(){};
 
@@ -188,8 +189,8 @@ class LaP: public BasisFunc {
 class HoPpro: public BasisFunc {
 	public:
 		/** HoPpro class constructor. Calls BasisFunc class constructor. See BasisFunc class for more details. */
-		HoPpro(double* zin, int zDim0, int* nCin, int ncDim0, int min, double cin):
-		  BasisFunc(zin,zDim0,nCin,ncDim0,min,cin){};
+		HoPpro(double x0, double xf, int* nCin, int ncDim0, int min):
+		  BasisFunc(x0,xf,nCin,ncDim0,min){};
 		/** HoPpro class destructor.*/
 		~HoPpro(){};
 
@@ -206,8 +207,8 @@ class HoPpro: public BasisFunc {
 class HoPphy: public BasisFunc {
 	public:
 		/** HoPphy class constructor. Calls BasisFunc class constructor. See BasisFunc class for more details. */
-		HoPphy(double* zin, int zDim0, int* nCin, int ncDim0, int min, double cin):
-		  BasisFunc(zin,zDim0,nCin,ncDim0,min,cin){};
+		HoPphy(double x0, double xf, int* nCin, int ncDim0, int min):
+		  BasisFunc(x0,xf,nCin,ncDim0,min){};
 		/** HoPphy class destructor.*/
 		~HoPphy(){};
 
@@ -224,8 +225,8 @@ class HoPphy: public BasisFunc {
 class FS: virtual public BasisFunc {
 	public:
 		/** FS class constructor. Calls BasisFunc class constructor. See BasisFunc class for more details. */
-		FS(double* zin, int zDim0, int* nCin, int ncDim0, int min, double cin):
-		  BasisFunc(zin,zDim0,nCin,ncDim0,min,cin){};
+		FS(double x0, double xf, int* nCin, int ncDim0, int min):
+		  BasisFunc(x0,xf,nCin,ncDim0,min,-M_PI,M_PI){};
 
 		/** Dummy FS class constructor. Used only in n-dimensions. */
 		FS(){};
@@ -256,7 +257,7 @@ class ELM: public BasisFunc {
 		double *b; 
 
 		/** ELM class constructor. Calls BasisFunc class constructor and sets up weights and biases for the ELM. See BasisFunc class for more details. */
-		ELM(double* zin, int zDim0, int* nCin, int ncDim0, int min, double cin);
+		ELM(double x0, double xf, int* nCin, int ncDim0, int min);
 
 		/** ELM class destructor.*/
 		virtual ~ELM();
@@ -291,11 +292,29 @@ class ELMSigmoid: public ELM {
 
 	public:
 		/** ELMSigmoid class constructor. Calls ELM class constructor. See ELM class for more details. */
-		ELMSigmoid(double* zin, int zDim0, int* nCin, int ncDim0, int min, double cin):
-		  ELM(zin,zDim0,nCin,ncDim0,min,cin){};
+		ELMSigmoid(double x0, double xf, int* nCin, int ncDim0, int min):
+		  ELM(x0,xf,nCin,ncDim0,min){};
 
 		/** ELMSigmoid class destructor.*/
 		~ELMSigmoid(){};
+
+	protected:
+		/** Function used internally to create the basis function matrices and derivatives. */
+		void Hint(const int d, const double* x, const int nOut, double* dark);
+
+};
+
+// ELM ReLU: ********************************************************************************************************************************
+/** ELM that uses the recitified linear unit activation function. */
+class ELMReLU: public ELM {
+
+	public:
+		/** ELMReLU class constructor. Calls ELM class constructor. See ELM class for more details. */
+		ELMReLU(double x0, double xf, int* nCin, int ncDim0, int min):
+		  ELM(x0,xf,nCin,ncDim0,min){};
+
+		/** ELMReLU class destructor.*/
+		~ELMReLU(){};
 
 	protected:
 		/** Function used internally to create the basis function matrices and derivatives. */
@@ -309,8 +328,8 @@ class ELMTanh: public ELM {
 
 	public:
 		/** ELMTanh class constructor. Calls ELM class constructor. See ELM class for more details. */
-		ELMTanh(double* zin, int zDim0, int* nCin, int ncDim0, int min, double cin):
-		  ELM(zin,zDim0,nCin,ncDim0,min,cin){};
+		ELMTanh(double x0, double xf, int* nCin, int ncDim0, int min):
+		  ELM(x0,xf,nCin,ncDim0,min){};
 
 		/** ELMTanh class destructor.*/
 		~ELMTanh(){};
@@ -327,8 +346,8 @@ class ELMSin: public ELM {
 
 	public:
 		/** ELMSin class constructor. Calls ELM class constructor. See ELM class for more details. */
-		ELMSin(double* zin, int zDim0, int* nCin, int ncDim0, int min, double cin):
-		  ELM(zin,zDim0,nCin,ncDim0,min,cin){};
+		ELMSin(double x0, double xf, int* nCin, int ncDim0, int min):
+		  ELM(x0,xf,nCin,ncDim0,min){};
 
 		/** ELMSin class destructor.*/
 		~ELMSin(){};
@@ -345,8 +364,8 @@ class ELMSwish: public ELM {
 
 	public:
 		/** ELMSwish class constructor. Calls ELM class constructor. See ELM class for more details. */
-		ELMSwish(double* zin, int zDim0, int* nCin, int ncDim0, int min, double cin):
-		 ELM(zin,zDim0,nCin,ncDim0,min,cin){};
+		ELMSwish(double x0, double xf, int* nCin, int ncDim0, int min):
+		  ELM(x0,xf,nCin,ncDim0,min){};
 
 		/** ELMSwish class destructor.*/
 		~ELMSwish(){};
@@ -366,8 +385,18 @@ class ELMSwish: public ELM {
 class nBasisFunc: virtual public BasisFunc{
 
 	public:
+
+		/** Beginning of the basis function domain. */
+		double z0;
+
+		/** Beginning of the basis function domain. */
+		double zf; 
+
 		/** Multipliers for the linear domain map. */
 		double* c;
+
+		/** Initial value of the domain */
+		double* x0;
 
 		/** Number of dimensions. */
 		int dim;
@@ -380,7 +409,7 @@ class nBasisFunc: virtual public BasisFunc{
 
 	public:
 		/** n-D basis function class constructor. */
-		nBasisFunc(double* zin, int zDim0, int zDim1, int* nCin, int ncDim0, int ncDim1, int min, double* cin, int cDim0);
+		nBasisFunc(double* x0in, int x0Dim0, double* xf, int xfDim0, int* nCin, int ncDim0, int ncDim1, int min, double z0in=0., double zfin=0.);
 
 		/** Dummy nBasisFunc constructor used by nELM only. */
 		nBasisFunc(){};
@@ -389,10 +418,13 @@ class nBasisFunc: virtual public BasisFunc{
 		virtual ~nBasisFunc();
 
 		/** This function is used to create a basis function matrix and its derivatives. */
-		void H(double* x, int in, int xDim1, int* d, int dDim0, int* nOut, int* mOut, double** F, const bool full, int* useVal, int useValDim0);
+		void H(double* x, int in, int xDim1, int* d, int dDim0, int* nOut, int* mOut, double** F, const bool full);
 
 		/** This function is an XLA version of the basis function. */
 		void xla(void* out, void** in);
+
+		/** Python hook to return domain mapping constants. */
+		void getC(double** arrOut, int* nOut);
 
 	private:
 		/** Recursive function used to perform the tensor product of univarite basis functions to form multivariate basis functions. */
@@ -402,7 +434,7 @@ class nBasisFunc: virtual public BasisFunc{
 		void NumBasisFunc(int dimCurr, int* vec, int &count, const bool full);
 
 		/** Internal function used to calculate dim sets of univariate basis functions with specified derivatives. Note, that if dDim0 < dim, then 0's will be used for the tail end.*/
-		virtual void nHint(double* x, int in, const int* d, int dDim0, int numBasis, double*& F, const bool full, const int* useVal);
+		virtual void nHint(double* x, int in, const int* d, int dDim0, int numBasis, double*& F, const bool full);
 
 		/** Function used internally to create the basis function matrices. */
 		virtual void Hint(const int d, const double* x, const int nOut, double* dark) = 0;
@@ -417,8 +449,9 @@ class nBasisFunc: virtual public BasisFunc{
 class nCP: public nBasisFunc, public CP {
 	
 	public:
+
 		/** nCP class constructor. Calls nBasisFunc class constructor and dummy constructors of remaining parents. See nBasisFunc class for more details. */
-		nCP(double* zin, int zDim0, int zDim1, int* nCin, int ncDim0, int ncDim1, int min, double* cin, int cDim0):nBasisFunc(zin,zDim0,zDim1,nCin,ncDim0,ncDim1,min,cin,cDim0){};
+		nCP(double* x0in, int x0Dim0, double* xf, int xfDim0, int* nCin, int ncDim0, int ncDim1, int min):nBasisFunc(x0in,x0Dim0,xf,xfDim0,nCin,ncDim0,ncDim1,min,-1.,1.){};
 
 		/** nCP class destructor.*/
 		~nCP(){};
@@ -430,6 +463,7 @@ class nCP: public nBasisFunc, public CP {
 		/** Function used internally to create derivatives of the basis function matrices. */
 		void RecurseDeriv(const int d, int dCurr, const double* x, const int nOut, double*& F, const int mOut){CP::RecurseDeriv(d,dCurr,x,nOut,F,mOut);};
 
+
 };
 
 // n-D LeP class: ******************************************************************************************************************
@@ -438,7 +472,7 @@ class nLeP: public nBasisFunc, public LeP {
 	
 	public:
 		/** nLeP class constructor. Calls nBasisFunc class constructor and dummy constructors of remaining parents. See nBasisFunc class for more details. */
-		nLeP(double* zin, int zDim0, int zDim1, int* nCin, int ncDim0, int ncDim1, int min, double* cin, int cDim0):nBasisFunc(zin,zDim0,zDim1,nCin,ncDim0,ncDim1,min,cin,cDim0){};
+		nLeP(double* x0in, int x0Dim0, double* xf, int xfDim0, int* nCin, int ncDim0, int ncDim1, int min):nBasisFunc(x0in,x0Dim0,xf,xfDim0,nCin,ncDim0,ncDim1,min,-1.,1.){};
 
 		/** nLeP class destructor.*/
 		~nLeP(){};
@@ -458,7 +492,7 @@ class nFS: public nBasisFunc, public FS {
 	
 	public:
 		/** nFS class constructor. Calls nBasisFunc class constructor and dummy constructors of remaining parents. See nBasisFunc class for more details. */
-		nFS(double* zin, int zDim0, int zDim1, int* nCin, int ncDim0, int ncDim1, int min, double* cin, int cDim0):nBasisFunc(zin,zDim0,zDim1,nCin,ncDim0,ncDim1,min,cin,cDim0){};
+		nFS(double* x0in, int x0Dim0, double* xf, int xfDim0, int* nCin, int ncDim0, int ncDim1, int min):nBasisFunc(x0in,x0Dim0,xf,xfDim0,nCin,ncDim0,ncDim1,min,-M_PI,M_PI){};
 
 		/** nFS class destructor.*/
 		~nFS(){};
@@ -477,6 +511,12 @@ class nFS: public nBasisFunc, public FS {
 class nELM: public nBasisFunc {
 
 	public:
+		/** Beginning of the basis function domain. */
+		double z0;
+
+		/** Beginning of the basis function domain. */
+		double zf; 
+
 		/** nELM weights. */
 		double *w;
 
@@ -484,7 +524,7 @@ class nELM: public nBasisFunc {
 		double *b; 
 
 		/** n-D ELM class constructor. */
-		nELM(double* zin, int zDim0, int zDim1, int* nCin, int ncDim0, int min, double* cin, int cDim0);
+		nELM(double* x0in, int x0Dim0, double* xf, int xfDim0, int* nCin, int ncDim0, int min, double z0in=0., double zfin=1.);
 
 		/** n-D ELM class destructor. */
 		virtual ~nELM();
@@ -504,7 +544,7 @@ class nELM: public nBasisFunc {
 	private:
 
 		/** Internal function used to calculate dim sets of univariate basis functions with specified derivatives. Note, that if dDim0 < dim, then 0's will be used for the tail end.*/
-		void nHint(double* x, int in, const int* d, int dDim0, int numBasis, double*& F, const bool full, const int* useVal) override;
+		void nHint(double* x, int in, const int* d, int dDim0, int numBasis, double*& F, const bool full) override;
 
 		/** This function handles creating a full matrix of nELM basis functions. */
 		virtual void nElmHint(const int* d, int dDim0, const double* x, const int in, double* F) = 0;
@@ -529,7 +569,7 @@ class nELMSigmoid: public nELM {
 	
 	public:
 		/** nELMSigmoid class constructor. Calls nELM class constructor. See nELM class for more details. */
-		nELMSigmoid(double* zin, int zDim0, int zDim1, int* nCin, int ncDim0, int min, double* cin, int cDim0):nELM(zin,zDim0,zDim1,nCin,ncDim0,min,cin,cDim0){};
+		nELMSigmoid(double* x0in, int x0Dim0, double* xf, int xfDim0, int* nCin, int ncDim0,int min):nELM(x0in,x0Dim0,xf,xfDim0,nCin,ncDim0,min){};
 
 		/** nELMSigmoid class destructor.*/
 		~nELMSigmoid(){};
@@ -545,7 +585,7 @@ class nELMTanh: public nELM {
 	
 	public:
 		/** nELMTanh class constructor. Calls nELM class constructor. See nELM class for more details. */
-		nELMTanh(double* zin, int zDim0, int zDim1, int* nCin, int ncDim0, int min, double* cin, int cDim0):nELM(zin,zDim0,zDim1,nCin,ncDim0,min,cin,cDim0){};
+		nELMTanh(double* x0in, int x0Dim0, double* xf, int xfDim0, int* nCin, int ncDim0, int min):nELM(x0in,x0Dim0,xf,xfDim0,nCin,ncDim0,min){};
 
 		/** nELMTanh class destructor.*/
 		~nELMTanh(){};
@@ -561,7 +601,7 @@ class nELMSin: public nELM {
 	
 	public:
 		/** nELMSin class constructor. Calls nELM class constructor. See nELM class for more details. */
-		nELMSin(double* zin, int zDim0, int zDim1, int* nCin, int ncDim0, int min, double* cin, int cDim0):nELM(zin,zDim0,zDim1,nCin,ncDim0,min,cin,cDim0){};
+		nELMSin(double* x0in, int x0Dim0, double* xf, int xfDim0, int* nCin, int ncDim0, int min):nELM(x0in,x0Dim0,xf,xfDim0,nCin,ncDim0,min){};
 
 		/** nELMSin class destructor.*/
 		~nELMSin(){};
@@ -577,7 +617,7 @@ class nELMSwish: public nELM {
 	
 	public:
 		/** nELMSwish class constructor. Calls nELM class constructor. See nELM class for more details. */
-		nELMSwish(double* zin, int zDim0, int zDim1, int* nCin, int ncDim0, int min, double* cin, int cDim0):nELM(zin,zDim0,zDim1,nCin,ncDim0,min,cin,cDim0){};
+		nELMSwish(double* x0in, int x0Dim0, double* xf, int xfDim0, int* nCin, int ncDim0, int min):nELM(x0in,x0Dim0,xf,xfDim0,nCin,ncDim0,min){};
 
 		/** nELMSwish class destructor.*/
 		~nELMSwish(){};

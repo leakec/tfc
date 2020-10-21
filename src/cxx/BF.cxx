@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <math.h>
+#include <float.h>
 #include <Python.h>
 #ifdef HAS_CUDA
 	#include <cuda.h>
@@ -31,19 +32,22 @@ void xlaWrapper(void* out, void** in){
 #endif
 
 // Parent basis function class: **********************************************************************
-BasisFunc::BasisFunc(double* zin, int zDim0, int* nCin, int ncDim0, int min, double cin){
-	// Initialize internal variables based on user givens
-	z = new double[zDim0];
-	memcpy(z,zin,zDim0*sizeof(double));
+BasisFunc::BasisFunc(double x0in, double xf, int* nCin, int ncDim0, int min, double z0in, double zf){
 
+	// Initialize internal variables based on user givens
 	nC = new int[ncDim0];
 	memcpy(nC,nCin,ncDim0*sizeof(int));
-
 	numC = ncDim0;
 
-	n = zDim0;
+	z0 = z0in;
+
 	m = min;
-	c = cin;
+	if (zf == DBL_MAX){
+		c = 1.; x0 = 0.;
+	} else {
+		x0 = x0in;
+		c = (zf-z0)/(xf-x0);
+	}
 
 	// Track this instance of BasisFunc 
 	BasisFuncContainer.push_back(this);
@@ -58,24 +62,24 @@ BasisFunc::BasisFunc(double* zin, int zDim0, int* nCin, int ncDim0, int min, dou
 };
 
 BasisFunc::~BasisFunc(){
-	delete[] z;
 	delete[] nC;
 };
 
-void BasisFunc::H(double* x, int in, const int d, int* nOut, int* mOut, double** F,  bool full, bool useVal){
-	*nOut = useVal ? in : n;
+void BasisFunc::H(double* x, int n, const int d, int* nOut, int* mOut, double** F,  bool full){
+	*nOut = n;
 	*mOut = full ? m : m-numC;
 
-	double dMult = pow(c,d);
-	double* dark = new double[*nOut*m];
-	*F = (double*)malloc((*mOut)*(*nOut)*sizeof(double));
-	if (useVal){
-		Hint(d,x,*nOut,dark);
-	} else { 
-		Hint(d,z,*nOut,dark);
-	}
-
 	int j,k;
+	double dMult = pow(c,d);
+	double* dark = new double[n*m];
+	double* z = new double[n];
+
+	for (k=0;k<n;k++)
+		z[k] = (x[k]-x0)*c+z0;
+
+	*F = (double*)malloc((*mOut)*n*sizeof(double));
+	Hint(d,z,n,dark);
+
 	if (!full){
 		int i=-1;
 		bool flag;
@@ -88,33 +92,36 @@ void BasisFunc::H(double* x, int in, const int d, int* nOut, int* mOut, double**
 				}
 			}
 			if (flag) continue; else i++;
-			for (k=0;k<(*nOut);k++)
+			for (k=0;k<n;k++)
 				(*F)[(*mOut)*k+i] = dark[m*k+j]*dMult;
 		}
 	} else {
 		for (j=0;j<m;j++){
-			for (k=0;k<(*nOut);k++)
+			for (k=0;k<n;k++)
 				(*F)[m*k+j] = dark[m*k+j]*dMult;
 		}
 	}
-	delete[] dark;
+	delete[] dark; delete[] z;
 };
 
 void BasisFunc::xla(void* out, void** in){
 	double* out_buf = reinterpret_cast<double*>(out);
-	bool useVal = (reinterpret_cast<bool*>(in[4]))[0];
-	double* x = useVal ? reinterpret_cast<double*>(in[1]) : z;
+	double* x = reinterpret_cast<double*>(in[1]);
 	int d = (reinterpret_cast<int*>(in[2]))[0];
 	bool full = (reinterpret_cast<bool*>(in[3]))[0];
-	int nOut = (reinterpret_cast<int*>(in[5]))[0];
-	int mOut = (reinterpret_cast<int*>(in[6]))[0];
-
-	double dMult = pow(c,d);
-	double* dark = new double[nOut*m];
-	
-	Hint(d,x,nOut,dark);
+	int n = (reinterpret_cast<int*>(in[4]))[0];
+	int mOut = (reinterpret_cast<int*>(in[5]))[0];
 
 	int j,k;
+	double dMult = pow(c,d);
+	double* dark = new double[n*m];
+	double* z = new double[n];
+
+	for (k=0;k<n;k++)
+		z[k] = (x[k]-x0)*c+z0;
+	
+	Hint(d,z,n,dark);
+
 	if (!full){
 		int i=-1;
 		bool flag;
@@ -127,16 +134,16 @@ void BasisFunc::xla(void* out, void** in){
 				}
 			}
 			if (flag) continue; else i++;
-			for (k=0;k<nOut;k++)
+			for (k=0;k<n;k++)
 				out_buf[mOut*k+i] = dark[m*k+j]*dMult;
 		}
 	} else {
 		for (j=0;j<m;j++){
-			for (k=0;k<nOut;k++)
+			for (k=0;k<n;k++)
 				out_buf[m*k+j] = dark[m*k+j]*dMult;
 		}
 	}
-	delete[] dark;
+	delete[] dark; delete[] z;
 };
 
 #ifdef HAS_CUDA
@@ -576,8 +583,8 @@ void FS::Hint(const int d, const double* x, const int nOut, double* dark){
 
 // ELM: **********************************************************************
 // ELM base class
-ELM::ELM(double* zin, int zDim0, int* nCin, int ncDim0, int min, double cin):
-	BasisFunc(zin,zDim0,nCin,ncDim0,min,cin){
+ELM::ELM(double x0, double xf, int* nCin, int ncDim0, int min):
+	BasisFunc(x0,xf,nCin,ncDim0,min,0.,1.){
 
 	int k;
 	w = new double[m];
@@ -628,8 +635,39 @@ void ELM::getB(double** arrOut, int* nOut){
 	return;
 };
 
-// ELM Sigmoid: **********************************************************************
+// ELM ReLU: **********************************************************************
+void ELMReLU::Hint(const int d, const double* x, const int nOut, double* dark){
+	int j,k;
 
+	if (d == 0){
+		for (j=0;j<nOut;j++){
+			for (k=0;k<m;k++){
+				dark[m*j+k] = std::max(0.,w[k]*x[j]+b[k]);
+			}
+		}
+	} else if (d==1) {
+		double dark1;
+		for (j=0;j<nOut;j++){
+			for (k=0;k<m;k++){
+				dark1 = w[k]*x[j]+b[k];
+				if (dark1 <= 0.){
+					dark[m*j+k] = 0.;
+				} else {
+					dark[m*j+k] = w[k];
+				}
+			}
+		}
+	} else {
+		for (j=0;j<nOut;j++){
+			for (k=0;k<m;k++){
+				dark[m*j+k] = 0.;
+			}
+		}
+	}
+	return;
+};
+
+// ELM Sigmoid: **********************************************************************
 void ELMSigmoid::Hint(const int d, const double* x, const int nOut, double* dark){
 	int j,k;
 
@@ -814,7 +852,7 @@ void ELMSin::Hint(const int d, const double* x, const int nOut, double* dark){
 
 void ELMSwish::Hint(const int d, const double* x, const int nOut, double* dark){
 	int j,k;
-	double sig[n*m], zint[n*m];
+	double sig[nOut*m], zint[nOut*m];
 
 	if (d == 0){
 		for (j=0;j<nOut;j++){
@@ -893,23 +931,24 @@ void ELMSwish::Hint(const int d, const double* x, const int nOut, double* dark){
 };
 
 // Parent n-dimensional basis function class: **********************************************************************
-nBasisFunc::nBasisFunc(double* zin, int zDim0, int zDim1, int* nCin, int ncDim0, int ncDim1, int min, double* cin, int cDim0){
+nBasisFunc::nBasisFunc(double* x0in, int x0Dim0, double* xf, int xfDim0, int* nCin, int ncDim0, int ncDim1, int min, double z0in, double zfin){
 
 	// Initialize internal variables based on user givens
-	z = new double[zDim0*zDim1];
-	memcpy(z,zin,zDim0*zDim1*sizeof(double));
+	dim = x0Dim0;
+	m = min;
+	numC = ncDim1;
+	z0 = z0in;
+	zf = zfin;
 
-	nC = new int[ncDim0*ncDim1];
+	x0 = new double[dim];
+	memcpy(x0,x0in,dim*sizeof(double));
+
+	nC = new int[dim*numC];
 	memcpy(nC,nCin,ncDim0*ncDim1*sizeof(int));
 
-	c = new double[cDim0];
-	memcpy(c,cin,cDim0*sizeof(double));
-
-	dim = ncDim0;
-	numC = ncDim1;
-
-	n = zDim1;
-	m = min;
+	c = new double[dim];
+	for (int k=0; k<dim; k++)
+		c[k] = (zf-z0)/(xf[k]-x0[k]);
 
 	// Calculate the number of basis functions
 	int vec[dim];
@@ -933,12 +972,20 @@ nBasisFunc::~nBasisFunc(){
 	delete[] c;
 };
 
-void nBasisFunc::H(double* x, int in, int xDim1, int* d, int dDim0, int* nOut, int* mOut, double** F, const bool full, int* useVal, int useValDim0){
+void nBasisFunc::getC(double** arrOut, int* nOut){
+	*nOut = dim;
+	*arrOut = (double*)malloc(dim*sizeof(double));
+	for (int k=0;k<dim;k++)
+		(*arrOut)[k] = c[k];
+	return;
+};
+
+void nBasisFunc::H(double* x, int in, int xDim1, int* d, int dDim0, int* nOut, int* mOut, double** F, const bool full){
 	int numBasis = full ? numBasisFuncFull : numBasisFunc;
 	*mOut = numBasis;
 	*nOut = xDim1;
 	*F = (double*)malloc(numBasis*xDim1*sizeof(double));
-	nHint(x,xDim1,d,dDim0,numBasis,*F,full,useVal);
+	nHint(x,xDim1,d,dDim0,numBasis,*F,full);
 };
 
 void nBasisFunc::xla(void* out, void** in){
@@ -947,49 +994,47 @@ void nBasisFunc::xla(void* out, void** in){
 	int* d = reinterpret_cast<int*>(in[2]);
 	int dDim0 = (reinterpret_cast<int*>(in[3]))[0];
 	bool full = (reinterpret_cast<bool*>(in[4]))[0];
-	int* useVal = reinterpret_cast<int*>(in[5]);
-	int nOut = (reinterpret_cast<int*>(in[6]))[0];
-	int mOut = (reinterpret_cast<int*>(in[7]))[0];
+	int nOut = (reinterpret_cast<int*>(in[5]))[0];
+	int mOut = (reinterpret_cast<int*>(in[6]))[0];
 
-	nHint(x,nOut,d,dDim0,mOut,out_buf,full,useVal);
+	nHint(x,nOut,d,dDim0,mOut,out_buf,full);
 
 };
 
-void nBasisFunc::nHint(double* x, int in, const int* d, int dDim0, int numBasis, double*& F, const bool full, const int* useVal){
+void nBasisFunc::nHint(double* x, int n, const int* d, int dDim0, int numBasis, double*& F, const bool full){
 
 	int j,k;
-	double* dark = new double[in*m]; // Allocated on the heap, as allocating on the stack frequently causes segfaults due to size. - CL
-	double* T = new double[in*m*dim]; // Allocated on the heap, as allocating on the stack frequently causes segfaults due to size. - CL
+	double* dark = new double[n*m]; 
+	double* T = new double[n*m*dim]; 
+	double* z = new double[n*dim];
 	double dMult;
+
+	// Calculate the basis function domain points
+	for (j=0;j<dim;j++){
+		for (k=0;k<n;k++)
+			z[j*n+k] = (x[j*n+k]-x0[j])*c[j]+z0;
+	}
 
 	// Calculate univariate basis functions
 	for (k=0;k<dim;k++){
 		if (k >= dDim0){
-			if (useVal[k]){
-				Hint(0,x+k*in,in,dark); 
-			} else {
-				Hint(0,z+k*n,n,dark);
-			}
+			Hint(0,z+k*n,n,dark);
 			dMult = 1.;
 		} else {
-			if (useVal[k]){
-				Hint(d[k],x+k*in,in,dark);
-			} else {
-				Hint(d[k],z+k*n,n,dark);
-			}
+			Hint(d[k],z+k*n,n,dark);
 			dMult = pow(c[k],d[k]);
 		}
-		for (j=0;j<in*m;j++)
-			T[j+k*m*in] = dark[j]*dMult;
+		for (j=0;j<n*m;j++)
+			T[j+k*m*n] = dark[j]*dMult;
 	}
 
-	for (k=0;k<in*numBasis;k++)
+	for (k=0;k<n*numBasis;k++)
 		F[k] = 1.;
 
 	int count = 0;
 	int vec[dim];
-	RecurseBasis(dim-1, &vec[0], count, full, in, numBasis, &T[0], F);
-	delete[] dark; delete[] T;
+	RecurseBasis(dim-1, &vec[0], count, full, n, numBasis, &T[0], F);
+	delete[] dark; delete[] T; delete[] z;
 };
 
 void nBasisFunc::NumBasisFunc(int dimCurr, int* vec, int &count, const bool full){
@@ -1101,24 +1146,28 @@ void nBasisFunc::RecurseBasis(int dimCurr, int* vec, int &count, const bool full
 };
 
 // nELM base class: ***********************************************************************************
-nELM::nELM(double* zin, int zDim0, int zDim1, int* nCin, int ncDim0, int min, double* cin, int cDim0){
+nELM::nELM(double* x0in, int x0Dim0, double* xf, int xfDim0, int* nCin, int ncDim0, int min, double z0in, double zfin){
 
 	int k;
 	bool flag = true;
 
 	// Initialize internal variables based on user givens
-	z = new double[zDim0*zDim1];
-	memcpy(z,zin,zDim0*zDim1*sizeof(double));
+	dim = x0Dim0;
+	m = min;
+	numC = ncDim0;
+	z0 = z0in;
+	zf = zfin;
 
-	nC = new int[ncDim0];
+	x0 = new double[dim];
+	memcpy(x0,x0in,dim*sizeof(double));
+
+	nC = new int[dim*numC];
 	memcpy(nC,nCin,ncDim0*sizeof(int));
 
-	c = new double[cDim0];
-	memcpy(c,cin,cDim0*sizeof(double));
+	c = new double[dim];
+	for (k=0; k<dim; k++)
+		c[k] = (zf-z0)/(xf[k]-x0[k]);
 
-	dim = zDim0;
-
-	numC = ncDim0;
 	for (k=0;k<ncDim0;k++){
 		if (nC[k] != -1){
 			flag = false;
@@ -1126,7 +1175,6 @@ nELM::nELM(double* zin, int zDim0, int zDim1, int* nCin, int ncDim0, int min, do
 	}
 	if (flag) numC = 0;
 
-	n = zDim1;
 	m = min;
 
 	// Calculate the number of basis functions
@@ -1193,53 +1241,24 @@ void nELM::getB(double** arrOut, int* nOut){
 	return;
 };
 
-void nELM::nHint(double* x, int in, const int* d, int dDim0, int numBasis, double*& F, const bool full, const int* useVal){
+void nELM::nHint(double* x, int n, const int* d, int dDim0, int numBasis, double*& F, const bool full){
 
-	bool useValFlag = false;
 	int j,k;
+	double* z = new double[n*dim];
+
+	// Calculate the basis function domain points
 	for (j=0;j<dim;j++){
-		if (useVal[j]){
-			useValFlag = true;
-			break;
-		}
+		for (k=0;k<n;k++)
+			z[j*n+k] = (x[j*n+k]-x0[j])*c[j]+z0;
 	}
 
 	if ((numC == 0) || (full)){
-		if (useValFlag){
-			double dark1[in*dim];
-			for (j=0;j<dim;j++){
-				for (k=0;k<in;k++){
-					if (useVal[j]){
-						dark1[j*in+k] = x[j*in+k];
-					} else {
-						dark1[j*in+k] = z[j*in+k];
-					}
-				}
-			}
-			nElmHint(d,dDim0,&dark1[0],in,F);
-		} else {
-			nElmHint(d,dDim0,z,n,F);
-		}
+		nElmHint(d,dDim0,z,n,F);
 	} else {
 		int i=-1;
 		bool flag;
-		int nOut = useValFlag ? in : n;
-		double* dark = new double[m*nOut]; // Allocated on the heap, as allocating on the stack frequently causes segfaults due to size. - CL
-		if (useValFlag){
-			double dark1[in*dim];
-			for (j=0;j<dim;j++){
-				for (k=0;k<in;k++){
-					if (useVal[j]){
-						dark1[j*in+k] = x[j*in+k];
-					} else {
-						dark1[j*in+k] = z[j*in+k];
-					}
-				}
-			}
-			nElmHint(d,dDim0,&dark1[0],in,dark);
-		} else {
-			nElmHint(d,dDim0,z,n,dark);
-		}
+		double* dark = new double[m*n]; // Allocated on the heap, as allocating on the stack frequently causes segfaults due to size. - CL
+		nElmHint(d,dDim0,z,n,dark);
 
 		for (j=0;j<m;j++){
 			flag = false;
@@ -1250,12 +1269,13 @@ void nELM::nHint(double* x, int in, const int* d, int dDim0, int numBasis, doubl
 				}
 			}
 			if (flag) continue; else i++;
-			for (k=0;k<nOut;k++)
+			for (k=0;k<n;k++)
 				F[numBasis*k+i] = dark[m*k+j];
 		}
 
 		delete[] dark;
 	}
+	delete[] z;
 
 };
 
