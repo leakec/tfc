@@ -9,6 +9,7 @@ setup(
     url="https://github.com/leakec/tfc.git",
     license="None",
     src_dir="src",
+    ext_module_dirs=["cxx","swig","python"],
     has_package_data=False,
-    install_requires=["cmaketools","numpy","jax","jaxlib"]
+    install_requires=["cmaketools","numpy","jax","jaxlib"],
 )

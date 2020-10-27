@@ -17,5 +17,4 @@ endif(CUDA_FOUND)
 set_target_properties(BF PROPERTIES
 	   				     PUBLIC_HEADER "BF.h"
 						 CXX_STANDARD 17)
-
 install(TARGETS BF)
