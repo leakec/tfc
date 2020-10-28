@@ -150,31 +150,31 @@ class TFC:
 
         # Setup the basis function
         if self.basis == 'CP':
-            from BF import nCP
+            from .utils.BF import nCP
             self.basisClass = nCP(self.x0,self.xf,self.nC,self.deg+1)
             z0 = -1.; zf = 1.
         elif self.basis == 'LeP':
-            from BF import nLeP
+            from .utils.BF import nLeP
             self.basisClass = nLeP(self.x0,self.xf,self.nC,self.deg+1)
             z0 = -1.; zf = 1.
         elif self.basis == 'FS':
-            from BF import nFS
+            from .utils.BF import nFS
             self.basisClass = nFS(self.x0,self.xf,self.nC,self.deg+1)
             z0 = -np.pi; zf = np.pi
         elif self.basis == 'ELMSigmoid':
-            from BF import nELMSigmoid
+            from .utils.BF import nELMSigmoid
             self.basisClass = nELMSigmoid(self.x0,self.xf,self.nC,self.deg+1)
             z0 = 0.; zf = 1.
         elif self.basis == 'ELMTanh':
-            from BF import nELMTanh
+            from .utils.BF import nELMTanh
             self.basisClass = nELMTanh(self.x0,self.xf,self.nC,self.deg+1)
             z0 = 0.; zf = 1.
         elif self.basis == 'ELMSin':
-            from BF import nELMSin
+            from .utils.BF import nELMSin
             self.basisClass = nELMSin(self.x0,self.xf,self.nC,self.deg+1)
             z0 = 0.; zf = 1.
         elif self.basis == 'ELMSwish':
-            from BF import nELMSwish
+            from .utils.BF import nELMSwish
             self.basisClass = nELMSwish(self.x0,self.xf,self.nC,self.deg+1)
             z0 = 0.; zf = 1.
         else:
