@@ -1,15 +1,11 @@
-import os,sys
-sourcePath = os.path.join("..","src","build","bin")
-sys.path.append(sourcePath)
-
 from jax.config import config
 config.update('jax_enable_x64', True)
 import numpy as onp
 import jax.numpy as np
 from jax import vmap, grad
 
-from BF import nCP, nLeP, nFS, nELMSigmoid, nELMTanh, nELMSin, nELMSwish
-from TFCUtils import egrad
+from tfc.utils.BF import nCP, nLeP, nFS, nELMSigmoid, nELMTanh, nELMSin, nELMSwish
+from tfc.utils import egrad
 
 def test_nCP():
     from pOP import nCP as pnCP
@@ -22,22 +18,23 @@ def test_nCP():
     nC2 = np.block([[np.arange(4),-1.*np.ones(3)],[np.arange(7)]]).astype(np.int32)
     n = np.array([10]*dim)
     N = np.prod(n)
-    z = np.linspace(0,5,num=n[0])
+    z = np.linspace(0,2,num=n[0])
     x = onp.zeros((N,dim))
     for k in range(dim):
         nProd = np.prod(n[k+1:])
         nStack = np.prod(n[0:k])
         dark = np.hstack([z]*nProd)
         x[:,k] = onp.array([dark]*nStack).flatten()
+    c = (1.+1.)/(x[-1,:]-x[0,:])
+    z = (x-x[0,:])*c+-1.
 
-    useVal = np.array([0,0],dtype=np.int32)
-    ncp1 = nCP(x.T,nC,5,c)
-    ncp2 = nCP(x.T,nC2,10,c)
-    Fc1 = ncp1.H(x.T,d,False,useVal)
-    Fc2 = ncp2.H(x.T,d2,False,useVal)
+    ncp1 = nCP(x[0,:],x[-1,:],nC,5)
+    ncp2 = nCP(x[0,:],x[-1,:],nC2,10)
+    Fc1 = ncp1.H(x.T,d,False)
+    Fc2 = ncp2.H(x.T,d2,False)
 
-    Fp1 = pnCP(x,4,d,nC.flatten()*0.)
-    Fp2 = pnCP(x,9,d2,nC2Py)
+    Fp1 = pnCP(z,4,d,nC.flatten()*0.)
+    Fp2 = pnCP(z,9,d2,nC2Py)
 
     assert(np.linalg.norm(Fc1-Fp1,ord='fro') < 1e-14)
     assert(np.linalg.norm(Fc2-Fp2,ord='fro') < 1e-14)
@@ -47,28 +44,28 @@ def test_nLeP():
     dim = 2
     nC = -1.*np.ones((dim,1),dtype=np.int32)
     d = np.zeros(dim,dtype=np.int32)
-    c = np.ones(dim)
     d2 = np.array([2,3],dtype=np.int32)
     nC2Py = np.array([4,7],dtype=np.int32)
     nC2 = np.block([[np.arange(4),-1.*np.ones(3)],[np.arange(7)]]).astype(np.int32)
     n = np.array([10]*dim)
     N = np.prod(n)
-    z = np.linspace(0,5,num=n[0])
+    z = np.linspace(0,2,num=n[0])
     x = onp.zeros((N,dim))
     for k in range(dim):
         nProd = np.prod(n[k+1:])
         nStack = np.prod(n[0:k])
         dark = np.hstack([z]*nProd)
         x[:,k] = onp.array([dark]*nStack).flatten()
+    c = (1.+1.)/(x[-1,:]-x[0,:])
+    z = (x-x[0,:])*c+-1.
 
-    useVal = np.array([0,0],dtype=np.int32)
-    nlep1= nLeP(x.T,nC,5,c)
-    nlep2= nLeP(x.T,nC2,10,c)
-    Fc1 = nlep1.H(x.T,d,False,useVal)
-    Fc2 = nlep2.H(x.T,d2,False,useVal)
+    nlep1 = nLeP(x[0,:],x[-1,:],nC,5)
+    nlep2 = nLeP(x[0,:],x[-1,:],nC2,10)
+    Fc1 = nlep1.H(x.T,d,False)
+    Fc2 = nlep2.H(x.T,d2,False)
 
-    Fp1 = pnLeP(x,4,d,nC.flatten()*0.)
-    Fp2 = pnLeP(x,9,d2,nC2Py)
+    Fp1 = pnLeP(z,4,d,nC.flatten()*0.)
+    Fp2 = pnLeP(z,9,d2,nC2Py)
 
     assert(np.linalg.norm(Fc1-Fp1,ord='fro') < 1e-14)
     assert(np.linalg.norm(Fc2-Fp2,ord='fro') < 1e-14)
@@ -84,56 +81,56 @@ def test_nFS():
     nC2 = np.block([[np.arange(4),-1.*np.ones(3)],[np.arange(7)]]).astype(np.int32)
     n = np.array([10]*dim)
     N = np.prod(n)
-    z = np.linspace(0,5,num=n[0])
+    z = np.linspace(0,2.*np.pi,num=n[0])
     x = onp.zeros((N,dim))
     for k in range(dim):
         nProd = np.prod(n[k+1:])
         nStack = np.prod(n[0:k])
         dark = np.hstack([z]*nProd)
         x[:,k] = onp.array([dark]*nStack).flatten()
+    c = (2.*np.pi)/(x[-1,:]-x[0,:])
+    z = (x-x[0,:])*c-np.pi
 
-    useVal = np.array([0,0],dtype=np.int32)
-    nfs1 = nFS(x.T,nC,5,c)
-    nfs2 = nFS(x.T,nC2,10,c)
-    Fc1 = nfs1.H(x.T,d,False,useVal)
-    Fc2 = nfs2.H(x.T,d2,False,useVal)
+    nfs1 = nFS(x[0,:],x[-1,:],nC,5)
+    nfs2 = nFS(x[0,:],x[-1,:],nC2,10)
+    Fc1 = nfs1.H(x.T,d,False)
+    Fc2 = nfs2.H(x.T,d2,False)
 
-    Fp1 = pnFS(x,4,d,nC.flatten()*0.)
-    Fp2 = pnFS(x,9,d2,nC2Py)
+    Fp1 = pnFS(z,4,d,nC.flatten()*0.)
+    Fp2 = pnFS(z,9,d2,nC2Py)
 
     assert(np.linalg.norm(Fc1-Fp1,ord='fro') < 1e-14)
     assert(np.linalg.norm(Fc2-Fp2,ord='fro') < 1e-14)
 
 def test_nELMSigmoid():
-    from pOP import nLeP as pnLeP
     dim = 2
     nC = -1*np.ones(1,dtype=np.int32)
     d = np.zeros(dim,dtype=np.int32)
-    c = np.ones(dim)
     d2 = np.array([2,3],dtype=np.int32)
     nC2 = np.array([4],dtype=np.int32)
     n = np.array([10]*dim)
     N = np.prod(n)
-    z = np.linspace(0,5,num=n[0])
+    z = np.linspace(0,1,num=n[0])
     X = onp.zeros((N,dim))
     for k in range(dim):
         nProd = np.prod(n[k+1:])
         nStack = np.prod(n[0:k])
         dark = np.hstack([z]*nProd)
         X[:,k] = onp.array([dark]*nStack).flatten()
+    c = 1./(X[-1,:]-X[0,:])
+    z = (X-X[0,:])*c
 
-    useVal = np.array([0,0],dtype=np.int32)
-    elm1 = nELMSigmoid(X.T,nC,10,c)
+    elm1 = nELMSigmoid(X[0,:],X[-1,:],nC,10)
     w = elm1.w
     b = elm1.b
-    elm2 = nELMSigmoid(X.T,nC2,10,c)
+    elm2 = nELMSigmoid(X[0,:],X[-1,:],nC2,10)
     elm2.w = w
     elm2.b = b
-    Fc1 = elm1.H(X.T,d,False,useVal)
-    Fc2 = elm2.H(X.T,d2,False,useVal)
+    Fc1 = elm1.H(X.T,d,False)
+    Fc2 = elm2.H(X.T,d2,False)
 
-    x = np.ones((100,10))*X[:,0:1]
-    y = np.ones((100,10))*X[:,1:2]
+    x = np.ones((100,10))*z[:,0:1]
+    y = np.ones((100,10))*z[:,1:2]
     w1 = w[0,:].reshape((1,10))
     w2 = w[1,:].reshape((1,10))
     b = b.reshape((1,10))
@@ -155,26 +152,27 @@ def test_nELMTanh():
     nC2 = np.array([4],dtype=np.int32)
     n = np.array([10]*dim)
     N = np.prod(n)
-    z = np.linspace(0,5,num=n[0])
+    z = np.linspace(0,1,num=n[0])
     X = onp.zeros((N,dim))
     for k in range(dim):
         nProd = np.prod(n[k+1:])
         nStack = np.prod(n[0:k])
         dark = np.hstack([z]*nProd)
         X[:,k] = onp.array([dark]*nStack).flatten()
+    c = 1./(X[-1,:]-X[0,:])
+    z = (X-X[0,:])*c
 
-    useVal = np.array([0,0],dtype=np.int32)
-    elm1 = nELMTanh(X.T,nC,10,c)
+    elm1 = nELMTanh(X[0,:],X[-1,:],nC,10)
     w = elm1.w
     b = elm1.b
-    elm2 = nELMTanh(X.T,nC2,10,c)
+    elm2 = nELMTanh(X[0,:],X[-1,:],nC2,10)
     elm2.w = w
     elm2.b = b
-    Fc1 = elm1.H(X.T,d,False,useVal)
-    Fc2 = elm2.H(X.T,d2,False,useVal)
+    Fc1 = elm1.H(X.T,d,False)
+    Fc2 = elm2.H(X.T,d2,False)
 
-    x = np.ones((100,10))*X[:,0:1]
-    y = np.ones((100,10))*X[:,1:2]
+    x = np.ones((100,10))*z[:,0:1]
+    y = np.ones((100,10))*z[:,1:2]
     w1 = w[0,:].reshape((1,10))
     w2 = w[1,:].reshape((1,10))
     b = b.reshape((1,10))
@@ -196,26 +194,27 @@ def test_nELMSin():
     nC2 = np.array([4],dtype=np.int32)
     n = np.array([10]*dim)
     N = np.prod(n)
-    z = np.linspace(0,5,num=n[0])
+    z = np.linspace(0,1,num=n[0])
     X = onp.zeros((N,dim))
     for k in range(dim):
         nProd = np.prod(n[k+1:])
         nStack = np.prod(n[0:k])
         dark = np.hstack([z]*nProd)
         X[:,k] = onp.array([dark]*nStack).flatten()
+    c = 1./(X[-1,:]-X[0,:])
+    z = (X-X[0,:])*c
 
-    useVal = np.array([0,0],dtype=np.int32)
-    elm1 = nELMSin(X.T,nC,10,c)
+    elm1 = nELMSin(X[0,:],X[-1,:],nC,10)
     w = elm1.w
     b = elm1.b
-    elm2 = nELMSin(X.T,nC2,10,c)
+    elm2 = nELMSin(X[0,:],X[-1,:],nC2,10)
     elm2.w = w
     elm2.b = b
-    Fc1 = elm1.H(X.T,d,False,useVal)
-    Fc2 = elm2.H(X.T,d2,False,useVal)
+    Fc1 = elm1.H(X.T,d,False)
+    Fc2 = elm2.H(X.T,d2,False)
 
-    x = np.ones((100,10))*X[:,0:1]
-    y = np.ones((100,10))*X[:,1:2]
+    x = np.ones((100,10))*z[:,0:1]
+    y = np.ones((100,10))*z[:,1:2]
     w1 = w[0,:].reshape((1,10))
     w2 = w[1,:].reshape((1,10))
     b = b.reshape((1,10))
@@ -237,26 +236,27 @@ def test_nELMSwish():
     nC2 = np.array([4],dtype=np.int32)
     n = np.array([10]*dim)
     N = np.prod(n)
-    z = np.linspace(0,5,num=n[0])
+    z = np.linspace(0,1,num=n[0])
     X = onp.zeros((N,dim))
     for k in range(dim):
         nProd = np.prod(n[k+1:])
         nStack = np.prod(n[0:k])
         dark = np.hstack([z]*nProd)
         X[:,k] = onp.array([dark]*nStack).flatten()
+    c = 1./(X[-1,:]-X[0,:])
+    z = (X-X[0,:])*c
 
-    useVal = np.array([0,0],dtype=np.int32)
-    elm1 = nELMSwish(X.T,nC,10,c)
+    elm1 = nELMSwish(X[0,:],X[-1,:],nC,10)
     w = elm1.w
     b = elm1.b
-    elm2 = nELMSwish(X.T,nC2,10,c)
+    elm2 = nELMSwish(X[0,:],X[-1,:],nC2,10)
     elm2.w = w
     elm2.b = b
-    Fc1 = elm1.H(X.T,d,False,useVal)
-    Fc2 = elm2.H(X.T,d2,False,useVal)
+    Fc1 = elm1.H(X.T,d,False)
+    Fc2 = elm2.H(X.T,d2,False)
 
-    x = np.ones((100,10))*X[:,0:1]
-    y = np.ones((100,10))*X[:,1:2]
+    x = np.ones((100,10))*z[:,0:1]
+    y = np.ones((100,10))*z[:,1:2]
     w1 = w[0,:].reshape((1,10))
     w2 = w[1,:].reshape((1,10))
     b = b.reshape((1,10))

@@ -1,16 +1,12 @@
-import os,sys
-sourcePath = os.path.join("..","src","build","bin")
-sys.path.append(sourcePath)
-
 import jax.numpy as np
 
-from TFC import TFC 
-from nTFC import TFC as nTFC
+from tfc import tfc as TFC
+from tfc import ntfc as nTFC
 
 def test_step():
     A = np.array([5.,4.,-1.,1.,0.])
-    tfc = TFC(10,0,3,basis='CP',c=1.)
-    ntfc = nTFC(np.array([5,5]),np.array([0,0]),3,dim=2,basis='CP',c=np.array([1.,1.]))
+    tfc = TFC(10,0,3,basis='CP',x0=-1.,xf=1.)
+    ntfc = nTFC(np.array([5,5]),np.array([0,0]),3,dim=2,basis='CP',x0=[-1.,-1.],xf=[1.,1.])
     B = tfc.step(A)
     C = ntfc.step(A)
     assert(np.all(B == np.array([1.,1.,0.,1.,0.])))
@@ -24,8 +20,8 @@ def test_step():
 
 def test_dstep():
     A = np.array([5.,4.,-1.,1.,0.])
-    tfc = TFC(10,0,3,basis='CP',c=1.)
-    ntfc = nTFC(np.array([5,5]),np.array([0,0]),3,dim=2,basis='CP',c=np.array([1.,1.]))
+    tfc = TFC(10,0,3,basis='CP',x0=-1.,xf=1.)
+    ntfc = nTFC(np.array([5,5]),np.array([0,0]),3,dim=2,basis='CP',x0=[-1.,-1.],xf=[1.,1.])
     B = lambda A: tfc.step(A)
     C = lambda A: ntfc.step(A)
     D = tfc.egrad(B,0)(A)

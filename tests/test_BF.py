@@ -1,41 +1,39 @@
-import os,sys
-sourcePath = os.path.join("..","src","build","bin")
-sys.path.append(sourcePath)
-
 from jax.config import config
 config.update('jax_enable_x64', True)
 import jax.numpy as np
 from jax import vmap, grad
 
-from BF import CP, LeP, LaP, HoPpro, HoPphy, FS, ELMSigmoid, ELMTanh, ELMSin, ELMSwish
-from TFCUtils import egrad
+from tfc.utils.BF import CP, LeP, LaP, HoPpro, HoPphy, FS, ELMReLU, ELMSigmoid, ELMTanh, ELMSin, ELMSwish
+from tfc.utils import egrad
 
 def test_CP():
     from pOP import CP as pCP
-    x = np.linspace(0,5,num=10)
-    cp1 = CP(x,np.array([],dtype=np.int32),5,1.)
-    cp2 = CP(x,np.array([],dtype=np.int32),10,1.)
-    Fc1 = cp1.H(x,0,False,False)
-    Fc2 = cp2.H(x,3,False,False)
+    x = np.linspace(0,2,num=10)
+    z = (x-x[0])*2./(x[-1]-x[0])-1.
+    cp1 = CP(0.,2.,np.array([],dtype=np.int32),5)
+    cp2 = CP(0.,2.,np.array([],dtype=np.int32),10)
+    Fc1 = cp1.H(x,0,False)
+    Fc2 = cp2.H(x,3,False)
 
-    x = x.reshape(10,1)
-    Fp1 = pCP(x,4)
-    Fp2 = pCP(x,9,d=3)
+    z = z.reshape(10,1)
+    Fp1 = pCP(z,4)
+    Fp2 = pCP(z,9,d=3)
 
     assert(np.linalg.norm(Fc1-Fp1,ord='fro') < 1e-14)
     assert(np.linalg.norm(Fc2-Fp2,ord='fro') < 1e-14)
 
 def test_LeP():
     from pOP import LeP as pLeP
-    x = np.linspace(-1.,1.,num=10)
-    lep1 = LeP(x,np.array([],dtype=np.int32),5,1.)
-    lep2 = LeP(x,np.array([],dtype=np.int32),10,1.)
-    Fc1 = lep1.H(x,0,False,False)
-    Fc2 = lep2.H(x,3,False,False)
+    x = np.linspace(0,2,num=10)
+    z = (x-x[0])*2./(x[-1]-x[0])-1.
+    lep1 = LeP(0.,2.,np.array([],dtype=np.int32),5)
+    lep2 = LeP(0.,2.,np.array([],dtype=np.int32),10)
+    Fc1 = lep1.H(x,0,False)
+    Fc2 = lep2.H(x,3,False)
 
-    x = x.reshape(10,1)
-    Fp1 = pLeP(x,4)
-    Fp2 = pLeP(x,9,d=3)
+    z = z.reshape(10,1)
+    Fp1 = pLeP(z,4)
+    Fp2 = pLeP(z,9,d=3)
 
     assert(np.linalg.norm(Fc1-Fp1,ord='fro') < 1e-14)
     assert(np.linalg.norm(Fc2-Fp2,ord='fro') < 1e-14)
@@ -43,10 +41,10 @@ def test_LeP():
 def test_LaP():
     from pOP import LaP as pLaP
     x = np.linspace(0,5,num=10)
-    lap1 = LaP(x,np.array([],dtype=np.int32),5,1.)
-    lap2 = LaP(x,np.array([],dtype=np.int32),10,1.)
-    Fc1 = lap1.H(x,0,False,False)
-    Fc2 = lap2.H(x,3,False,False)
+    lap1 = LaP(0.,5.,np.array([],dtype=np.int32),5)
+    lap2 = LaP(0.,5.,np.array([],dtype=np.int32),10)
+    Fc1 = lap1.H(x,0,False)
+    Fc2 = lap2.H(x,3,False)
 
     x = x.reshape(10,1)
     Fp1 = pLaP(x,4)
@@ -58,10 +56,10 @@ def test_LaP():
 def test_HoPpro():
     from pOP import HoPpro as pHoPpro
     x = np.linspace(0,5,num=10)
-    hoppro1 = HoPpro(x,np.array([],dtype=np.int32),5,1.)
-    hoppro2 = HoPpro(x,np.array([],dtype=np.int32),10,1.)
-    Fc1 = hoppro1.H(x,0,False,False)
-    Fc2 = hoppro2.H(x,3,False,False)
+    hoppro1 = HoPpro(0.,5.,np.array([],dtype=np.int32),5)
+    hoppro2 = HoPpro(0.,5.,np.array([],dtype=np.int32),10)
+    Fc1 = hoppro1.H(x,0,False)
+    Fc2 = hoppro2.H(x,3,False)
 
     x = x.reshape(10,1)
     Fp1 = pHoPpro(x,4)
@@ -73,10 +71,10 @@ def test_HoPpro():
 def test_HoPphy():
     from pOP import HoPphy as pHoPphy
     x = np.linspace(0,5,num=10)
-    hopphy1 = HoPphy(x,np.array([],dtype=np.int32),5,1.)
-    hopphy2 = HoPphy(x,np.array([],dtype=np.int32),10,1.)
-    Fc1 = hopphy1.H(x,0,False,False)
-    Fc2 = hopphy2.H(x,3,False,False)
+    hopphy1 = HoPphy(0.,5.,np.array([],dtype=np.int32),5)
+    hopphy2 = HoPphy(0.,5.,np.array([],dtype=np.int32),10)
+    Fc1 = hopphy1.H(x,0,False)
+    Fc2 = hopphy2.H(x,3,False)
 
     x = x.reshape(10,1)
     Fp1 = pHoPphy(x,4)
@@ -87,21 +85,22 @@ def test_HoPphy():
 
 def test_FS():
     from pOP import FS as pFS
-    x = np.linspace(0,5,num=10)
-    fs1 = FS(x,np.array([],dtype=np.int32),5,1.)
-    fs2 = FS(x,np.array([],dtype=np.int32),10,1.)
-    Fc1 = fs1.H(x,0,False,False)
-    Fc2 = fs2.H(x,1,False,False)
-    Fc3 = fs2.H(x,2,False,False)
-    Fc4 = fs2.H(x,3,False,False)
-    Fc5 = fs2.H(x,4,False,False)
+    x = np.linspace(0,2*np.pi,num=10)
+    z = (x-x[0])*2.*np.pi/(x[-1]-x[0])-np.pi
+    fs1 = FS(0.,2.*np.pi,np.array([],dtype=np.int32),5)
+    fs2 = FS(0.,2.*np.pi,np.array([],dtype=np.int32),10)
+    Fc1 = fs1.H(x,0,False)
+    Fc2 = fs2.H(x,1,False)
+    Fc3 = fs2.H(x,2,False)
+    Fc4 = fs2.H(x,3,False)
+    Fc5 = fs2.H(x,4,False)
 
-    x = x.reshape(10,1)
-    Fp1 = pFS(x,4)
-    Fp2 = pFS(x,9,d=1)
-    Fp3 = pFS(x,9,d=2)
-    Fp4 = pFS(x,9,d=3)
-    Fp5 = pFS(x,9,d=4)
+    z = z.reshape(10,1)
+    Fp1 = pFS(z,4)
+    Fp2 = pFS(z,9,d=1)
+    Fp3 = pFS(z,9,d=2)
+    Fp4 = pFS(z,9,d=3)
+    Fp5 = pFS(z,9,d=4)
 
     assert(np.linalg.norm(Fc1-Fp1,ord='fro') < 1e-14)
     assert(np.linalg.norm(Fc2-Fp2,ord='fro') < 1e-14)
@@ -109,18 +108,43 @@ def test_FS():
     assert(np.linalg.norm(Fc4-Fp4,ord='fro') < 1e-14)
     assert(np.linalg.norm(Fc5-Fp5,ord='fro') < 1e-14)
 
+def test_ELMReLU():
+    from jax.nn import relu as ReLU
+    x = np.linspace(0,1,num=10)
+    elm = ELMReLU(0.,1.,np.array([],dtype=np.int32),10)
+    Fc1 = elm.H(x,0,False)
+    Fc2 = elm.H(x,1,False)
+    Fc3 = elm.H(x,2,False)
+    Fc4 = elm.H(x,3,False)
+
+    x = x.reshape(10,1)
+    x = np.ones((10,10))*x
+    w = elm.w.reshape(1,10)
+    b = elm.b.reshape(1,10)
+    relu = lambda x: ReLU(w*x+b)
+    drelu = egrad(relu)
+    d2relu = egrad(drelu)
+
+    Fp1 = relu(x)
+    Fp2 = drelu(x)
+    Fp3 = d2relu(x)
+
+    assert(np.linalg.norm(Fc1-Fp1,ord='fro') < 1e-14)
+    assert(np.linalg.norm(Fc2-Fp2,ord='fro') < 1e-14)
+    assert(np.linalg.norm(Fc3-Fp3,ord='fro') < 1e-14)
+
 def test_ELMSigmoid():
-    x = np.linspace(0,5,num=10)
-    elm = ELMSigmoid(x,np.array([],dtype=np.int32),10,1.)
-    Fc1 = elm.H(x,0,False,False)
-    Fc2 = elm.H(x,1,False,False)
-    Fc3 = elm.H(x,2,False,False)
-    Fc4 = elm.H(x,3,False,False)
-    Fc5 = elm.H(x,4,False,False)
-    Fc6 = elm.H(x,5,False,False)
-    Fc7 = elm.H(x,6,False,False)
-    Fc8 = elm.H(x,7,False,False)
-    Fc9 = elm.H(x,8,False,False)
+    x = np.linspace(0,1,num=10)
+    elm = ELMSigmoid(0.,1.,np.array([],dtype=np.int32),10)
+    Fc1 = elm.H(x,0,False)
+    Fc2 = elm.H(x,1,False)
+    Fc3 = elm.H(x,2,False)
+    Fc4 = elm.H(x,3,False)
+    Fc5 = elm.H(x,4,False)
+    Fc6 = elm.H(x,5,False)
+    Fc7 = elm.H(x,6,False)
+    Fc8 = elm.H(x,7,False)
+    Fc9 = elm.H(x,8,False)
 
     x = x.reshape(10,1)
     x = np.ones((10,10))*x
@@ -158,17 +182,17 @@ def test_ELMSigmoid():
     #assert(np.linalg.norm(Fc9-Fp9,ord='fro') < 1e-12)
 
 def test_ELMTanh():
-    x = np.linspace(0,5,num=10)
-    elm = ELMTanh(x,np.array([],dtype=np.int32),10,1.)
-    Fc1 = elm.H(x,0,False,False)
-    Fc2 = elm.H(x,1,False,False)
-    Fc3 = elm.H(x,2,False,False)
-    Fc4 = elm.H(x,3,False,False)
-    Fc5 = elm.H(x,4,False,False)
-    Fc6 = elm.H(x,5,False,False)
-    Fc7 = elm.H(x,6,False,False)
-    Fc8 = elm.H(x,7,False,False)
-    Fc9 = elm.H(x,8,False,False)
+    x = np.linspace(0,1,num=10)
+    elm = ELMTanh(0.,1.,np.array([],dtype=np.int32),10)
+    Fc1 = elm.H(x,0,False)
+    Fc2 = elm.H(x,1,False)
+    Fc3 = elm.H(x,2,False)
+    Fc4 = elm.H(x,3,False)
+    Fc5 = elm.H(x,4,False)
+    Fc6 = elm.H(x,5,False)
+    Fc7 = elm.H(x,6,False)
+    Fc8 = elm.H(x,7,False)
+    Fc9 = elm.H(x,8,False)
 
     x = x.reshape(10,1)
     x = np.ones((10,10))*x
@@ -206,13 +230,13 @@ def test_ELMTanh():
     #assert(np.linalg.norm(Fc9-Fp9,ord='fro') < 1e-12)
 
 def test_ELMSin():
-    x = np.linspace(0,5,num=10)
-    elm = ELMSin(x,np.array([],dtype=np.int32),10,1.)
-    Fc1 = elm.H(x,0,False,False)
-    Fc2 = elm.H(x,1,False,False)
-    Fc3 = elm.H(x,2,False,False)
-    Fc4 = elm.H(x,3,False,False)
-    Fc5 = elm.H(x,4,False,False)
+    x = np.linspace(0,1,num=10)
+    elm = ELMSin(0.,1.,np.array([],dtype=np.int32),10)
+    Fc1 = elm.H(x,0,False)
+    Fc2 = elm.H(x,1,False)
+    Fc3 = elm.H(x,2,False)
+    Fc4 = elm.H(x,3,False)
+    Fc5 = elm.H(x,4,False)
 
     x = x.reshape(10,1)
     x = np.ones((10,10))*x
@@ -238,17 +262,17 @@ def test_ELMSin():
     assert(np.linalg.norm(Fc5-Fp5,ord='fro') < 5e-12)
 
 def test_ELMSwish():
-    x = np.linspace(0,5,num=10)
-    elm = ELMSwish(x,np.array([],dtype=np.int32),10,1.)
-    Fc1 = elm.H(x,0,False,False)
-    Fc2 = elm.H(x,1,False,False)
-    Fc3 = elm.H(x,2,False,False)
-    Fc4 = elm.H(x,3,False,False)
-    Fc5 = elm.H(x,4,False,False)
-    Fc6 = elm.H(x,5,False,False)
-    Fc7 = elm.H(x,6,False,False)
-    Fc8 = elm.H(x,7,False,False)
-    Fc9 = elm.H(x,8,False,False)
+    x = np.linspace(0,1,num=10)
+    elm = ELMSwish(0.,1.,np.array([],dtype=np.int32),10)
+    Fc1 = elm.H(x,0,False)
+    Fc2 = elm.H(x,1,False)
+    Fc3 = elm.H(x,2,False)
+    Fc4 = elm.H(x,3,False)
+    Fc5 = elm.H(x,4,False)
+    Fc6 = elm.H(x,5,False)
+    Fc7 = elm.H(x,6,False)
+    Fc8 = elm.H(x,7,False)
+    Fc9 = elm.H(x,8,False)
 
     x = x.reshape(10,1)
     x = np.ones((10,10))*x
