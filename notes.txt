@@ -1,8 +1,8 @@
-* To build from source:
+* To create a source and wheel distribution:
 python setup.py sdist bdist_wheel
 
 * To push to PyPi Test:
 python -m twine upload --repository testpypi dist/*
 
-* To install from PyPi:
+* To install from PyPi Test:
 pip3 install -i https://test.pypi.org/simple/ TFC
