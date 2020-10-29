@@ -1,9 +1,16 @@
+cmake_minimum_required(VERSION 3.12)
+
+project(TFC-documentation)
+
+# Add extra cmake files
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+
 # Doxygen documentation
 find_package(Doxygen REQUIRED)
 
 # Find all the public headers
-file(GLOB_RECURSE PUBLIC_HEADERS ../cxx/*.h)
-file(GLOB_RECURSE PYTHON_FILES ../python/*.py)
+file(GLOB_RECURSE PUBLIC_HEADERS ../src/cxx/*.h)
+file(GLOB_RECURSE PYTHON_FILES ../src/python/*.py)
 
 #This will be the main output of our command
 set(DOXYGEN_INDEX_FILE ${CMAKE_CURRENT_SOURCE_DIR}/html/index.html)
