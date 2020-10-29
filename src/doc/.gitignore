@@ -1,3 +1,4 @@
 # Do not change symbolic links
 DoxygenDocumentation.html
 SphinxDocumentation.html
+notebooks/.ipynb_checkpoints
