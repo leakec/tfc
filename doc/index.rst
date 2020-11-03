@@ -6,6 +6,7 @@ Welcome to the documentation for TFC!
    :caption: Tutorials
 
    notebooks/UnivariateTFC
+   notebooks/MakePlot
 
 .. toctree::
    :maxdepth: 1
