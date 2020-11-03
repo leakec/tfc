@@ -20,32 +20,26 @@ def NameGen():
     return "TFC"+str(NameGen.persist)
 
 ##
-#This is the univariate TFC class. It acts as a container that holds:
-#  - The linear map from the domain of the DE to the domain of the free-function.
-#  - The necessary autograd code that enables automatic differentiation of the constrained experssion and Jacobians of the residual with respect to the unknown coefficients in the linear combination of basis functions that make up the free function.
+#This is the univariate TFC class. It acts as a container that creates and stores:
+#  - The linear map between the free function domain (z) and the problem domain (x).
+#  - The basis functions or ELMs that make up the free function.
+#  - The necessary JAX code that enables automatic differentiation of the free function.
 #  - Other useful TFC related functions such as collocation point creation.
 #In addition, this class ties these methods together to form a utility that enables a higher level of code abstraction
 #such that the end-user scripts are simple, clear, and elegant implementations of TFC.
-#
-# For more information on TFC constrained expressions see:
-# - <a href = https://doi.org/10.3390/math8081303><i>The Multivariate Theory of Functional Connections: Theory, Proofs, and Application in Partial Differential Equationshe Pyramid Star Identification Techinque</i></a> 
-# \rst
-# `The Multivariate Theory of Functional Connections: Theory, Proofs, and Application in Partial Differential Equations <https://doi.org/10.3390/math8081303>`_
-# \endrst
 class TFC:
 
     ##
     #This function is the constructor for the univariate TFC class. Its inputs are as follows:
     #    * N - Number of points to use when discretizing the domain.
-    #    * nC - Number of functions to remove from the beginning of free function linear expansion. This variable is used to account for basis functions that are linearly dependent on support functions used in the construction of the constrained expressions. It can be expressed in 1 of 2 ways. 
+    #    * nC - Number of functions to remove from the free function linear expansion. This variable is used to account for basis functions that are linearly dependent on support functions used in the construction of the constrained expressions. It can be expressed in 1 of 2 ways. 
     #           -# As an integer. When expressed as an integer, the first nC basis functions are removed from the free function.
-    #           -# As a list or tuple. When expressed as a list or tuple, the basis functions corresponding to the numbers given by the list or tuple are removed from the free function. 
-    #    * deg - Degree of the basis function expansion. This number is one less than the number of basis functions used.
-    #    * basis - This optional string argument specifies the basis functions to be used. The default is Chebyshev orthogonal polynomails.
-    #    * c - This argument acts as the constant in the linear map that maps the DE domain to the basis function domain.
-    #    * x0 - This optional argument specifies the beginning of the DE domain. The default value "None" will result in a DE domain that begins at 0.
-    #    * z - This optional argument is used to specify the basis function domain discretization. The default value will result in the typical collocation discretiztaion. 
-    def __init__(self,N,nC,deg,basis='CP',x0=None,xf=None,z=None):
+    #           -# As a list or array. When expressed as a list or array, the basis functions corresponding to the numbers given by the list or array are removed from the free function. 
+    #    * m - Degree of the basis function expansion. This number is one less than the number of basis functions used before removing those specified by nC.
+    #    * xf - This required keyword argument specifies the end of the DE domain.
+    #    * basis - This optional, string, keyword argument specifies the basis functions to be used. The default is Chebyshev orthogonal polynomails.
+    #    * x0 - This optional argument specifies the beginning of the DE domain. The default value 0 will result in a DE domain that begins at 0.
+    def __init__(self,N,nC,deg,basis='CP',x0=None,xf=None):
 
         # Generate a custom name
         self.name = NameGen()
@@ -123,29 +117,29 @@ class TFC:
             self.z = np.linspace(z0,zf,num=self.N)
             self.x = (self.z-z0)/self.c+self.x0
 
-        self.SetupJax()
+        self._SetupJax()
 
     ## This function returns the a JAX function that returns a matrix of the basis functions evaluated at each discretization point.
     #  This function can be automatically differentiated via JAX commands. The returned function pointer has the following arguments:
     #     * x - The discretization points. 
     #     * full - This optional boolean argument when set to True will ignore the basis functions removed by the nC argument in the TFC constructor. The default is False.
     def H(self,x,full=False):
-        return self.Hjax(x,full=full)
+        return self._Hjax(x,full=full)
     def dH(self,x,full=False):
         """ This function returns a pointer to the deriative of H. See documentation of H for more details. """
-        return self.dHjax(x,full=full)
+        return self._dHjax(x,full=full)
     def d2H(self,x,full=False):
         """ This function returns a pointer to the second deriative of H. See documentation of H for more details. """
-        return self.d2Hjax(x,full=full)
+        return self._d2Hjax(x,full=full)
     def d3H(self,x,full=False):
         """ This function returns a pointer to the third deriative of H. See documentation of H for more details. """
-        return self.d3Hjax(x,full=full)
+        return self._d3Hjax(x,full=full)
     def d4H(self,x,full=False):
         """ This function returns a pointer to the fourth deriative of H. See documentation of H for more details. """
-        return self.d4Hjax(x,full=full)
+        return self._d4Hjax(x,full=full)
     def d8H(self,x,full=False):
         """ This function returns a pointer to the eighth deriative of H. See documentation of H for more details. """
-        return self.d8Hjax(x,full=full)
+        return self._d8Hjax(x,full=full)
 
     def RepMat(self,varIn,dim=1):
         """ This function is used to replicate a vector along the dimension specified by dim to create a matrix
@@ -165,11 +159,11 @@ class TFC:
         S = 1./np.sqrt(np.sum(A*A,0))
         S = np.reshape(S,(A.shape[1],))
         q,r = np.linalg.qr(A.dot(np.diag(S)))
-        x = S*np.linalg.multi_dot([self.MatPinv(r),q.T,B])
+        x = S*np.linalg.multi_dot([self._MatPinv(r),q.T,B])
         cn = np.linalg.cond(r)
         return x,cn
 
-    def MatPinv(self,A):
+    def _MatPinv(self,A):
         """ This function is used to better replicate MATLAB's pseudo-inverse. """
         rcond = onp.max(A.shape)*onp.spacing(np.linalg.norm(A,ord=2))
         return np.linalg.pinv(A,rcond=rcond)
@@ -178,16 +172,7 @@ class TFC:
         """ This is the unit step function, but the deriative is defined and equal to 0 at every point. """
         return np.heaviside(x,0)
 
-    @staticmethod
-    def egrad(g,j=0):
-        """ This function mimics egrad from autograd. """
-        def wrapped(*args):
-            tans = tuple([onp.ones(args[i].shape) if i == j else onp.zeros(args[i].shape) for i in range(len(args)) ])
-            _,x_bar = jvp(g,args,tans)
-            return x_bar
-        return wrapped
-
-    def SetupJax(self):
+    def _SetupJax(self):
         """ This function is used internally by TFC to setup JAX primatives and create desired behavior when taking derivatives of TFC constrained expressions. """
 
         # Helper functions
@@ -668,12 +653,12 @@ class TFC:
         ad.primitive_jvps[d7H_p] = d7H_jvp
 
         # Provide pointers from TFC class
-        self.Hjax = Hjax
-        self.dHjax = dHjax
-        self.d2Hjax = d2Hjax
-        self.d3Hjax = d3Hjax
-        self.d4Hjax = d4Hjax
-        self.d8Hjax = d5Hjax
+        self._Hjax = Hjax
+        self._dHjax = dHjax
+        self._d2Hjax = d2Hjax
+        self._d3Hjax = d3Hjax
+        self._d4Hjax = d4Hjax
+        self._d8Hjax = d5Hjax
 
 ##
 # This class combines TFC classes together so that multiple basis functions can be used 
@@ -687,19 +672,19 @@ class HybridTFC:
 
     def H(self,x,full=False):
         """ This function returns a pointer to a concatenated matrix of the H matrices for each of the tfcClasses provided at initialization. """
-        return np.hstack([k.Hjax(x,full=full) for j,k in enumerate(self._tfcClasses)])
+        return np.hstack([k._Hjax(x,full=full) for j,k in enumerate(self._tfcClasses)])
     def dH(self,x,full=False):
         """ This function returns a pointer to the deriative of H. See documentation of H for more details. """
-        return np.hstack([k.dHjax(x,full=full) for j,k in enumerate(self._tfcClasses)])
+        return np.hstack([k._dHjax(x,full=full) for j,k in enumerate(self._tfcClasses)])
     def d2H(self,x,full=False):
         """ This function returns a pointer to the second deriative of H. See documentation of H for more details. """
-        return np.hstack([k.d2Hjax(x,full=full) for j,k in enumerate(self._tfcClasses)])
+        return np.hstack([k._d2Hjax(x,full=full) for j,k in enumerate(self._tfcClasses)])
     def d3H(self,x,full=False):
         """ This function returns a pointer to the third deriative of H. See documentation of H for more details. """
-        return np.hstack([k.d3Hjax(x,full=full) for j,k in enumerate(self._tfcClasses)])
+        return np.hstack([k._d3Hjax(x,full=full) for j,k in enumerate(self._tfcClasses)])
     def d4H(self,x,full=False):
         """ This function returns a pointer to the fourth deriative of H. See documentation of H for more details. """
-        return np.hstack([k.d4Hjax(x,full=full) for j,k in enumerate(self._tfcClasses)])
+        return np.hstack([k._d4Hjax(x,full=full) for j,k in enumerate(self._tfcClasses)])
     def d8H(self,x,full=False):
         """ This function returns a pointer to the eighth deriative of H. See documentation of H for more details. """
-        return np.hstack([k.d8Hjax(x,full=full) for j,k in enumerate(self._tfcClasses)])
+        return np.hstack([k._d8Hjax(x,full=full) for j,k in enumerate(self._tfcClasses)])

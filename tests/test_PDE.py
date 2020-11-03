@@ -1,7 +1,7 @@
 import jax.numpy as np
 from jax import vmap, jacfwd, jit
 
-from tfc import ntfc as TFC
+from tfc import mtfc as TFC
 from tfc.utils import NLLS, egrad
 
 def test_PDE():

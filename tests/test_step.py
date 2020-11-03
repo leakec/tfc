@@ -1,7 +1,7 @@
 import jax.numpy as np
 
-from tfc import tfc as TFC
-from tfc import ntfc as nTFC
+from tfc import utfc as TFC
+from tfc import mtfc as nTFC
 
 def test_step():
     A = np.array([5.,4.,-1.,1.,0.])

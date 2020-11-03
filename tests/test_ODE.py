@@ -1,7 +1,7 @@
 import jax.numpy as np
 from jax import vmap, jacfwd, jit, jacrev
 
-from tfc import tfc as TFC
+from tfc import utfc as TFC
 from tfc.utils import NLLS
 
 def test_ODE():
