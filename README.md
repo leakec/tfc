@@ -46,3 +46,32 @@ After following the build instructions:
 1. Navigate to the tests directory.
 2. Run py.test or python -m pytest
 These serve as simple unit tests that test basic functionality of the code. These include tests for individual TFC functions, as well as full ODE and PDE tests.
+
+## Documentation:
+Any users interested in the theory behind this method should start [here](https://www.mdpi.com/2227-7390/8/8/1303); note that this journal article is open access, so you should be able to download it for free. The curious user can continue their study of the theory by visiting this [link](https://www.researchgate.net/project/Theory-of-Functional-Connections) for a complete list of TFC publications with free downloadable PDFs.
+
+## Citing this repository:
+The authors of this repsitory and the associated theory have gone to lengths to ensure that both are publicy available at no cost to the user. All that we ask in return is that if you use them, please add a reference to this GitHub and following journal article. Thank you.
+```
+@misc{tfc2020github,
+    author = {Carl Leake and Hunter Johnston},
+    title = {{TFC: A Functional Interpolation Framework.}},
+    url = {https://github.com/leakec/tfc},
+    version = {0.0.1},
+    year = {2020},
+}
+@article{TFC, 
+    title={The Multivariate Theory of Functional Connections: Theory, Proofs, and Application in Partial Differential Equations}, 
+    volume={8}, 
+    ISSN={2227-7390}, 
+    url={http://dx.doi.org/10.3390/math8081303}, 
+    DOI={10.3390/math8081303},
+    number={8}, 
+    journal={Mathematics},
+    publisher={MDPI AG},
+    author={Leake, Carl and Johnston, Hunter and Mortari, Daniele}, 
+    year={2020}, 
+    month={Aug}, 
+    pages={1303}
+}
+```
