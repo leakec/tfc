@@ -2,8 +2,8 @@ from cmaketools import setup
 
 setup(
     name="TFC",
-    version="0.0.3",
-    author="Carl Leake",
+    version="0.0.1",
+    author="Carl Leake and Hunter Johnston",
     author_email="leakec57@gmail.com",
     description="Theory of Functional Connections (TFC): A functional interpolation framework with applications in differential equations.",
     url="https://github.com/leakec/tfc.git",
