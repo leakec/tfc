@@ -40,6 +40,7 @@ Dependencies:
   * sphinx\_rtd\_theme
   * nbsphinx
   * breathe
+  * exhale
 
 ## Testing instructions:
 After following the build instructions:

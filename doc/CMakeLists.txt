@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 
-project(TFC-documentation)
+project(TFC)
 
 # Add extra cmake files
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
@@ -37,8 +37,8 @@ add_custom_target(Doxygen DEPENDS ${DOXYGEN_INDEX_FILE})
 find_package(Sphinx REQUIRED)
 
 set(SPHINX_SOURCE ${CMAKE_CURRENT_SOURCE_DIR})
-set(SPHINX_BUILD ${CMAKE_CURRENT_BINARY_DIR}/docs/sphinx)
-set(SPHINX_INDEX_FILE ${CMAKE_CURRENT_BINARY_DIR}/docs/sphinx/index.html)
+set(SPHINX_BUILD ${CMAKE_CURRENT_BINARY_DIR}/sphinx)
+set(SPHINX_INDEX_FILE ${CMAKE_CURRENT_BINARY_DIR}/sphinx/index.html)
 
 add_custom_target(docs
                   COMMAND ${SPHINX_EXECUTABLE} -b html

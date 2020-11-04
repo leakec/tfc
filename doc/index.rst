@@ -2,15 +2,11 @@ Welcome to the documentation for TFC!
 ===============================
 
 .. toctree::
-   :maxdepth: 1
-   :caption: Tutorials
-
-   notebooks/UnivariateTFC
-   notebooks/MakePlot
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Contents
+    :maxdepth: 1
+    :caption: Tutorials
+    
+    notebooks/UnivariateTFC
+    notebooks/MakePlot
 
 Indices and tables
 ==================
@@ -18,10 +14,13 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
-Docs
-====
-.. doxygenindex:: 
+ 
+.. toctree::
+    :maxdepth: 1
+    :caption: API Documentation
+    
+    Exhale/exhale_root
+`Doxygen Documentation <../html/index.html>`_
 
 .. TFC documentation master file, created by
    sphinx-quickstart on Fri May  8 15:49:25 2020.
