@@ -161,12 +161,12 @@ class MakePlot():
     def show(self):
         self.fig.show()
 
-    def save(self,fileName,trans=True,fileType='pdf'):
+    def save(self,fileName,transparent=True,fileType='pdf'):
         self.fig.savefig(fileName+'.'+fileType, bbox_inches='tight', pad_inches = 0, dpi = 300, format=fileType, transparent=trans)
 
     def savePickle(self,fileName):
         pickle.dump(self.fig,open(fileName+'.pickle','wb'))
 
-    def saveAll(self,fileName):
-        self.save(fileName)
+    def saveAll(self,fileName,transparent=True,fileType='pdf'):
+        self.save(fileName,transparent=transparent,fileType=fileType)
         self.savePickle(fileName)
