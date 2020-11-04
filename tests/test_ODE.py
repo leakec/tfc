@@ -2,7 +2,7 @@ import jax.numpy as np
 from jax import vmap, jacfwd, jit, jacrev
 
 from tfc import utfc as TFC
-from tfc.utils import NLLS
+from tfc.utils import egrad,NLLS
 
 def test_ODE():
     # This script will solve the non-linear differential equation 
@@ -43,8 +43,8 @@ def test_ODE():
     beta1 = lambda t: (ti-t)/(ti-tf)
     y = lambda t,xi: np.dot(H(t),xi)+beta0(t)*(yi-np.dot(H0,xi))+beta1(t)*(yf-np.dot(Hf,xi))
 
-    yd = tfc.egrad(y)
-    ydd = tfc.egrad(yd)
+    yd = egrad(y)
+    ydd = egrad(yd)
 
     # Create the residual and jacobians
     r = jit(lambda xi: ydd(t,xi)+f(t)*y(t,xi)*yd(t,xi)-f2(t))

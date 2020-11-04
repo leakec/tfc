@@ -1,7 +1,7 @@
 from cmaketools import setup
 
 setup(
-    name="TFC",
+    name="tfc",
     version="0.0.1",
     author="Carl Leake and Hunter Johnston",
     author_email="leakec57@gmail.com",
