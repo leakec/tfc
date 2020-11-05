@@ -10,4 +10,5 @@ formats: all
 
 # Specify Python requirements
 python:
-  - requirements: docs/requirements.txt
+  install:
+    - requirements: docs/requirements.txt
