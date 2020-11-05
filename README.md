@@ -30,18 +30,26 @@ Dependencies:
   * graphviz
   * yattag
 
-## Build Code Documentation from Source:
-Currently, the documentation and source code are built seperately. To build the documentation follow these instructions.
+## Testing instructions:
+After following the build instructions:
+1. Navigate to the tests directory.
+2. Run py.test or python -m pytest
+These serve as simple unit tests that test basic functionality of the code. These include tests for individual TFC functions, as well as full ODE and PDE tests.
+
+## Reference Documentation:
+For tutorials on how to use this package as well as information about the tfc API, see the [reference documentation](https://tfc-documentation.readthedocs.io/en/latest/).
+
+### Building Reference Documentation from Source:
+If for some reason you want to build the reference documentation from source, you can do so using these two steps:
 1. Change into the docs directory.
 2. Run:
 ```bash
 sphinx-build . _build/html
 ```
-The code documentation will appear under \_build/html and the main file is index.html. This file can also be accessed using SphinxDocumentation.html symbolic link.
+The code documentation will appear under \_build/html and the main file is index.html. This file can also be accessed using the SphinxDocumentation.html symbolic link in the docs directory.
 
 Dependencies:
 * System Packages:
-  * cmake
   * graphviz
   * doxygen
   * python3-sphinx
@@ -51,13 +59,7 @@ Dependencies:
   * nbsphinx
   * breathe
   * exhale
-
-## Testing instructions:
-After following the build instructions:
-1. Navigate to the tests directory.
-2. Run py.test or python -m pytest
-These serve as simple unit tests that test basic functionality of the code. These include tests for individual TFC functions, as well as full ODE and PDE tests.
-
+  
 ## Mathematical Documentation:
 Any users interested in the theory behind this method should start [here](https://www.mdpi.com/2227-7390/8/8/1303); note that this journal article is open access, so you should be able to download it for free. The curious user can continue their study of the theory by visiting this [link](https://www.researchgate.net/project/Theory-of-Functional-Connections) for a complete list of TFC publications with free downloadable PDFs.
 
