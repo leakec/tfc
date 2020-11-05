@@ -8,19 +8,19 @@ Welcome to the documentation for TFC!
     notebooks/UnivariateTFC
     notebooks/MakePlot
 
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
- 
 .. toctree::
     :maxdepth: 1
     :caption: API Documentation
     
     Exhale/exhale_root
 `Doxygen Documentation <_static/index.html>`_
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
 
 .. TFC documentation master file, created by
    sphinx-quickstart on Fri May  8 15:49:25 2020.
