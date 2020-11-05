@@ -2,7 +2,9 @@
 import os, subprocess
 if not os.path.exists('_build'):
     os.makedirs('_build')
-subprocess.call('cd _build; cmake ..; make docs -j 4', shell=True)
+if not os.path.exists('_build/doxygen'):
+    os.makedirs('_build/doxygen')
+subprocess.call('cd _build/doxygen; doxygen ../../Doxyfile', shell=True)
 
 # Configuration file for the Sphinx documentation builder.
 #
