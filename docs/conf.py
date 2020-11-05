@@ -2,9 +2,11 @@
 import os, subprocess
 if not os.path.exists('_build'):
     os.makedirs('_build')
-if not os.path.exists('_build/doxygen'):
-    os.makedirs('_build/doxygen')
-subprocess.call('cd _build/doxygen; doxygen ../../Doxyfile', shell=True)
+if not os.path.exists('_build/html'):
+    os.makedirs('_build/html')
+if not os.path.exists('_build/html/doxygen'):
+    os.makedirs('_build/html/doxygen')
+subprocess.call('cd _build/html/doxygen; doxygen ../../../Doxyfile', shell=True)
 
 # Configuration file for the Sphinx documentation builder.
 #
@@ -37,7 +39,7 @@ extensions = ['breathe','exhale','nbsphinx','sphinx.ext.graphviz','sphinx.ext.in
 
 # Breathe Configuration
 breathe_default_project = "TFC"
-breathe_projects = {"TFC":"_build/doxygen/xml"}
+breathe_projects = {"TFC":"_build/html/doxygen/xml"}
 
 # Exhale Configuration
 exhale_args = {
