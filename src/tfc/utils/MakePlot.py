@@ -162,7 +162,7 @@ class MakePlot():
         self.fig.show()
 
     def save(self,fileName,transparent=True,fileType='pdf'):
-        self.fig.savefig(fileName+'.'+fileType, bbox_inches='tight', pad_inches = 0, dpi = 300, format=fileType, transparent=trans)
+        self.fig.savefig(fileName+'.'+fileType, bbox_inches='tight', pad_inches = 0, dpi = 300, format=fileType, transparent=transparent)
 
     def savePickle(self,fileName):
         pickle.dump(self.fig,open(fileName+'.pickle','wb'))
