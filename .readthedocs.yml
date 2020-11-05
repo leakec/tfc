@@ -6,8 +6,7 @@ sphinx:
   configuration: docs/conf.py
 
 # Build all formats
-formats: 
-  - htmlzip
+formats:  all
 
 # Specify Python requirements
 python:
