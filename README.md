@@ -32,7 +32,7 @@ Dependencies:
 
 ## Build Code Documentation from Source:
 Currently, the documentation and source code are built seperately. To build the documentation follow these instructions.
-1. Change into the doc directory.
+1. Change into the docs directory.
 2. Run:
 ```bash
 sphinx-build . _build/html
