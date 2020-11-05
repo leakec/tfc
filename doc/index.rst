@@ -20,7 +20,7 @@ Indices and tables
     :caption: API Documentation
     
     Exhale/exhale_root
-`Doxygen Documentation <../html/index.html>`_
+`Doxygen Documentation <../doxygen/html/index.html>`_
 
 .. TFC documentation master file, created by
    sphinx-quickstart on Fri May  8 15:49:25 2020.

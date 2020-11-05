@@ -30,13 +30,14 @@ Dependencies:
   * graphviz
   * yattag
 
-## Code Documentation:
+## Build Code Documentation from Source:
 Currently, the documentation and source code are built seperately. To build the documentation follow these instructions.
-1. Create a build directory in the main directory if it does not already exist.
-2. Clear the build directory if there is anything in it. (The documentation and code build are under 2 different cmake projects that will conflict.)
-3. From the build directory run cmake ../doc
-4. From the build director run make docs
-The code documentation will appear under build/docs/sphinx and the main file is index.html. 
+1. Change into the doc directory.
+2. Run:
+```bash
+sphinx-build . _build/html
+```
+The code documentation will appear under \_build/html and the main file is index.html. This file can also be accessed using SphinxDocumentation.html symbolic link.
 
 Dependencies:
 * System Packages:

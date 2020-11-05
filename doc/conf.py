@@ -1,3 +1,9 @@
+# Build Doxygen docs
+import os, subprocess
+if not os.path.exists('_build'):
+    os.makedirs('_build')
+subprocess.call('cd _build; cmake ..; make docs -j 4', shell=True)
+
 # Configuration file for the Sphinx documentation builder.
 #
 # This file only contains a selection of the most common options. For a full
@@ -14,13 +20,11 @@
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
-
 # -- Project information -----------------------------------------------------
 
 project = 'TFC'
 copyright = '2020, Carl Leake, Hunter Johnston'
 author = 'Carl Leake, Hunter Johnston'
-
 
 # -- General configuration ---------------------------------------------------
 
@@ -31,6 +35,7 @@ extensions = ['breathe','exhale','nbsphinx','sphinx.ext.graphviz','sphinx.ext.in
 
 # Breathe Configuration
 breathe_default_project = "TFC"
+breathe_projects = {"TFC":"_build/doxygen/xml"}
 
 # Exhale Configuration
 exhale_args = {
@@ -60,3 +65,4 @@ html_theme = 'sphinx_rtd_theme'
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
