@@ -320,7 +320,7 @@ def NLLS(xiInit,res,*args,J=None,cond=None,body=None,tol=1e-13,maxIter=50,method
 
     def cond(val):
         return np.all(np.array([
-                    np.max(np.abs(res(val['xi'],*args))) > tol,
+                    np.max(np.abs(res(val['xi'],*val['args']))) > tol,
                     val['it'] < maxIter,
                     np.max(np.abs(val['dxi'])) > tol]))
 
@@ -335,26 +335,26 @@ def NLLS(xiInit,res,*args,J=None,cond=None,body=None,tol=1e-13,maxIter=50,method
                     jacob = jacfwd(res,0)(xi,*args)
                     return np.hstack([jacob[k] for k in xi.keys()])
         else:
-            J = lambda xi: jacfwd(res,0)(xi,*args)
+            J = lambda xi,*args: jacfwd(res,0)(xi,*args)
 
     if method == 'pinv':
-        LS = lambda xi: np.dot(np.linalg.pinv(J(xi,*args)),res(xi,*args))
+        LS = lambda xi,*args: np.dot(np.linalg.pinv(J(xi,*args)),res(xi,*args))
     elif method == 'lstsq':
-        LS = lambda xi: np.linalg.lstsq(J(xi,*args),res(xi,*args),rcond=None)[0]
+        LS = lambda xi,*args: np.linalg.lstsq(J(xi,*args),res(xi,*args),rcond=None)[0]
     else:
         TFCPrint.Error("The method entered is not valid. Please enter a valid method.")
 
     if body is None:
         if printOut:
             def body(val):
-                val['dxi'] = LS(val['xi'])
+                val['dxi'] = LS(val['xi'],*val['args'])
                 val['xi'] -= val['dxi']
                 val['it'] += 1
                 print("Iteration "+str(val['it'])+":\tMax Residual: "+str(np.max(np.abs(res(val['xi'])))))
                 return val
         else:
             def body(val):
-                val['dxi'] = LS(val['xi'])
+                val['dxi'] = LS(val['xi'],*val['args'])
                 val['xi'] -= val['dxi']
                 val['it'] += 1
                 return val
@@ -368,10 +368,10 @@ def NLLS(xiInit,res,*args,J=None,cond=None,body=None,tol=1e-13,maxIter=50,method
     if timer:
         import time
         timer = getattr(time,timerType)
-        val = {'xi':xiInit,'dxi':dxi,'it':maxIter-1}
+        val = {'xi':xiInit,'dxi':dxi,'it':maxIter-1,'args':args}
         nlls(val)['dxi'].block_until_ready()
 
-        val = {'xi':xiInit,'dxi':dxi,'it':0}
+        val = {'xi':xiInit,'dxi':dxi,'it':0,'args':args}
 
         start = timer()
         val = nlls(val)
@@ -380,9 +380,107 @@ def NLLS(xiInit,res,*args,J=None,cond=None,body=None,tol=1e-13,maxIter=50,method
 
         return val['xi'],val['it'],stop-start
     else:
-        val = {'xi':xiInit,'dxi':dxi,'it':0}
+        val = {'xi':xiInit,'dxi':dxi,'it':0,'args':args}
         val = nlls(val)
         return val['xi'],val['it']
+
+## JIT-ed non-linear least squares class.
+# Like the NLLS function, but it is in class form so that the run methd can be called multiple times w/o re-JITing 
+
+class NllsClass:
+
+    def __init__(self,xiInit,res,J=None,cond=None,body=None,tol=1e-13,maxIter=50,method='pinv',timer=False,printOut=False,timerType='process_time'):
+
+        self.timerType = timerType
+        self.timer = timer
+        self._maxIter = maxIter
+
+        if timer and printOut:
+            TFCPrint.Warning("Warning, you have both the timer and printer on in the nonlinear least-squares.\nThe time will be longer than optimal due to the printout.")
+        if printOut:
+            TFCPrint.Warning("Warning, printing is not yet supported. You're going to get a garbage printout.")
+
+        if isinstance(xiInit,TFCDict) or isinstance(xiInit,TFCDictRobust):
+            self._dictFlag = True
+        else:
+            self._dictFlag = False
+
+        def cond(val):
+            return np.all(np.array([
+                        np.max(np.abs(res(val['xi'],*val['args']))) > tol,
+                        val['it'] < maxIter,
+                        np.max(np.abs(val['dxi'])) > tol]))
+
+        if J is None:
+            if self._dictFlag:
+                if isinstance(xiInit,TFCDictRobust):
+                    def J(xi,*args):
+                        jacob = jacfwd(res,0)(xi,*args)
+                        return np.hstack([jacob[k].reshape(jacob[k].shape[0],onp.prod(onp.array(xi[k].shape))) for k in xi.keys()])
+                else:
+                    def J(xi,*args):
+                        jacob = jacfwd(res,0)(xi,*args)
+                        return np.hstack([jacob[k] for k in xi.keys()])
+            else:
+                J = lambda xi,*args: jacfwd(res,0)(xi,*args)
+
+        if method == 'pinv':
+            LS = lambda xi,*args: np.dot(np.linalg.pinv(J(xi,*args)),res(xi,*args))
+        elif method == 'lstsq':
+            LS = lambda xi,*args: np.linalg.lstsq(J(xi,*args),res(xi,*args),rcond=None)[0]
+        else:
+            TFCPrint.Error("The method entered is not valid. Please enter a valid method.")
+
+        if body is None:
+            if printOut:
+                def body(val):
+                    val['dxi'] = LS(val['xi'],*val['args'])
+                    val['xi'] -= val['dxi']
+                    val['it'] += 1
+                    print("Iteration "+str(val['it'])+":\tMax Residual: "+str(np.max(np.abs(res(val['xi'])))))
+                    return val
+            else:
+                def body(val):
+                    val['dxi'] = LS(val['xi'],*val['args'])
+                    val['xi'] -= val['dxi']
+                    val['it'] += 1
+                    return val
+
+        self._nlls = jit(lambda val: lax.while_loop(cond,body,val))
+        self._compiled = False
+
+    def run(self,xiInit,*args):
+
+        if self._dictFlag:
+            dxi = np.ones_like(xiInit.toArray())
+        else:
+            dxi = np.ones_like(xiInit)
+
+        if self.timer:
+            import time
+            timer = getattr(time,self.timerType)
+
+            if not self._compiled:
+                val = {'xi':xiInit,'dxi':dxi,'it':self._maxIter-1,'args':args}
+                self._nlls(val)['dxi'].block_until_ready()
+                self._compiled = True
+
+            val = {'xi':xiInit,'dxi':dxi,'it':0,'args':args}
+
+            start = timer()
+            val = self._nlls(val)
+            val['dxi'].block_until_ready()
+            stop = timer()
+
+            return val['xi'],val['it'],stop-start
+
+        else:
+            val = {'xi':xiInit,'dxi':dxi,'it':0,'args':args}
+            val = self._nlls(val)
+
+            self._compiled = True
+
+            return val['xi'],val['it']
 
 class ComponentConstraintGraph:
 
