@@ -33,7 +33,10 @@ author = 'Carl Leake, Hunter Johnston'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['breathe','exhale','nbsphinx','sphinx.ext.graphviz','sphinx.ext.inheritance_diagram']
+extensions = ['breathe',
+              'exhale',
+              'nbsphinx',
+              'sphinx.ext.mathjax']
 
 # Breathe Configuration
 breathe_default_project = "TFC"
