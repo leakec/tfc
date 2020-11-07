@@ -1,0 +1,45 @@
+tfc.utils package
+=================
+
+Submodules
+----------
+
+tfc.utils.Html module
+---------------------
+
+.. automodule:: tfc.utils.Html
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+tfc.utils.Latex module
+----------------------
+
+.. automodule:: tfc.utils.Latex
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+tfc.utils.MakePlot module
+-------------------------
+
+.. automodule:: tfc.utils.MakePlot
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+tfc.utils.TFCUtils module
+-------------------------
+
+.. automodule:: tfc.utils.TFCUtils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: tfc.utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
