@@ -4,3 +4,11 @@ breathe
 exhale
 nbsphinx
 ipykernel
+numpy
+jax
+jaxlib
+matplotlib
+colorama
+graphviz
+yattag
+
