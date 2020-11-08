@@ -2,7 +2,7 @@
 add_library(BF BF.cxx)
 
 # Get necessary Python packages
-find_package(Python COMPONENTS Interpreter Development NumPy)
+find_package(Python COMPONENTS Interpreter NumPy)
 find_package(PythonLibs REQUIRED)
 include_directories(${PYTHON_INCLUDE_PATH})
 

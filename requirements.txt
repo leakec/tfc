@@ -1,0 +1,10 @@
+cmaketools>=0.1.6
+setuptools>=50.3.2
+numpy
+jax
+jaxlib
+matplotlib
+colorama
+graphviz
+yattag
+
