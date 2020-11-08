@@ -1,9 +1,12 @@
+import oss
 import pickle
 import numpy as np
 import matplotlib as matplotlib
 
-# Change matplotlib backend to allow fig.show()
-matplotlib.use("TkAgg")
+# Change matplotlib backend to allow fig.show(). 
+# Do not do this if READTHEDOCS is building.
+if not os.environ.get('READTHEDOCS') == 'True':
+    matplotlib.use("TkAgg")
 
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
