@@ -4,4 +4,3 @@ breathe
 exhale
 nbsphinx
 ipykernel
-.
