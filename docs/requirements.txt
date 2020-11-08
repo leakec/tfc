@@ -3,3 +3,5 @@ sphinx_rtd_theme
 breathe
 exhale
 nbsphinx
+pygments==2.4.1
+ipykernel
