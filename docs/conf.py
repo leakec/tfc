@@ -20,7 +20,7 @@ author = 'Carl Leake, Hunter Johnston'
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath(os.path.join('..','src','tfc')))
+sys.path.insert(0, os.path.abspath(os.path.join('..','src')))
 
 # Minimal version of sphinx needed
 needs_sphinx = '2.1'
