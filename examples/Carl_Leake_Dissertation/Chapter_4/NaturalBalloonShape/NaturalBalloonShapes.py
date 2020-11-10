@@ -89,25 +89,6 @@ resR = lambda x,xi: c(xi)*dr(x,xi)-np.sin(th(x,xi))
 resZ = lambda x,xi: c(xi)*dz(x,xi)-np.cos(th(x,xi))
 res = jit(lambda xi,const: np.hstack([resTh(x,xi,const), resQ(x,xi,const), resR(x,xi), resZ(x,xi)]))
 
-def Jdark(x,xi,const):
-    jacob = jacfwd(res,0)(xi,const)
-    return np.hstack((jacob[k] for k in xi.keys()))
-J = jit(lambda xi,const: Jdark(x,xi,const))
-
-# Create the NLLS 
-def cond(val):
-    return np.all(np.array([
-                np.max(np.abs(res(val['xi'],val['const']))) > tol,
-                val['it'] < 30,
-                np.max(np.abs(val['dxi'])) > tol]))
-def body(val):
-    val['dxi'] = -np.dot(np.linalg.pinv(J(val['xi'],val['const'])),res(val['xi'],val['const']))
-    val['xi'] += val['dxi']
-    val['it'] += 1
-    return val
-
-nlls = jit(lambda val: lax.while_loop(cond,body,val))
-
 # Create plot
 th2 = np.linspace(0.,2.*np.pi,num=100)
 X2 = Rs*np.cos(th2)
