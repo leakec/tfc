@@ -34,7 +34,8 @@ extensions = ['breathe',
               'sphinx.ext.mathjax',
               'sphinx.ext.viewcode',
               'sphinx.ext.autodoc',
-              'sphinx.ext.autosummary']
+              'sphinx.ext.autosummary',
+              'sphinx_copybutton']
 
 # Breathe Configuration
 breathe_default_project = "TFC"
