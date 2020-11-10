@@ -6,6 +6,7 @@ Welcome to the documentation for TFC!
     :caption: Tutorials
     
     notebooks/UnivariateTFC
+    notebooks/ODE
     notebooks/NLLS
     notebooks/MakePlot
 
