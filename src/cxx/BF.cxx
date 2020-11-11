@@ -1699,3 +1699,47 @@ void nELMSwish::nElmHint(const int* d, int dDim0, const double* x, const int in,
 	delete[] sig; delete[] zint; 
 	return;
 };
+
+// nELM Swish *******************************************************************************************
+void nELMReLU::nElmHint(const int* d, int dDim0, const double* x, const int in, double* F){
+
+	int i,j,k,h=-1;
+	double dark,dark1;
+	bool zeroFlag=false;
+	for (i=0;i<dDim0;i++){
+		if (d[i] > 1 || ((d[i] == 1) && (h != -1))){
+			zeroFlag = true;
+			break;
+		} else if (d[i] == 1) {
+			h = i;
+			dark1 = c[i];
+		}
+	}
+	
+	if (zeroFlag) {
+		for (j=0;j<in;j++){
+			for (k=0;k<m;k++)
+				F[m*j+k] = 0.;
+		}
+	} else {
+		for (j=0;j<in;j++){
+			for (k=0;k<m;k++){
+				dark = 0.;
+				for (i=0;i<dim;i++)
+					dark += w[i*m+k]*x[i*in+j];
+				F[m*j+k] = std::max(0.,dark+b[k]);
+			}
+		}
+	} 
+
+	if (h != -1){
+		for (j=0;j<in;j++){
+			for (k=0;k<m;k++){
+				if (F[m*j+k] != 0.){
+					F[m*j+k] = dark1*w[h*m+k];
+				}
+			}
+		}
+	}
+	return;
+};

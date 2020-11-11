@@ -4,7 +4,7 @@ import numpy as onp
 import jax.numpy as np
 from jax import vmap, grad
 
-from tfc.utils.BF import nCP, nLeP, nFS, nELMSigmoid, nELMTanh, nELMSin, nELMSwish
+from tfc.utils.BF import nCP, nLeP, nFS, nELMSigmoid, nELMTanh, nELMSin, nELMSwish, nELMReLU
 from tfc.utils import egrad
 
 def test_nCP():
@@ -268,3 +268,50 @@ def test_nELMSwish():
 
     assert(np.linalg.norm(Fc1-Fp1,ord='fro') < 1e-14)
     assert(np.linalg.norm(Fc2-Fp2,ord='fro') < 1e-12)
+
+def test_nELMSwish():
+    dim = 2
+    nC = -1*np.ones(1,dtype=np.int32)
+    d = np.zeros(dim,dtype=np.int32)
+    c = np.ones(dim)
+    d2 = np.array([0,1],dtype=np.int32)
+    d3 = np.array([1,1],dtype=np.int32)
+    d4 = np.array([0,2],dtype=np.int32)
+    nC2 = np.array([4],dtype=np.int32)
+    n = np.array([10]*dim)
+    N = np.prod(n)
+    z = np.linspace(0,1,num=n[0])
+    X = onp.zeros((N,dim))
+    for k in range(dim):
+        nProd = np.prod(n[k+1:])
+        nStack = np.prod(n[0:k])
+        dark = np.hstack([z]*nProd)
+        X[:,k] = onp.array([dark]*nStack).flatten()
+    c = 1./(X[-1,:]-X[0,:])
+    z = (X-X[0,:])*c
+
+    elm1 = nELMReLU(X[0,:],X[-1,:],nC,10)
+    w = elm1.w
+    b = elm1.b
+    elm2 = nELMReLU(X[0,:],X[-1,:],nC2,10)
+    elm2.w = w
+    elm2.b = b
+    Fc1 = elm1.H(X.T,d,False)
+    Fc2 = elm2.H(X.T,d2,False)
+    Fc3 = elm2.H(X.T,d3,False)
+    Fc4 = elm2.H(X.T,d4,False)
+
+    x = np.ones((100,10))*z[:,0:1]
+    y = np.ones((100,10))*z[:,1:2]
+    w1 = w[0,:].reshape((1,10))
+    w2 = w[1,:].reshape((1,10))
+    b = b.reshape((1,10))
+    relu = lambda x,y: np.maximum(np.zeros_like(x),w1*x+w2*y+b)
+
+    Fp1 = relu(x,y)
+    Fp2 = onp.delete(egrad(relu,1)(x,y),nC2[0],axis=1)
+
+    assert(np.linalg.norm(Fc1-Fp1,ord='fro') < 1e-14)
+    assert(np.linalg.norm(Fc2-Fp2,ord='fro') < 1e-14)
+    assert(np.linalg.norm(Fc3,ord='fro') < 1e-14)
+    assert(np.linalg.norm(Fc4,ord='fro') < 1e-14)

@@ -626,5 +626,21 @@ class nELMSwish: public nELM {
 		/** Function used internally to create the basis function matrices. */
 		void nElmHint(const int* d, int dDim0, const double* x, const int in, double* F) override ;
 };
+
+// n-D ELM ReLU class: *******************************************************************************************************************************************************
+/** n-D ELM that uses the rectified linear activation function. */
+class nELMReLU: public nELM {
+	
+	public:
+		/** nELMReLU class constructor. Calls nELM class constructor. See nELM class for more details. */
+		nELMReLU(double* x0in, int x0Dim0, double* xf, int xfDim0, int* nCin, int ncDim0, int min):nELM(x0in,x0Dim0,xf,xfDim0,nCin,ncDim0,min){};
+
+		/** nELMReLU class destructor.*/
+		~nELMReLU(){};
+
+	private:
+		/** Function used internally to create the basis function matrices. */
+		void nElmHint(const int* d, int dDim0, const double* x, const int in, double* F) override ;
+};
 	
 #endif

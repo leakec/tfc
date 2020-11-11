@@ -31,7 +31,7 @@ class mtfc:
     def __init__(self,n,nC,deg,dim=2,basis='CP',x0=None,xf=None):
 
         # Store givens
-        self._elm_classes= ['ELMSigmoid','ELMTanh','ELMSin','ELMSwish']
+        self._elm_classes= ['ELMSigmoid','ELMTanh','ELMSin','ELMSwish','ELMReLU']
         self.deg = deg
         self.dim = dim
         
@@ -160,6 +160,10 @@ class mtfc:
         elif self.basis == 'ELMSwish':
             from .utils.BF import nELMSwish
             self.basisClass = nELMSwish(self.x0,self.xf,self.nC,self.deg+1)
+            z0 = 0.; zf = 1.
+        elif self.basis == 'ELMReLU':
+            from .utils.BF import nELMReLU
+            self.basisClass = nELMReLU(self.x0,self.xf,self.nC,self.deg+1)
             z0 = 0.; zf = 1.
         else:
             TFCPrint.Error("Invalid basis selection. Please select a valid basis")
