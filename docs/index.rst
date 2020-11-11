@@ -7,6 +7,7 @@ Welcome to the documentation for TFC!
     
     notebooks/UnivariateTFC
     notebooks/ODE
+    notebooks/MultivariateTFC
     notebooks/NLLS
     notebooks/MakePlot
 
@@ -15,8 +16,13 @@ Welcome to the documentation for TFC!
     :caption: API Documentation
     
     Exhale/exhale_root
+    _static/index.html
 `Doxygen Documentation <_static/index.html>`_
 
+Mathematical Documentation
+=================
+Any users interested in the theory behind this method should start `here <https://www.mdpi.com/2227-7390/8/8/1303>`_; note that this journal article is open access, so you should be able to download it for free. The curious user can continue their study of the theory by visiting this `link <https://www.researchgate.net/project/Theory-of-Functional-Connections>`_ for a complete list of TFC publications with free downloadable PDFs.
+    
 Indices and tables
 ==================
 
