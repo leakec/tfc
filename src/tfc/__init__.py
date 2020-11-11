@@ -1,5 +1,5 @@
 from . import utils
-from .TFC import TFC as utfc 
-from .nTFC import TFC as mtfc
+from .utfc import utfc 
+from .mtfc import mtfc
 
 __all__ = ['utfc','mtfc','utils']

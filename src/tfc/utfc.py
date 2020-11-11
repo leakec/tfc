@@ -11,14 +11,6 @@ from jax.lib import xla_client
 
 from .utils.TFCUtils import TFCPrint
 
-# Custom name generator
-def NameGen():
-    """ Generates a custom name for the TFC class. """
-    if not(hasattr(NameGen,'persist')):
-        NameGen.persist = 0
-    NameGen.persist += 1
-    return "TFC"+str(NameGen.persist)
-
 ##
 #This is the univariate TFC class. It acts as a container that creates and stores:
 #  - The linear map between the free function domain (z) and the problem domain (x).
@@ -27,7 +19,7 @@ def NameGen():
 #  - Other useful TFC related functions such as collocation point creation.
 #In addition, this class ties these methods together to form a utility that enables a higher level of code abstraction
 #such that the end-user scripts are simple, clear, and elegant implementations of TFC.
-class TFC:
+class utfc:
 
     ##
     #This function is the constructor for the univariate TFC class. Its inputs are as follows:
@@ -40,9 +32,6 @@ class TFC:
     #    * basis - This optional, string, keyword argument specifies the basis functions to be used. The default is Chebyshev orthogonal polynomails.
     #    * x0 - This optional argument specifies the beginning of the DE domain. The default value 0 will result in a DE domain that begins at 0.
     def __init__(self,N,nC,deg,basis='CP',x0=None,xf=None):
-
-        # Generate a custom name
-        self.name = NameGen()
 
         # Store givens
         self.N = N
@@ -153,24 +142,6 @@ class TFC:
             return np.tile(varIn,(self.N,1))
         else:
             TFCPrint.Error('Invalid dimension')
-
-    def LS(self,A,B):
-        """ This function performs least-squares using the scaled QR method. """
-        S = 1./np.sqrt(np.sum(A*A,0))
-        S = np.reshape(S,(A.shape[1],))
-        q,r = np.linalg.qr(A.dot(np.diag(S)))
-        x = S*np.linalg.multi_dot([self._MatPinv(r),q.T,B])
-        cn = np.linalg.cond(r)
-        return x,cn
-
-    def _MatPinv(self,A):
-        """ This function is used to better replicate MATLAB's pseudo-inverse. """
-        rcond = onp.max(A.shape)*onp.spacing(np.linalg.norm(A,ord=2))
-        return np.linalg.pinv(A,rcond=rcond)
-
-    def step(self,x):
-        """ This is the unit step function, but the deriative is defined and equal to 0 at every point. """
-        return np.heaviside(x,0)
 
     def _SetupJax(self):
         """ This function is used internally by TFC to setup JAX primatives and create desired behavior when taking derivatives of TFC constrained expressions. """

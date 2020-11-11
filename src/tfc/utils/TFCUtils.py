@@ -576,3 +576,22 @@ class ComponentConstraintGraph:
                     treeHtml.doc.stag('img',src=os.path.join('..','dotFiles','tree'+str(k)+'.svg'),usemap='#tree'+str(k),klass='center')
                     treeHtml.doc.asis(treeHtml.ReadFile(os.path.join(outputDir,'dotFiles','tree'+str(k)+'.cmapx')))
             treeHtml.WriteFile()
+
+
+def LS(A,B):
+    """ This function performs least-squares using the scaled QR method. """
+    S = 1./np.sqrt(np.sum(A*A,0))
+    S = np.reshape(S,(A.shape[1],))
+    q,r = np.linalg.qr(A.dot(np.diag(S)))
+    x = S*np.linalg.multi_dot([_MatPinv(r),q.T,B])
+    cn = np.linalg.cond(r)
+    return x,cn
+
+def _MatPinv(A):
+    """ This function is used to better replicate MATLAB's pseudo-inverse. """
+    rcond = onp.max(A.shape)*onp.spacing(np.linalg.norm(A,ord=2))
+    return np.linalg.pinv(A,rcond=rcond)
+
+def step(x):
+    """ This is the unit step function, but the deriative is defined and equal to 0 at every point. """
+    return np.heaviside(x,0)

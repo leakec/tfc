@@ -8,13 +8,6 @@ from jax.interpreters import ad, batching, xla
 from jax.ops import index_update, index
 from jax.lib import xla_client
 
-# Custom name generator
-def NameGen():
-    if not(hasattr(NameGen,'persist')):
-        NameGen.persist = 0
-    NameGen.persist += 1
-    return "TFC"+str(NameGen.persist)
-
 ##
 #This is the multivariate TFC class. It acts as a container that holds:
 #  - The linear map from the domain of the DE to the domain of the free-function.
@@ -22,13 +15,7 @@ def NameGen():
 #  - Other useful TFC related functions such as collocation point creation.
 #In addition, this class ties these methods together to form a utility that enables a higher level of code abstraction
 #such that the end-user scripts are simple, clear, and elegant implementations of TFC.
-#
-# For more information on TFC constrained expressions see:
-# - <a href = https://doi.org/10.3390/math8081303><i>The Multivariate Theory of Functional Connections: Theory, Proofs, and Application in Partial Differential Equationshe Pyramid Star Identification Techinque</i></a> 
-# \rst
-# `The Multivariate Theory of Functional Connections: Theory, Proofs, and Application in Partial Differential Equations <https://doi.org/10.3390/math8081303>`_
-# \endrst
-class TFC:
+class mtfc:
 
     ##
     #This function is the constructor for the multivarite TFC class. Its inputs are as follows:
@@ -42,9 +29,6 @@ class TFC:
     #    * x0 - This optional argument specifies the beginning of the DE domain. The default value "None" will result in a DE domain that begins at 0.
     #    * z - This optional argument is used to specify the basis function domain discretization. The default value will result in the typical collocation discretiztaion. 
     def __init__(self,n,nC,deg,dim=2,basis='CP',x0=None,xf=None):
-
-        # Generate a custom name
-        self.name = NameGen()
 
         # Store givens
         self._elm_classes= ['ELMSigmoid','ELMTanh','ELMSin','ELMSwish']
@@ -117,9 +101,9 @@ class TFC:
                 nCmax = 0
                 for k in range(dim):
                     if isinstance(nC[k],np.ndarray):
-                        nCk = np.array(nCk).flatten()
+                        nCk = np.array(nC[k]).flatten()
                     else:
-                        nCk = np.array([nC[k]])
+                        nCk = np.array([nC[k]]).flatten()
                     if nCk.shape[0] == 1:
                         maxk = nCk[0]
                     else:
@@ -133,9 +117,9 @@ class TFC:
                 onC = onp.zeros((dim,nCmax))
                 for k in range(dim):
                     if isinstance(nC[k],np.ndarray):
-                        nCk = np.array(nCk).flatten()
+                        nCk = np.array(nC[k]).flatten()
                     else:
-                        nCk = onp.array([nC[k]])
+                        nCk = onp.array([nC[k]]).flatten()
                     n = nCk.shape[0]
                     if n == 1:
                         nCk = onp.arange(nCk[0])
@@ -217,59 +201,32 @@ class TFC:
     #     * x - The discretization points. 
     #     * full - This optional boolean argument when set to True will ignore the basis functions removed by the nC argument in the TFC constructor. The default is False.
     def H(self,*x,full=False):
-        return self.Hjax(*x,full=full)
+        return self._Hjax(*x,full=full)
     def Hx(self,*x,full=False):
         """ This function returns a pointer to the deriative of H with respect to x. See documentation of H for more details. """
-        return self.Hxjax(*x,full=full)
+        return self._Hxjax(*x,full=full)
     def Hx2(self,*x,full=False):
         """ This function returns a pointer to the second deriative of H with respect to x. See documentation of H for more details. """
-        return self.Hx2jax(*x,full=full)
+        return self._Hx2jax(*x,full=full)
     def Hy2(self,*x,full=False):
         """ This function returns a pointer to the second deriative of H with respect to y. See documentation of H for more details. """
-        return self.Hy2jax(*x,full=full)
+        return self._Hy2jax(*x,full=full)
     def Hx2y(self,*x,full=False):
         """ This function returns a pointer of the mixed derivative d^3H/dx^2dy. See documentation of H for more details. """
-        return self.Hx2yjax(*x,full=full)
+        return self._Hx2yjax(*x,full=full)
     def Hy(self,*x,full=False):
         """ This function returns a pointer to the deriative of H with respect to y. See documentation of H for more details. """
-        return self.Hyjax(*x,full=full)
+        return self._Hyjax(*x,full=full)
     def Hxy(self,*x,full=False):
         """ This function returns a pointer of the mixed derivative d^2H/dxdy. See documentation of H for more details. """
-        return self.Hxyjax(*x,full=full)
+        return self._Hxyjax(*x,full=full)
     def Hz(self,*x,full=False):
         """ This function returns a pointer to the deriative of H with respect to z. See documentation of H for more details. """
-        return self.Hzjax(*x,full=full)
+        return self._Hzjax(*x,full=full)
 
     def RepMat(self,varIn):
         """ This function is used to replicate a value self.N times to return a vector the same size as one of the dimensions of the z points. """
         return np.tile(varIn,self.N)
-
-    def LS(self,A,B):
-        """ This function performs least-squares using the scaled QR method. """
-        S = 1./np.sqrt(np.sum(A*A,0))
-        S = np.reshape(S,(A.shape[1],))
-        q,r = np.linalg.qr(A.dot(np.diag(S)))
-        x = S*np.linalg.multi_dot([self.MatPinv(r),q.T,B])
-        cn = np.linalg.cond(r)
-        return x,cn
-
-    def MatPinv(self,A):
-        """ This function is used to better replicate MATLAB's pseudo-inverse. """
-        rcond = onp.max(A.shape)*onp.spacing(np.linalg.norm(A,ord=2))
-        return np.linalg.pinv(A,rcond=rcond)
-
-    def step(self,x):
-        """ This is the unit step function, but the deriative is defined and equal to 0 at every point. """
-        return np.heaviside(x,0)
-
-    @staticmethod
-    def egrad(g,j=0):
-        """ This function mimics egrad from autograd. """
-        def wrapped(*args):
-            tans = tuple([onp.ones(args[i].shape) if i == j else onp.zeros(args[i].shape) for i in range(len(args)) ])
-            _,x_bar = jvp(g,args,tans)
-            return x_bar
-        return wrapped
 
     def SetupJAX(self):
         """ This function is used internally by TFC to setup autograd primatives and create desired behavior when taking derivatives of TFC constrained expressions. """
@@ -2799,11 +2756,11 @@ class TFC:
         ad.primitive_jvps[Hx5y3_p] = Hx5y3_jvp
         ad.primitive_jvps[Hx4y4_p] = Hx4y4_jvp
 
-        self.Hjax = Hjax
-        self.Hxjax = Hxjax
-        self.Hx2jax = Hx2jax
-        self.Hy2jax = Hy2jax
-        self.Hxy2jax = Hxy2jax
-        self.Hyjax = Hyjax
-        self.Hxyjax = Hxyjax
-        self.Hzjax = Hzjax
+        self._Hjax = Hjax
+        self._Hxjax = Hxjax
+        self._Hx2jax = Hx2jax
+        self._Hy2jax = Hy2jax
+        self._Hxy2jax = Hxy2jax
+        self._Hyjax = Hyjax
+        self._Hxyjax = Hxyjax
+        self._Hzjax = Hzjax
