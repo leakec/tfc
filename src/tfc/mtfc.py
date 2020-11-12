@@ -8,6 +8,8 @@ from jax.interpreters import ad, batching, xla
 from jax.ops import index_update, index
 from jax.lib import xla_client
 
+from .utils.TFCUtils import TFCPrint
+
 ##
 #This is the multivariate TFC class. It acts as a container that holds:
 #  - The linear map from the domain of the DE to the domain of the free-function.
