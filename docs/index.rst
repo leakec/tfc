@@ -8,6 +8,7 @@ Welcome to the documentation for TFC!
     notebooks/UnivariateTFC
     notebooks/ODE
     notebooks/MultivariateTFC
+    notebooks/PDE
     notebooks/NLLS
     notebooks/MakePlot
 
