@@ -215,7 +215,7 @@ void CP::Hint(const int d, const double* x, const int nOut, double* dark){
 void CP::RecurseDeriv(const int d, int dCurr, const double* x, const int nOut, double*& F, const int mOut){
 	if (dCurr != d){
 		int j, k;
-		double dark[mOut*nOut];
+		double* dark = new double[mOut*nOut];
 		memcpy(&dark[0],F,mOut*nOut*sizeof(double));
 		if (dCurr == 0){
 			for (k=0;k<nOut;k++){
@@ -232,6 +232,7 @@ void CP::RecurseDeriv(const int d, int dCurr, const double* x, const int nOut, d
 				F[mOut*j+k] = (2.+2.*dCurr)*dark[mOut*j+k-1]+2.*x[j]*F[mOut*j+k-1]-F[mOut*j+k-2];
 		}
 		dCurr++;
+		delete[] dark;
 		RecurseDeriv(d,dCurr,x,nOut,F,mOut);
 	}
 	return;
@@ -283,7 +284,7 @@ void LeP::RecurseDeriv(const int d, int dCurr, const double* x, const int nOut, 
 
 	if (dCurr != d){
 		int j, k;
-		double dark[mOut*nOut];
+		double* dark = new double[mOut*nOut];
 		memcpy(&dark[0],F,mOut*nOut*sizeof(double));
 		if (dCurr == 0){
 			for (k=0;k<nOut;k++){
@@ -300,6 +301,7 @@ void LeP::RecurseDeriv(const int d, int dCurr, const double* x, const int nOut, 
 				F[m*j+k+1] = ((2.*k+1.)*((dCurr+1.)*dark[m*j+k]+x[j]*F[m*j+k])-k*F[m*j+k-1])/(k+1.);
 		}
 		dCurr++;
+		delete[] dark;
 		RecurseDeriv(d,dCurr,x,nOut,F,mOut);
 	}
 	return;
@@ -351,7 +353,7 @@ void LaP::RecurseDeriv(const int d, int dCurr, const double* x, const int nOut, 
 
 	if (dCurr != d){
 		int j, k;
-		double dark[mOut*nOut];
+		double* dark = new double[mOut*nOut];
 		memcpy(&dark[0],F,mOut*nOut*sizeof(double));
 		if (dCurr == 0){
 			for (k=0;k<nOut;k++){
@@ -368,6 +370,7 @@ void LaP::RecurseDeriv(const int d, int dCurr, const double* x, const int nOut, 
 				F[m*j+k+1] = ((2.*k+1.-x[j])*F[m*j+k]-(dCurr+1.)*dark[m*j+k]-k*F[m*j+k-1])/(k+1.);
 		}
 		dCurr++;
+		delete[] dark;
 		RecurseDeriv(d,dCurr,x,nOut,F,mOut);
 	}
 	return;
@@ -420,7 +423,7 @@ void HoPpro::RecurseDeriv(const int d, int dCurr, const double* x, const int nOu
 
 	if (dCurr != d){
 		int j, k;
-		double dark[mOut*nOut];
+		double* dark = new double[mOut*nOut];
 		memcpy(&dark[0],F,mOut*nOut*sizeof(double));
 		if (dCurr == 0){
 			for (k=0;k<nOut;k++){
@@ -437,6 +440,7 @@ void HoPpro::RecurseDeriv(const int d, int dCurr, const double* x, const int nOu
 				F[m*j+k+1] = (dCurr+1.)*dark[m*j+k]+x[j]*F[m*j+k]-k*F[m*j+k-1];
 		}
 		dCurr++;
+		delete[] dark;
 		RecurseDeriv(d,dCurr,x,nOut,F,mOut);
 	}
 	return;
@@ -489,7 +493,7 @@ void HoPphy::RecurseDeriv(const int d, int dCurr, const double* x, const int nOu
 
 	if (dCurr != d){
 		int j, k;
-		double dark[mOut*nOut];
+		double* dark = new double[mOut*nOut];
 		memcpy(&dark[0],F,mOut*nOut*sizeof(double));
 		if (dCurr == 0){
 			for (k=0;k<nOut;k++){
@@ -506,6 +510,7 @@ void HoPphy::RecurseDeriv(const int d, int dCurr, const double* x, const int nOu
 				F[m*j+k+1] = 2.*(dCurr+1.)*dark[m*j+k]+2.*x[j]*F[m*j+k]-2.*k*F[m*j+k-1];
 		}
 		dCurr++;
+		delete[] dark;
 		RecurseDeriv(d,dCurr,x,nOut,F,mOut);
 	}
 	return;
