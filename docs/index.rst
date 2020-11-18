@@ -3,14 +3,20 @@ Welcome to the documentation for TFC!
 
 .. toctree::
     :maxdepth: 1
-    :caption: Tutorials
+    :caption: TFC Tutorials
     
     notebooks/UnivariateTFC
     notebooks/ODE
     notebooks/MultivariateTFC
     notebooks/PDE
+
+.. toctree::
+    :maxdepth: 1
+    :caption: Utilities Tutorials
+    
     notebooks/NLLS
     notebooks/MakePlot
+    notebooks/Latex
 
 .. toctree::
     :maxdepth: 1
