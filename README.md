@@ -8,7 +8,7 @@ The following instructions can be used to install a source distribution via pip 
 
 ### pip installation:
 ```bash
-pip install --upgrade pip cmaketools setuptools
+pip install --upgrade pip cmaketools setuptools wheel
 pip install --upgrade tfc
 ```
 
