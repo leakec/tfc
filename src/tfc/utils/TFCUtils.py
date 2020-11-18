@@ -522,7 +522,7 @@ class ComponentConstraintGraph:
 
     def SaveTrees(self,outputDir,allTrees=False,savePDFs=False):
         import os
-        from Html import HTML, Dot
+        from .Html import HTML, Dot
 
         if allTrees:
             targets = self.targets

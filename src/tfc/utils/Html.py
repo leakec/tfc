@@ -2,7 +2,6 @@ import os
 from graphviz import Digraph
 from yattag import Doc, indent
 
-
 class HTML:
     """ This contains helper functions for creating HTML files with yattag. """
 
@@ -46,5 +45,3 @@ class Dot:
         """ This function renders the dot graph as a .svg and as a .cmapx. """
         for f in formats:
             self.dot.render(self._outFile,format=f,cleanup=True,view=False)
-
-
