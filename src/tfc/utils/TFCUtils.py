@@ -336,6 +336,69 @@ def LS(zXi,res,*args,J=None,method='pinv',timer=False,timerType='process_time'):
         zXi += ls(zXi,*args)
         return zXi
 
+## JIT-ed linear least-squares class.
+# Like the LS function, but it is in class form so that the run methd can be called multiple times w/o re-JITing 
+
+class LsClass:
+
+    def __init__(self,zXi,res,J=None,method='pinv',timer=False,timerType='process_time'):
+        """ Initialization function. Creates the JIT-ed least-squares function. """
+
+        self.timerType = timerType
+        self.timer = timer
+
+        if isinstance(zXi,TFCDict) or isinstance(zXi,TFCDictRobust):
+            dictFlag = True
+        else:
+            dictFlag = False
+
+        if J is None:
+            if dictFlag:
+                if isinstance(zXi,TFCDictRobust):
+                    def J(xi,*args):
+                        jacob = jacfwd(res,0)(xi,*args)
+                        return np.hstack([jacob[k].reshape(jacob[k].shape[0],onp.prod(onp.array(xi[k].shape))) for k in xi.keys()])
+                else:
+                    def J(xi,*args):
+                        jacob = jacfwd(res,0)(xi,*args)
+                        return np.hstack([jacob[k] for k in xi.keys()])
+            else:
+                J = lambda xi,*args: jacfwd(res,0)(xi,*args)
+
+        if method == 'pinv':
+            self._ls = jit(lambda xi,*args: np.dot(np.linalg.pinv(J(xi,*args)),-res(xi,*args)))
+        elif method == 'lstsq':
+            self._ls = jit(lambda xi,*args: np.linalg.lstsq(J(xi,*args),-res(xi,*args),rcond=None)[0])
+        else:
+            TFCPrint.Error("The method entered is not valid. Please enter a valid method.")
+
+        self._compiled = False
+
+    def run(self,zXi,*args):
+        """ Runs the JIT-ed least-squares function and times it if desired. """
+
+        if self.timer:
+            import time
+            timer = getattr(time,self.timerType)
+
+            if not self._compiled:
+                self._ls(zXi,*args).block_until_ready()
+                self._compiled = True
+
+            start = timer()
+            xi = self._ls(zXi,*args).block_until_ready()
+            stop = timer()
+            zXi += xi
+
+            return zXi,stop-start
+
+        else:
+            zXi += ls(zXi,*args)
+
+            self._compiled = True
+
+            return zXi
+
 ## JIT-ed non-linear least squares.
 # This function takes in an initial guess, xiInit (initial values of xi), and a residual function, res, and
 # performs a nonlinear least squares to minimize the res function using the parameters
@@ -452,6 +515,7 @@ def NLLS(xiInit,res,*args,J=None,cond=None,body=None,tol=1e-13,maxIter=50,method
 class NllsClass:
 
     def __init__(self,xiInit,res,J=None,cond=None,body=None,tol=1e-13,maxIter=50,method='pinv',timer=False,printOut=False,timerType='process_time'):
+        """ Initialization function. Creates the JIT-ed nonlinear least-squares function. """
 
         self.timerType = timerType
         self.timer = timer
@@ -512,6 +576,7 @@ class NllsClass:
         self._compiled = False
 
     def run(self,xiInit,*args):
+        """ Runs the JIT-ed nonlinear least-squares function and times it if desired. """
 
         if self._dictFlag:
             dxi = np.ones_like(xiInit.toArray())
