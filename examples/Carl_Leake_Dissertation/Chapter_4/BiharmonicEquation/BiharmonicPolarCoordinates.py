@@ -1,5 +1,4 @@
 import tqdm
-from time import process_time as timer
 
 import numpy as onp
 import jax.numpy as np

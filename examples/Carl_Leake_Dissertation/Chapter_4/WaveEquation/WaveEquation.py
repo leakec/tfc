@@ -1,5 +1,3 @@
-from time import process_time as timer
-
 import numpy as onp
 import jax.numpy as np
 from jax import jacfwd, jit
