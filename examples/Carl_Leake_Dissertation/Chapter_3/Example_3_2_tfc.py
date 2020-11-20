@@ -1,16 +1,14 @@
-# Import python packages
 from tqdm import tqdm
 import numpy as onp
 import jax.numpy as np
 from jax import jacfwd
 from matplotlib import cm
 
-# Import TFC classes
 from tfc import mtfc
 from tfc.utils import egrad
 from tfc.utils.Latex import table
 
-# Constants and switches:
+# Constants:
 nVec = [5,10,15,20,25,30]
 mVec = [5,10,15,20,25]
 
