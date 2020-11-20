@@ -274,6 +274,68 @@ register_pytree_node(
   lambda x: (list(x.values()), list(x.keys())),
   lambda keys, values: TFCDictRobust(safe_zip(keys, values)))
 
+## JIT-ed least squares.
+# This function takes in an initial guess of zeros, zXi, and a residual function, res, and
+# linear least squares to minimize the res function using the parameters
+# xi. 
+#
+# The outputs of this function are:
+# 1. xi: The values of xi that minimize the residual.
+# 2. time: If timer = True, then the third output is the time the nonlinear least-squares took;
+#          otherwise, there is no third output.
+#
+# The option kwarg arguments are:
+# - J: User-specified jacobian that takes in argument xi. Default value is the jacobian of
+#      res with respect to xi.
+# - method: Method used to invert the matrix. The default is pinv. The two options are:
+#   * pinv: Use np.linalg.pinv
+#   * lstsq: Use np.linalg.lstsq
+# - timer: Setting this to True will time the non-linear least squares. Note that doing so
+#          adds a slight increase in runtime. As one iteration of the non-linear least squares
+#          is run first to avoid timining the JAX trace. The default is False.
+
+def LS(zXi,res,*args,J=None,method='pinv',timer=False,timerType='process_time'):
+
+    if isinstance(zXi,TFCDict) or isinstance(zXi,TFCDictRobust):
+        dictFlag = True
+    else:
+        dictFlag = False
+
+    if J is None:
+        if dictFlag:
+            if isinstance(zXi,TFCDictRobust):
+                def J(xi,*args):
+                    jacob = jacfwd(res,0)(xi,*args)
+                    return np.hstack([jacob[k].reshape(jacob[k].shape[0],onp.prod(onp.array(xi[k].shape))) for k in xi.keys()])
+            else:
+                def J(xi,*args):
+                    jacob = jacfwd(res,0)(xi,*args)
+                    return np.hstack([jacob[k] for k in xi.keys()])
+        else:
+            J = lambda xi,*args: jacfwd(res,0)(xi,*args)
+
+    if method == 'pinv':
+        ls = jit(lambda xi,*args: np.dot(np.linalg.pinv(J(xi,*args)),-res(xi,*args)))
+    elif method == 'lstsq':
+        ls = jit(lambda xi,*args: np.linalg.lstsq(J(xi,*args),-res(xi,*args),rcond=None)[0])
+    else:
+        TFCPrint.Error("The method entered is not valid. Please enter a valid method.")
+
+    if timer:
+        import time
+        timer = getattr(time,timerType)
+        ls(zXi,*args).block_until_ready()
+
+        start = timer()
+        xi = ls(zXi,*args).block_until_ready()
+        stop = timer()
+        zXi += xi
+
+        return zXi,stop-start
+    else:
+        zXi += ls(zXi,*args)
+        return zXi
+
 ## JIT-ed non-linear least squares.
 # This function takes in an initial guess, xiInit (initial values of xi), and a residual function, res, and
 # performs a nonlinear least squares to minimize the res function using the parameters
@@ -578,7 +640,7 @@ class ComponentConstraintGraph:
             treeHtml.WriteFile()
 
 
-def LS(A,B):
+def ScaledQrLs(A,B):
     """ This function performs least-squares using the scaled QR method. """
     S = 1./np.sqrt(np.sum(A*A,0))
     S = np.reshape(S,(A.shape[1],))
