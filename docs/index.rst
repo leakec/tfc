@@ -14,6 +14,7 @@ Welcome to the documentation for TFC!
     :maxdepth: 1
     :caption: Utilities Tutorials
     
+    notebooks/LS
     notebooks/NLLS
     notebooks/MakePlot
     notebooks/Latex
