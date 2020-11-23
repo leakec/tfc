@@ -634,7 +634,7 @@ class utfc:
 ##
 # This class combines TFC classes together so that multiple basis functions can be used 
 # simultaneously in the solution. Note, that this class is not yet complete.
-class HybridTFC:
+class HybridUtfc:
 
     def __init__(self,tfcClasses):
         if not all([k.N == tfcClasses[0].N for k in tfcClasses]):
