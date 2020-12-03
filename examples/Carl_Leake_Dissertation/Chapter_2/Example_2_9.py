@@ -26,7 +26,7 @@ v = lambda x,y: v1(x,y)+5.-v1(x,np.zeros_like(y))-u(x,np.zeros_like(y))
 # Plot results
 U = u(x,y).reshape((n,n))
 V = v(x,y).reshape((n,n))
-p = [MakePlot("x","y",zlabs="z"),MakePlot("x","y",zlabs="z")]
+p = [MakePlot(r"$x$",r"$y$",zlabs=r"$u(x,y,g^u(x,y))$"),MakePlot(r"$x$",r"$y$",zlabs=r"$v(x,y,g^v(x,y),g^u(x,y))$")]
 p[0].ax[0].plot_surface(*dark,U,cmap=cm.gist_rainbow,antialiased=False,rcount=n,ccount=n)
 p[0].ax[0].plot(np.zeros_like(x),y,np.cos(np.pi*y),'k',linewidth=4.,zorder=3)
 p[1].ax[0].plot_surface(*dark,V,cmap=cm.gist_rainbow,antialiased=False,rcount=n,ccount=n)
@@ -37,7 +37,7 @@ for k in range(2):
     p[k].ax[0].zaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
     p[k].ax[0].xaxis.labelpad = 20
     p[k].ax[0].yaxis.labelpad = 20
-    p[k].ax[0].zaxis.labelpad = 20
+    p[k].ax[0].zaxis.labelpad = 15
     p[k].ax[0].view_init(30.,-135.)
-    p[k].PartScreen(7,7)
+    p[k].PartScreen(8,7)
     p[k].show()
