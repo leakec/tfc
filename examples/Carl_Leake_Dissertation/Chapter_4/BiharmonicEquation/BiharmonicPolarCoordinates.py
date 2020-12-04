@@ -83,15 +83,31 @@ print("Time: "+str(time))
 print("Max Error: "+str(np.max(err)))
 print("Mean Error: "+str(np.mean(err)))
 
-# Plot the analytical solution in Cartesian coordinates
+# Plot the analytical solution in polar coordinates
 X = xTest[0]*np.cos(xTest[1])
 Y = xTest[0]*np.sin(xTest[1])
-p = MakePlot(r'$x$',r'$y$',zlabs=r'$u(x,y)$')
-p.ax[0].plot_surface(X.reshape((nTest,nTest)),Y.reshape((nTest,nTest)),real(*xTest).reshape((nTest,nTest)),cmap=cm.gist_rainbow)
-p.ax[0].xaxis.labelpad = 20
-p.ax[0].yaxis.labelpad = 20
-p.ax[0].zaxis.labelpad = 20
-p.FullScreen()
+
+xlabs = [[r'$x$',r'$x$'],['',r'$x$']]
+ylabs = [[r'',r'$y$'],[r'$y$',r'$y$']]
+zlabs = [[r'$u(x,y)$',r''],[r'$u(x,y)$',r'$u(x,y)$']]
+
+azim = [-90,-90,0,-135]
+elev = [0,90,0,45]
+
+p = MakePlot(xlabs,ylabs,zlabs=zlabs)
+for k in range(4):
+    p.ax[k].plot_surface(X.reshape((nTest,nTest)),Y.reshape((nTest,nTest)),real(*xTest).reshape((nTest,nTest)),cmap=cm.nipy_spectral)
+    p.ax[k].xaxis.labelpad = 15
+    p.ax[k].yaxis.labelpad = 15
+    p.ax[k].zaxis.labelpad = 10
+    p.ax[k].view_init(azim=azim[k],elev=elev[k])
+    if not k == 4:
+        p.ax[k].set_proj_type('ortho')
+p.ax[0].set_yticklabels([])
+p.ax[1].set_zticklabels([])
+p.ax[2].set_xticklabels([])
+p.fig.subplots_adjust(wspace=0.05, hspace=0.05)
+p.PartScreen(10,9)
 p.show()
 
 # Plot the error in polar coordinates

@@ -64,13 +64,14 @@ print("Max error test: "+str(np.max(err)))
 print("Mean error test: "+str(np.mean(err)))
 
 # Create plots
-p = MakePlot(r'$x$',r'$y$',zlabs=r'$u(x,y)$')
+p = MakePlot(r'$x$',r'$t$',zlabs=r'$u(x,t)$')
 p.ax[0].plot_surface(x[0].reshape((n,n)),x[1].reshape((n,n)),real(*x).reshape((n,n)),
                      cmap=cm.gist_rainbow,antialiased=False,rcount=n,ccount=n)
 p.ax[0].xaxis.labelpad = 20
 p.ax[0].yaxis.labelpad = 20
-p.ax[0].zaxis.labelpad = 20
-p.FullScreen()
+p.ax[0].zaxis.labelpad = 15
+p.ax[0].view_init(azim=-25,elev=25)
+p.PartScreen(8,7)
 p.show()
 
 p1 = MakePlot('x','y',zlabs='error')
