@@ -130,19 +130,6 @@ class utfc:
         """ This function returns a pointer to the eighth deriative of H. See documentation of H for more details. """
         return self._d8Hjax(x,full=full)
 
-    def RepMat(self,varIn,dim=1):
-        """ This function is used to replicate a vector along the dimension specified by dim to create a matrix
-            the same size as the H matrix."""
-        if dim == 1:
-            if not isinstance(self.nC,tuple):
-                return np.tile(varIn,(1,self.deg+1-self.nC))
-            else:
-                return np.tile(varIn,(1,self.deg+1-self.nC.__len__()))
-        elif dim == 0:
-            return np.tile(varIn,(self.N,1))
-        else:
-            TFCPrint.Error('Invalid dimension')
-
     def _SetupJax(self):
         """ This function is used internally by TFC to setup JAX primatives and create desired behavior when taking derivatives of TFC constrained expressions. """
 

@@ -230,10 +230,6 @@ class mtfc:
         """ This function returns a pointer to the deriative of H with respect to z. See documentation of H for more details. """
         return self._Hzjax(*x,full=full)
 
-    def RepMat(self,varIn):
-        """ This function is used to replicate a value self.N times to return a vector the same size as one of the dimensions of the z points. """
-        return np.tile(varIn,self.N)
-
     def SetupJAX(self):
         """ This function is used internally by TFC to setup autograd primatives and create desired behavior when taking derivatives of TFC constrained expressions. """
 

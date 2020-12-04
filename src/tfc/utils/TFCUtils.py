@@ -16,7 +16,7 @@ from jax.tree_util import register_pytree_node, tree_multimap
 from jax.interpreters.partial_eval import JaxprTracer
 
 ##
-# This is the TFCPrint class. It is used to print text in the terminal with color.
+# This class is used to print to the terminal in color.
 class TFCPrint:
 
     def __init__(self):
