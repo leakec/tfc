@@ -61,7 +61,7 @@ Dependencies:
   * exhale
   
 ## Mathematical Documentation:
-Any users interested in the theory behind this method should start [here](https://www.mdpi.com/2227-7390/8/8/1303); note that this journal article is open access, so you should be able to download it for free. The curious user can continue their study of the theory by visiting this [link](https://www.researchgate.net/project/Theory-of-Functional-Connections) for a complete list of TFC publications with free downloadable PDFs.
+Any users interested in the theory behind this method should start with this [journal article](https://www.mdpi.com/2227-7390/8/8/1303); note that the article is open access, so you should be able to download it for free. The curious user can continue their study of the theory by visiting the [TFC article repository](https://www.researchgate.net/project/Theory-of-Functional-Connections) on ResearchGate for a complete list of TFC publications with free downloadable PDFs.
 
 ## Citing this repository:
 The authors of this repsitory and the associated theory have gone to lengths to ensure that both are publicy available at no cost to the user. All that we ask in return is that if you use them, please add a reference to this GitHub and following journal article. Thank you.
