@@ -76,4 +76,5 @@ p.ax[0].plot_surface(X,Y,real(X,Y,0.5*np.ones_like(X)),cmap=cm.gist_rainbow,anti
 p.ax[0].xaxis.labelpad = 20
 p.ax[0].yaxis.labelpad = 20
 p.ax[0].zaxis.labelpad = 20
+p.PartScreen(8,7)
 p.show()
