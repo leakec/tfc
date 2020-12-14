@@ -79,4 +79,5 @@ p1.ax[0].locator_params(axis='both',tight=True)
 p1.ax[0].grid(True,which='both')
 [line.set_zorder(0) for line in p1.ax[0].lines]
 mTicks = p1.ax[0].xaxis.get_minor_ticks()
+p1.PartScreen(11,8)
 p1.show()
