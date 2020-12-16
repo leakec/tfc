@@ -103,6 +103,11 @@ for k in range(4):
     p.ax[k].view_init(azim=azim[k],elev=elev[k])
     if not k == 4:
         p.ax[k].set_proj_type('ortho')
+
+p.ax[1].tick_params(axis='both', which='major', pad=8)
+p.ax[1].xaxis.labelpad = 10
+p.ax[1].yaxis.labelpad = 10
+
 p.ax[0].set_yticklabels([])
 p.ax[1].set_zticklabels([])
 p.ax[2].set_xticklabels([])

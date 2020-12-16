@@ -31,6 +31,7 @@ p[0].ax[0].plot_surface(*dark,U,cmap=cm.gist_rainbow,antialiased=False,rcount=n,
 p[0].ax[0].plot(np.zeros_like(x),y,np.cos(np.pi*y),'k',linewidth=4.,zorder=3)
 p[1].ax[0].plot_surface(*dark,V,cmap=cm.gist_rainbow,antialiased=False,rcount=n,ccount=n)
 p[1].ax[0].plot(np.zeros_like(x),y,5.-np.cos(np.pi*y),'k',linewidth=4.,zorder=3)
+p[1].ax[0].tick_params(axis='z', which='major', pad=8)
 for k in range(2):
     p[k].ax[0].xaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
     p[k].ax[0].yaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
@@ -39,5 +40,7 @@ for k in range(2):
     p[k].ax[0].yaxis.labelpad = 20
     p[k].ax[0].zaxis.labelpad = 15
     p[k].ax[0].view_init(30.,-135.)
+    p[k].ax[0].zaxis.set_rotate_label(False)
+    p[k].ax[0].zaxis.label.set_rotation(95)
     p[k].PartScreen(8,7)
     p[k].show()

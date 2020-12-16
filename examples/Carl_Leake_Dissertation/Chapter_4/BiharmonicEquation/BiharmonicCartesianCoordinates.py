@@ -77,8 +77,11 @@ print("Mean Error: "+str(np.mean(err)))
 # Plot the analytical solution
 p = MakePlot(r'$x$',r'$y$',zlabs=r'$u(x,y)$')
 p.ax[0].plot_surface(xTest[0].reshape((nTest,nTest)),xTest[1].reshape((nTest,nTest)),real(*xTest).reshape((nTest,nTest)),cmap=cm.gist_rainbow)
+
+p.ax[0].tick_params(axis='z', which='major', pad=10)
 p.ax[0].xaxis.labelpad = 20
 p.ax[0].yaxis.labelpad = 20
 p.ax[0].zaxis.labelpad = 20
+
 p.FullScreen()
 p.show()
