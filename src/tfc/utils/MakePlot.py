@@ -15,8 +15,8 @@ from .TFCUtils import TFCPrint
 TFCPrint()
 
 class MakePlot():
-""" This class is used to easily create journal-article-ready plots and subplots. The class can create 2D as well as 3D plots
-and even has support for twin y-axes."""
+    """ This class is used to easily create journal-article-ready plots and subplots. The class can create 2D as well as 3D plots
+    and even has support for twin y-axes."""
 
     def __init__(self,xlabs,ylabs,twinYlabs=None,titles=None,zlabs=None,name='name'):
         """ This function initializes subplots based on the inputs provided. """
@@ -170,7 +170,7 @@ and even has support for twin y-axes."""
 
     def save(self,fileName,transparent=True,fileType='pdf'):
         """ This function crops and saves the figure. """
-        self.fig.savefig(fileName+'.'+fileType, bbox_inches='tight', pad_inches = 0, dpi = 300, format=fileType, transparent=transparent)
+        self.fig.savefig(fileName+'.'+fileType, bbox_inches='tight', pad_inches = 0.05, dpi = 300, format=fileType, transparent=transparent)
 
     def savePickle(self,fileName):
         """ This function saves the figure in a pickle format so it can be opened and modified later. """
