@@ -269,7 +269,7 @@ def test_nELMSwish():
     assert(np.linalg.norm(Fc1-Fp1,ord='fro') < 1e-14)
     assert(np.linalg.norm(Fc2-Fp2,ord='fro') < 1e-12)
 
-def test_nELMSwish():
+def test_nELMReLU():
     dim = 2
     nC = -1*np.ones(1,dtype=np.int32)
     d = np.zeros(dim,dtype=np.int32)
