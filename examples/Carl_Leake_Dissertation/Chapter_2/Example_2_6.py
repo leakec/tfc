@@ -1,6 +1,9 @@
 from matplotlib import cm
+from mayavi import mlab
+
 import jax.numpy as np
 from tfc.utils import egrad, MakePlot
+from tfc.utils.MayaviMakePlot import MakePlot as MP
 
 # Constants
 n = 100
@@ -47,4 +50,20 @@ p.ax[0].yaxis.labelpad = 20
 p.ax[0].zaxis.labelpad = 20
 p.FullScreen()
 p.show()
+
+p1 = MP()
+mesh = p1.mesh(*dark,U.reshape((n,n)),colormap='jet')
+mlab.axes(mesh)
+p1.plot3d(x[ind1],y[ind1],c1(y[ind1]),color='b',tube_radius=0.01)
+p1.plot3d(x[ind2],y[ind2],U[ind2],color='m',tube_radius=0.01)
+p1.plot3d(x[ind3],y[ind3],U[ind2],color='m',tube_radius=0.01)
+for k,el in enumerate(ind2):
+    if not k%5:
+        p1.plot3d([x[el],]*2,
+                 [0.,0.1],
+                 [u(x[el],0.),]*2,
+                 color='k',tube_radius=0.01)
+p1.show_axes = True
+p1.view(azimuth=-140,elevation=30)
+p1.show()
 
