@@ -2,7 +2,6 @@ import os
 import pickle
 import numpy as np
 
-import matplotlib as matplotlib
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -163,6 +162,10 @@ class MakePlot():
         """ This function shows the plot. """
         self.fig.show()
 
+    def draw(self):
+        """ This function draws the canvas. """
+        self.fig.canvas.draw()
+
     def save(self,fileName,transparent=True,fileType='pdf'):
         """ This function crops and saves the figure. """
         self.fig.savefig(fileName+'.'+fileType, bbox_inches='tight', pad_inches = 0.05, dpi = 300, format=fileType, transparent=transparent)
@@ -175,3 +178,24 @@ class MakePlot():
         """ This function invokes the save and savePickle functions. """
         self.save(fileName,transparent=transparent,fileType=fileType)
         self.savePickle(fileName)
+
+    def animate(self,animFunc,outDir='MyMovie',fileName='images',save=True,delay=10):
+        """ Creates an animation using a Python generator. """
+
+        iterable = animFunc()
+
+        if save:
+            if not os.path.exists(outDir):
+                os.mkdir(outDir)
+            k = 0
+
+            while next(iterable,-1) != -1:
+                plt.pause(delay/1000.)
+                fileNameFull = '{}{:0>6d}'.format(fileName,k)
+                self.save(os.path.join(outDir,fileNameFull),fileType='png')
+                k += 1
+
+            print('ffmpeg -r 60 -i ./{0}/{1}%06d.png -c:v libx264 -profile:v high -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" ./{0}/MyMovie.mp4'.format(outDir,fileName))
+        else:
+            while next(iterable,-1) != -1:
+                plt.pause(delay/1000.)
