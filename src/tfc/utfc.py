@@ -37,12 +37,12 @@ class utfc:
         self.N = N
         self.deg = deg
 
-        if isinstance(nC,np.ndarray):
+        if isinstance(nC,int):
+            self.nC = onp.arange(nC,dtype=onp.int32)
+        elif isinstance(nC,np.ndarray):
             self.nC = nC
         elif isinstance(nC,list):
             self.nC = np.array(nC)
-        else:
-            self.nC = np.arange(nC)
         if self.nC.shape[0] > self.deg:
             TFCPrint.Error("Number of basis functions is less than number of constraints!")
 
