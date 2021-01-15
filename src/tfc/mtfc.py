@@ -82,14 +82,16 @@ class mtfc:
 
         # Create nC matrix based on user input
         if basis in self._elm_classes:
-            if isinstance(nC,np.ndarray):
+            if isinstance(nC,int):
+                self.nC = onp.arange(nC,dtype=onp.int32)
+            elif isinstance(nC,np.ndarray):
                 self.nC = nC
             elif isinstance(nC,list):
                 self.nC = np.array(nC)
-            else:
-                self.nC = np.arange(nC)
             if self.nC.shape[0] > self.deg:
                 TFCPrint.Error("Number of basis functions is less than number of constraints!")
+            if np.any(self.nC < 0):
+                TFCPrint.Error("To set nC to -1 (no constraints) either use nC = -1 or nC = 0 (i.e., use an integer not a list or array). Do not put only -1 in a list or array, this will cause issues in the C++ layer.")
         else:
             if isinstance(nC,np.ndarray) and len(nC.shape) > 1:
                 if not nC.shape[0] == self.dim:
