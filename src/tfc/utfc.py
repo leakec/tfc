@@ -45,6 +45,8 @@ class utfc:
             self.nC = np.array(nC)
         if self.nC.shape[0] > self.deg:
             TFCPrint.Error("Number of basis functions is less than number of constraints!")
+        if np.any(self.nC < 0):
+            TFCPrint.Error("To set nC to -1 (no constraints) either use nC = -1 or nC = 0 (i.e., use an integer not a list or array). Do not put only -1 in a list or array, this will cause issues in the C++ layer.")
 
         self.basis = basis
 
