@@ -7,7 +7,8 @@ from collections import OrderedDict
 from functools import partial
 
 from jax.config import config
-config.update('jax_enable_x64', True)
+
+config.update("jax_enable_x64", True)
 import numpy as onp
 import jax.numpy as np
 from jax import jvp, jit, lax, jacfwd
@@ -18,52 +19,67 @@ from jax.interpreters.partial_eval import JaxprTracer
 ##
 # This class is used to print to the terminal in color.
 class TFCPrint:
-
     def __init__(self):
         """ This function is the constructor. It initializes the colorama class. """
         initColorama()
 
     @staticmethod
     def Error(stringIn):
-        """ This function prints errors. It prints the text in 'stringIn' in bright red and
-            exits the program."""
-        print(fg.RED+style.BRIGHT+stringIn)
-        print(style.RESET_ALL,end="")
+        """This function prints errors. It prints the text in 'stringIn' in bright red and
+        exits the program."""
+        print(fg.RED + style.BRIGHT + stringIn)
+        print(style.RESET_ALL, end="")
         sys.exit()
 
     @staticmethod
     def Warning(stringIn):
         """ This function prints warnings. It prints the text in 'stringIn' in bright yellow."""
-        print(fg.YELLOW+style.BRIGHT+stringIn)
-        print(style.RESET_ALL,end="")
+        print(fg.YELLOW + style.BRIGHT + stringIn)
+        print(style.RESET_ALL, end="")
 
-def egrad(g,j=0):
-        """ This function mimics egrad from autograd. """
-        def wrapped(*args):
-            tans = tuple([onp.ones(args[i].shape) if i == j else onp.zeros(args[i].shape) for i in range(len(args)) ])
-            _,x_bar = jvp(g,args,tans)
-            return x_bar
-        return wrapped
+
+def egrad(g, j=0):
+    """ This function mimics egrad from autograd. """
+
+    def wrapped(*args):
+        tans = tuple(
+            [
+                onp.ones(args[i].shape) if i == j else onp.zeros(args[i].shape)
+                for i in range(len(args))
+            ]
+        )
+        _, x_bar = jvp(g, args, tans)
+        return x_bar
+
+    return wrapped
+
 
 @partial(partial, tree_multimap)
 def onesRobust(val):
     """ Returns ones_like val, but can handle arrays and dictionaries. """
     return onp.ones(val.shape)
 
+
 @partial(partial, tree_multimap)
 def zerosRobust(val):
     """ Returns zeros_like val, but can handle arrays and dictionaries. """
     return onp.zeros(val.shape)
 
-def egradRobust(g,j=0):
+
+def egradRobust(g, j=0):
     """ This function mimics egrad from autograd, but can also handle dictionaries. """
-    if g.__qualname__ == 'jit.<locals>.f_jitted':
+    if g.__qualname__ == "jit.<locals>.f_jitted":
         g = g.__wrapped__
+
     def wrapped(*args):
-        tans = tuple([onesRobust(args[i]) if i == j else zerosRobust(args[i]) for i in range(len(args)) ])
-        _,x_bar = jvp(g,args,tans)
+        tans = tuple(
+            [onesRobust(args[i]) if i == j else zerosRobust(args[i]) for i in range(len(args))]
+        )
+        _, x_bar = jvp(g, args, tans)
         return x_bar
+
     return wrapped
+
 
 ##
 # This is the TFC dictionary class. It extends an OrderedDict and
@@ -72,8 +88,7 @@ def egradRobust(g,j=0):
 #   - Turning a dictionary into a 1-D array
 #   - Turning a 1-D array into a dictionary
 class TFCDict(OrderedDict):
-
-    def __init__(self,*args):
+    def __init__(self, *args):
         """ Initialize TfcDict using the OrderedDict method. """
 
         # Store dictionary and keep a record of the keys. Keys will stay in same
@@ -85,20 +100,24 @@ class TFCDict(OrderedDict):
 
     def getSlices(self):
         """ Function that creates slices for each of the keys in the dictionary. """
-        if all(isinstance(value,np.ndarray) for value in self.values()):
+        if all(isinstance(value, np.ndarray) for value in self.values()):
             arrLen = 0
-            self._slices = [slice(0,0,1),]*self._nKeys
+            self._slices = [
+                slice(0, 0, 1),
+            ] * self._nKeys
             start = 0
             stop = 0
             for k in range(self._nKeys):
                 start = stop
                 arrLen = self[self._keys[k]].shape[0]
                 stop = start + arrLen
-                self._slices[k] = slice(start,stop,1)
+                self._slices[k] = slice(start, stop, 1)
         else:
-            self._slices = [None,]*self._nKeys
+            self._slices = [
+                None,
+            ] * self._nKeys
 
-    def update(self,*args):
+    def update(self, *args):
         """ Overload the update method to update the _keys variable as well. """
         super().update(*args)
         self._keys = list(self.keys())
@@ -109,73 +128,75 @@ class TFCDict(OrderedDict):
         """ Send dictionary to a flat JAX array. """
         return np.hstack([self[self._keys[k]] for k in range(self._nKeys)])
 
-    def toDict(self,arr):
+    def toDict(self, arr):
         """ Send a flat JAX array to a TfcDict with the same keys."""
         arr = arr.flatten()
-        return TFCDict(zip(self._keys,[arr[self._slices[k]] for k in range(self._nKeys)]))
+        return TFCDict(zip(self._keys, [arr[self._slices[k]] for k in range(self._nKeys)]))
 
     def block_until_ready(self):
-        """ Mimics block_until_ready for jax arrays. Used to halt the program until the computation that created the 
-            dictionary is finished. """
+        """Mimics block_until_ready for jax arrays. Used to halt the program until the computation that created the
+        dictionary is finished."""
         self[self._keys[0]].block_until_ready()
         return self
 
-    def __iadd__(self,o):
+    def __iadd__(self, o):
         """ Used to overload "+=" for TfcDict so that 2 TfcDict's can be added together."""
-        if isinstance(o,dict) or (type(o) is type(self)):
+        if isinstance(o, dict) or (type(o) is type(self)):
             for key in self._keys:
                 self[key] += o[key]
-        elif isinstance(o,np.ndarray):
+        elif isinstance(o, np.ndarray):
             o = o.flatten()
             for k in range(self._nKeys):
                 self[self._keys[k]] += o[self._slices[k]]
         return self
 
-    def __isub__(self,o):
+    def __isub__(self, o):
         """ Used to overload "-=" for TfcDict so that 2 TfcDict's can be subtracted."""
-        if isinstance(o,dict) or (type(o) is type(self)):
+        if isinstance(o, dict) or (type(o) is type(self)):
             for key in self._keys:
                 self[key] -= o[key]
-        elif isinstance(o,np.ndarray):
+        elif isinstance(o, np.ndarray):
             o = o.flatten()
             for k in range(self._nKeys):
                 self[self._keys[k]] -= o[self._slices[k]]
         return self
 
-    def __add__(self,o):
+    def __add__(self, o):
         """ Used to overload "+" for TfcDict so that 2 TfcDict's can be added together."""
         out = TFCDict(self)
-        if isinstance(o,dict) or (type(o) is type(self)):
+        if isinstance(o, dict) or (type(o) is type(self)):
             for key in self._keys:
                 out[key] += o[key]
-        elif isinstance(o,np.ndarray):
+        elif isinstance(o, np.ndarray):
             o = o.flatten()
             for k in range(self._nKeys):
                 out[self._keys[k]] += o[self._slices[k]]
         return out
 
-    def __sub__(self,o):
+    def __sub__(self, o):
         """ Used to overload "-" for TfcDict so that 2 TfcDict's can be subtracted."""
         out = TFCDict(self)
-        if isinstance(o,dict) or (type(o) is type(self)):
+        if isinstance(o, dict) or (type(o) is type(self)):
             for key in self._keys:
                 out[key] -= o[key]
-        elif isinstance(o,np.ndarray):
+        elif isinstance(o, np.ndarray):
             o = o.flatten()
             for k in range(self._nKeys):
                 out[self._keys[k]] -= o[self._slices[k]]
         return out
 
+
 # Register TFCDict as a JAX type
 register_pytree_node(
-  TFCDict,
-  lambda x: (list(x.values()), list(x.keys())),
-  lambda keys, values: TFCDict(safe_zip(keys, values)))
+    TFCDict,
+    lambda x: (list(x.values()), list(x.keys())),
+    lambda keys, values: TFCDict(safe_zip(keys, values)),
+)
 
 ##
 # This class is like the TFCDict class, but it handles non-flat arrays.
 class TFCDictRobust(OrderedDict):
-    def __init__(self,*args):
+    def __init__(self, *args):
         """ Initialize TFCDictRobust using the OrderedDict method. """
 
         # Store dictionary and keep a record of the keys. Keys will stay in same
@@ -187,20 +208,24 @@ class TFCDictRobust(OrderedDict):
 
     def getSlices(self):
         """ Function that creates slices for each of the keys in the dictionary. """
-        if all(isinstance(value,np.ndarray) for value in self.values()):
+        if all(isinstance(value, np.ndarray) for value in self.values()):
             arrLen = 0
-            self._slices = [slice(0,0,1),]*self._nKeys
+            self._slices = [
+                slice(0, 0, 1),
+            ] * self._nKeys
             start = 0
             stop = 0
             for k in range(self._nKeys):
                 start = stop
                 arrLen = self[self._keys[k]].flatten().shape[0]
                 stop = start + arrLen
-                self._slices[k] = slice(start,stop,1)
+                self._slices[k] = slice(start, stop, 1)
         else:
-            self._slices = [None,]*self._nKeys
+            self._slices = [
+                None,
+            ] * self._nKeys
 
-    def update(self,*args):
+    def update(self, *args):
         """ Overload the update method to update the _keys variable as well. """
         super().update(*args)
         self._keys = list(self.keys())
@@ -211,73 +236,83 @@ class TFCDictRobust(OrderedDict):
         """ Send dictionary to a flat JAX array. """
         return np.hstack([self[self._keys[k]].flatten() for k in range(self._nKeys)])
 
-    def toDict(self,arr):
+    def toDict(self, arr):
         """ Send a flat JAX array to a TfcDict with the same keys."""
         arr = arr.flatten()
-        return TFCDictRobust(zip(self._keys,[arr[self._slices[k]].reshape(self[self._keys[k]].shape) for k in range(self._nKeys)]))
+        return TFCDictRobust(
+            zip(
+                self._keys,
+                [
+                    arr[self._slices[k]].reshape(self[self._keys[k]].shape)
+                    for k in range(self._nKeys)
+                ],
+            )
+        )
 
     def block_until_ready(self):
-        """ Mimics block_until_ready for jax arrays. Used to halt the program until the computation that created the 
-            dictionary is finished. """
+        """Mimics block_until_ready for jax arrays. Used to halt the program until the computation that created the
+        dictionary is finished."""
         self[self._keys[0]].block_until_ready()
         return self
 
-    def __iadd__(self,o):
+    def __iadd__(self, o):
         """ Used to overload "+=" for TfcDict so that 2 TfcDict's can be added together."""
-        if isinstance(o,dict) or (type(o) is type(self)):
+        if isinstance(o, dict) or (type(o) is type(self)):
             for key in self._keys:
                 self[key] += o[key]
-        elif isinstance(o,np.ndarray):
+        elif isinstance(o, np.ndarray):
             o = o.flatten()
             for k in range(self._nKeys):
                 self[self._keys[k]] += o[self._slices[k]].reshape(self[self._keys[k]].shape)
         return self
 
-    def __isub__(self,o):
+    def __isub__(self, o):
         """ Used to overload "-=" for TfcDict so that 2 TfcDict's can be subtracted."""
-        if isinstance(o,dict) or (type(o) is type(self)):
+        if isinstance(o, dict) or (type(o) is type(self)):
             for key in self._keys:
                 self[key] -= o[key]
-        elif isinstance(o,np.ndarray):
+        elif isinstance(o, np.ndarray):
             o = o.flatten()
             for k in range(self._nKeys):
                 self[self._keys[k]] -= o[self._slices[k]].reshape(self[self._keys[k]].shape)
         return self
 
-    def __add__(self,o):
+    def __add__(self, o):
         """ Used to overload "+" for TfcDict so that 2 TfcDict's can be added together."""
         out = TFCDictRobust(self)
-        if isinstance(o,dict) or (type(o) is type(self)):
+        if isinstance(o, dict) or (type(o) is type(self)):
             for key in self._keys:
                 out[key] += o[key]
-        elif isinstance(o,np.ndarray):
+        elif isinstance(o, np.ndarray):
             o = o.flatten()
             for k in range(self._nKeys):
                 out[self._keys[k]] += o[self._slices[k]].reshape(self[self._keys[k]].shape)
         return out
 
-    def __sub__(self,o):
+    def __sub__(self, o):
         """ Used to overload "-" for TfcDict so that 2 TfcDict's can be subtracted."""
         out = TFCDictRobust(self)
-        if isinstance(o,dict) or (type(o) is type(self)):
+        if isinstance(o, dict) or (type(o) is type(self)):
             for key in self._keys:
                 out[key] -= o[key]
-        elif isinstance(o,np.ndarray):
+        elif isinstance(o, np.ndarray):
             o = o.flatten()
             for k in range(self._nKeys):
                 out[self._keys[k]] -= o[self._slices[k]].reshape(self[self._keys[k]].shape)
         return out
 
+
 # Register TFCDictRobust as a JAX type
 register_pytree_node(
-  TFCDictRobust,
-  lambda x: (list(x.values()), list(x.keys())),
-  lambda keys, values: TFCDictRobust(safe_zip(keys, values)))
+    TFCDictRobust,
+    lambda x: (list(x.values()), list(x.keys())),
+    lambda keys, values: TFCDictRobust(safe_zip(keys, values)),
+)
 
 ## JIT-ed least squares.
 # This function takes in an initial guess of zeros, zXi, and a residual function, res, and
 # linear least squares to minimize the res function using the parameters
-# xi. 
+# xi.
 #
 # The outputs of this function are:
 # 1. xi: The values of xi that minimize the residual.
@@ -294,110 +329,137 @@ register_pytree_node(
 #          adds a slight increase in runtime. As one iteration of the non-linear least squares
 #          is run first to avoid timining the JAX trace. The default is False.
 
-def LS(zXi,res,*args,J=None,method='pinv',timer=False,timerType='process_time'):
 
-    if isinstance(zXi,TFCDict) or isinstance(zXi,TFCDictRobust):
+def LS(zXi, res, *args, J=None, method="pinv", timer=False, timerType="process_time"):
+
+    if isinstance(zXi, TFCDict) or isinstance(zXi, TFCDictRobust):
         dictFlag = True
     else:
         dictFlag = False
 
     if J is None:
         if dictFlag:
-            if isinstance(zXi,TFCDictRobust):
-                def J(xi,*args):
-                    jacob = jacfwd(res,0)(xi,*args)
-                    return np.hstack([jacob[k].reshape(jacob[k].shape[0],onp.prod(onp.array(xi[k].shape))) for k in xi.keys()])
-            else:
-                def J(xi,*args):
-                    jacob = jacfwd(res,0)(xi,*args)
-                    return np.hstack([jacob[k] for k in xi.keys()])
-        else:
-            J = lambda xi,*args: jacfwd(res,0)(xi,*args)
+            if isinstance(zXi, TFCDictRobust):
 
-    if method == 'pinv':
-        ls = jit(lambda xi,*args: np.dot(np.linalg.pinv(J(xi,*args)),-res(xi,*args)))
-    elif method == 'lstsq':
-        ls = jit(lambda xi,*args: np.linalg.lstsq(J(xi,*args),-res(xi,*args),rcond=None)[0])
+                def J(xi, *args):
+                    jacob = jacfwd(res, 0)(xi, *args)
+                    return np.hstack(
+                        [
+                            jacob[k].reshape(jacob[k].shape[0], onp.prod(onp.array(xi[k].shape)))
+                            for k in xi.keys()
+                        ]
+                    )
+
+            else:
+
+                def J(xi, *args):
+                    jacob = jacfwd(res, 0)(xi, *args)
+                    return np.hstack([jacob[k] for k in xi.keys()])
+
+        else:
+            J = lambda xi, *args: jacfwd(res, 0)(xi, *args)
+
+    if method == "pinv":
+        ls = jit(lambda xi, *args: np.dot(np.linalg.pinv(J(xi, *args)), -res(xi, *args)))
+    elif method == "lstsq":
+        ls = jit(lambda xi, *args: np.linalg.lstsq(J(xi, *args), -res(xi, *args), rcond=None)[0])
     else:
         TFCPrint.Error("The method entered is not valid. Please enter a valid method.")
 
     if timer:
         import time
-        timer = getattr(time,timerType)
-        ls(zXi,*args).block_until_ready()
+
+        timer = getattr(time, timerType)
+        ls(zXi, *args).block_until_ready()
 
         start = timer()
-        xi = ls(zXi,*args).block_until_ready()
+        xi = ls(zXi, *args).block_until_ready()
         stop = timer()
         zXi += xi
 
-        return zXi,stop-start
+        return zXi, stop - start
     else:
-        zXi += ls(zXi,*args)
+        zXi += ls(zXi, *args)
         return zXi
 
+
 ## JIT-ed linear least-squares class.
-# Like the LS function, but it is in class form so that the run methd can be called multiple times w/o re-JITing 
+# Like the LS function, but it is in class form so that the run methd can be called multiple times w/o re-JITing
+
 
 class LsClass:
-
-    def __init__(self,zXi,res,J=None,method='pinv',timer=False,timerType='process_time'):
+    def __init__(self, zXi, res, J=None, method="pinv", timer=False, timerType="process_time"):
         """ Initialization function. Creates the JIT-ed least-squares function. """
 
         self.timerType = timerType
         self.timer = timer
 
-        if isinstance(zXi,TFCDict) or isinstance(zXi,TFCDictRobust):
+        if isinstance(zXi, TFCDict) or isinstance(zXi, TFCDictRobust):
             dictFlag = True
         else:
             dictFlag = False
 
         if J is None:
             if dictFlag:
-                if isinstance(zXi,TFCDictRobust):
-                    def J(xi,*args):
-                        jacob = jacfwd(res,0)(xi,*args)
-                        return np.hstack([jacob[k].reshape(jacob[k].shape[0],onp.prod(onp.array(xi[k].shape))) for k in xi.keys()])
-                else:
-                    def J(xi,*args):
-                        jacob = jacfwd(res,0)(xi,*args)
-                        return np.hstack([jacob[k] for k in xi.keys()])
-            else:
-                J = lambda xi,*args: jacfwd(res,0)(xi,*args)
+                if isinstance(zXi, TFCDictRobust):
 
-        if method == 'pinv':
-            self._ls = jit(lambda xi,*args: np.dot(np.linalg.pinv(J(xi,*args)),-res(xi,*args)))
-        elif method == 'lstsq':
-            self._ls = jit(lambda xi,*args: np.linalg.lstsq(J(xi,*args),-res(xi,*args),rcond=None)[0])
+                    def J(xi, *args):
+                        jacob = jacfwd(res, 0)(xi, *args)
+                        return np.hstack(
+                            [
+                                jacob[k].reshape(
+                                    jacob[k].shape[0], onp.prod(onp.array(xi[k].shape))
+                                )
+                                for k in xi.keys()
+                            ]
+                        )
+
+                else:
+
+                    def J(xi, *args):
+                        jacob = jacfwd(res, 0)(xi, *args)
+                        return np.hstack([jacob[k] for k in xi.keys()])
+
+            else:
+                J = lambda xi, *args: jacfwd(res, 0)(xi, *args)
+
+        if method == "pinv":
+            self._ls = jit(lambda xi, *args: np.dot(np.linalg.pinv(J(xi, *args)), -res(xi, *args)))
+        elif method == "lstsq":
+            self._ls = jit(
+                lambda xi, *args: np.linalg.lstsq(J(xi, *args), -res(xi, *args), rcond=None)[0]
+            )
         else:
             TFCPrint.Error("The method entered is not valid. Please enter a valid method.")
 
         self._compiled = False
 
-    def run(self,zXi,*args):
+    def run(self, zXi, *args):
         """ Runs the JIT-ed least-squares function and times it if desired. """
 
         if self.timer:
             import time
-            timer = getattr(time,self.timerType)
+
+            timer = getattr(time, self.timerType)
 
             if not self._compiled:
-                self._ls(zXi,*args).block_until_ready()
+                self._ls(zXi, *args).block_until_ready()
                 self._compiled = True
 
             start = timer()
-            xi = self._ls(zXi,*args).block_until_ready()
+            xi = self._ls(zXi, *args).block_until_ready()
             stop = timer()
             zXi += xi
 
-            return zXi,stop-start
+            return zXi, stop - start
 
         else:
-            zXi += ls(zXi,*args)
+            zXi += ls(zXi, *args)
 
             self._compiled = True
 
             return zXi
+
 
 ## JIT-ed non-linear least squares.
 # This function takes in an initial guess, xiInit (initial values of xi), and a residual function, res, and
@@ -431,60 +493,100 @@ class LsClass:
 # - printOut: Currently this option is not implemented. If JAX allows printing in JIT-ed functions,
 #             then it will dislpay the value of max(abs(res)) at each iteration.
 
-def NLLS(xiInit,res,*args,J=None,cond=None,body=None,tol=1e-13,maxIter=50,method='pinv',timer=False,printOut=False,timerType='process_time'):
+
+def NLLS(
+    xiInit,
+    res,
+    *args,
+    J=None,
+    cond=None,
+    body=None,
+    tol=1e-13,
+    maxIter=50,
+    method="pinv",
+    timer=False,
+    printOut=False,
+    timerType="process_time"
+):
 
     if timer and printOut:
-        TFCPrint.Warning("Warning, you have both the timer and printer on in the nonlinear least-squares.\nThe time will be longer than optimal due to the printout.")
+        TFCPrint.Warning(
+            "Warning, you have both the timer and printer on in the nonlinear least-squares.\nThe time will be longer than optimal due to the printout."
+        )
     if printOut:
-        TFCPrint.Warning("Warning, printing is not yet supported. You're going to get a garbage printout.")
+        TFCPrint.Warning(
+            "Warning, printing is not yet supported. You're going to get a garbage printout."
+        )
 
-    if isinstance(xiInit,TFCDict) or isinstance(xiInit,TFCDictRobust):
+    if isinstance(xiInit, TFCDict) or isinstance(xiInit, TFCDictRobust):
         dictFlag = True
     else:
         dictFlag = False
 
     def cond(val):
-        return np.all(np.array([
-                    np.max(np.abs(res(val['xi'],*val['args']))) > tol,
-                    val['it'] < maxIter,
-                    np.max(np.abs(val['dxi'])) > tol]))
+        return np.all(
+            np.array(
+                [
+                    np.max(np.abs(res(val["xi"], *val["args"]))) > tol,
+                    val["it"] < maxIter,
+                    np.max(np.abs(val["dxi"])) > tol,
+                ]
+            )
+        )
 
     if J is None:
         if dictFlag:
-            if isinstance(xiInit,TFCDictRobust):
-                def J(xi,*args):
-                    jacob = jacfwd(res,0)(xi,*args)
-                    return np.hstack([jacob[k].reshape(jacob[k].shape[0],onp.prod(onp.array(xi[k].shape))) for k in xi.keys()])
-            else:
-                def J(xi,*args):
-                    jacob = jacfwd(res,0)(xi,*args)
-                    return np.hstack([jacob[k] for k in xi.keys()])
-        else:
-            J = lambda xi,*args: jacfwd(res,0)(xi,*args)
+            if isinstance(xiInit, TFCDictRobust):
 
-    if method == 'pinv':
-        LS = lambda xi,*args: np.dot(np.linalg.pinv(J(xi,*args)),res(xi,*args))
-    elif method == 'lstsq':
-        LS = lambda xi,*args: np.linalg.lstsq(J(xi,*args),res(xi,*args),rcond=None)[0]
+                def J(xi, *args):
+                    jacob = jacfwd(res, 0)(xi, *args)
+                    return np.hstack(
+                        [
+                            jacob[k].reshape(jacob[k].shape[0], onp.prod(onp.array(xi[k].shape)))
+                            for k in xi.keys()
+                        ]
+                    )
+
+            else:
+
+                def J(xi, *args):
+                    jacob = jacfwd(res, 0)(xi, *args)
+                    return np.hstack([jacob[k] for k in xi.keys()])
+
+        else:
+            J = lambda xi, *args: jacfwd(res, 0)(xi, *args)
+
+    if method == "pinv":
+        LS = lambda xi, *args: np.dot(np.linalg.pinv(J(xi, *args)), res(xi, *args))
+    elif method == "lstsq":
+        LS = lambda xi, *args: np.linalg.lstsq(J(xi, *args), res(xi, *args), rcond=None)[0]
     else:
         TFCPrint.Error("The method entered is not valid. Please enter a valid method.")
 
     if body is None:
         if printOut:
+
             def body(val):
-                val['dxi'] = LS(val['xi'],*val['args'])
-                val['xi'] -= val['dxi']
-                val['it'] += 1
-                print("Iteration "+str(val['it'])+":\tMax Residual: "+str(np.max(np.abs(res(val['xi'])))))
-                return val
-        else:
-            def body(val):
-                val['dxi'] = LS(val['xi'],*val['args'])
-                val['xi'] -= val['dxi']
-                val['it'] += 1
+                val["dxi"] = LS(val["xi"], *val["args"])
+                val["xi"] -= val["dxi"]
+                val["it"] += 1
+                print(
+                    "Iteration "
+                    + str(val["it"])
+                    + ":\tMax Residual: "
+                    + str(np.max(np.abs(res(val["xi"]))))
+                )
                 return val
 
-    nlls = jit(lambda val: lax.while_loop(cond,body,val))
+        else:
+
+            def body(val):
+                val["dxi"] = LS(val["xi"], *val["args"])
+                val["xi"] -= val["dxi"]
+                val["it"] += 1
+                return val
+
+    nlls = jit(lambda val: lax.while_loop(cond, body, val))
     if dictFlag:
         dxi = np.ones_like(xiInit.toArray())
     else:
@@ -492,29 +594,44 @@ def NLLS(xiInit,res,*args,J=None,cond=None,body=None,tol=1e-13,maxIter=50,method
 
     if timer:
         import time
-        timer = getattr(time,timerType)
-        val = {'xi':xiInit,'dxi':dxi,'it':maxIter-1,'args':args}
-        nlls(val)['dxi'].block_until_ready()
 
-        val = {'xi':xiInit,'dxi':dxi,'it':0,'args':args}
+        timer = getattr(time, timerType)
+        val = {"xi": xiInit, "dxi": dxi, "it": maxIter - 1, "args": args}
+        nlls(val)["dxi"].block_until_ready()
+
+        val = {"xi": xiInit, "dxi": dxi, "it": 0, "args": args}
 
         start = timer()
         val = nlls(val)
-        val['dxi'].block_until_ready()
+        val["dxi"].block_until_ready()
         stop = timer()
 
-        return val['xi'],val['it'],stop-start
+        return val["xi"], val["it"], stop - start
     else:
-        val = {'xi':xiInit,'dxi':dxi,'it':0,'args':args}
+        val = {"xi": xiInit, "dxi": dxi, "it": 0, "args": args}
         val = nlls(val)
-        return val['xi'],val['it']
+        return val["xi"], val["it"]
+
 
 ## JIT-ed non-linear least squares class.
-# Like the NLLS function, but it is in class form so that the run methd can be called multiple times w/o re-JITing 
+# Like the NLLS function, but it is in class form so that the run methd can be called multiple times w/o re-JITing
+
 
 class NllsClass:
-
-    def __init__(self,xiInit,res,J=None,cond=None,body=None,tol=1e-13,maxIter=50,method='pinv',timer=False,printOut=False,timerType='process_time'):
+    def __init__(
+        self,
+        xiInit,
+        res,
+        J=None,
+        cond=None,
+        body=None,
+        tol=1e-13,
+        maxIter=50,
+        method="pinv",
+        timer=False,
+        printOut=False,
+        timerType="process_time",
+    ):
         """ Initialization function. Creates the JIT-ed nonlinear least-squares function. """
 
         self.timerType = timerType
@@ -522,60 +639,88 @@ class NllsClass:
         self._maxIter = maxIter
 
         if timer and printOut:
-            TFCPrint.Warning("Warning, you have both the timer and printer on in the nonlinear least-squares.\nThe time will be longer than optimal due to the printout.")
+            TFCPrint.Warning(
+                "Warning, you have both the timer and printer on in the nonlinear least-squares.\nThe time will be longer than optimal due to the printout."
+            )
         if printOut:
-            TFCPrint.Warning("Warning, printing is not yet supported. You're going to get a garbage printout.")
+            TFCPrint.Warning(
+                "Warning, printing is not yet supported. You're going to get a garbage printout."
+            )
 
-        if isinstance(xiInit,TFCDict) or isinstance(xiInit,TFCDictRobust):
+        if isinstance(xiInit, TFCDict) or isinstance(xiInit, TFCDictRobust):
             self._dictFlag = True
         else:
             self._dictFlag = False
 
         def cond(val):
-            return np.all(np.array([
-                        np.max(np.abs(res(val['xi'],*val['args']))) > tol,
-                        val['it'] < maxIter,
-                        np.max(np.abs(val['dxi'])) > tol]))
+            return np.all(
+                np.array(
+                    [
+                        np.max(np.abs(res(val["xi"], *val["args"]))) > tol,
+                        val["it"] < maxIter,
+                        np.max(np.abs(val["dxi"])) > tol,
+                    ]
+                )
+            )
 
         if J is None:
             if self._dictFlag:
-                if isinstance(xiInit,TFCDictRobust):
-                    def J(xi,*args):
-                        jacob = jacfwd(res,0)(xi,*args)
-                        return np.hstack([jacob[k].reshape(jacob[k].shape[0],onp.prod(onp.array(xi[k].shape))) for k in xi.keys()])
-                else:
-                    def J(xi,*args):
-                        jacob = jacfwd(res,0)(xi,*args)
-                        return np.hstack([jacob[k] for k in xi.keys()])
-            else:
-                J = lambda xi,*args: jacfwd(res,0)(xi,*args)
+                if isinstance(xiInit, TFCDictRobust):
 
-        if method == 'pinv':
-            LS = lambda xi,*args: np.dot(np.linalg.pinv(J(xi,*args)),res(xi,*args))
-        elif method == 'lstsq':
-            LS = lambda xi,*args: np.linalg.lstsq(J(xi,*args),res(xi,*args),rcond=None)[0]
+                    def J(xi, *args):
+                        jacob = jacfwd(res, 0)(xi, *args)
+                        return np.hstack(
+                            [
+                                jacob[k].reshape(
+                                    jacob[k].shape[0], onp.prod(onp.array(xi[k].shape))
+                                )
+                                for k in xi.keys()
+                            ]
+                        )
+
+                else:
+
+                    def J(xi, *args):
+                        jacob = jacfwd(res, 0)(xi, *args)
+                        return np.hstack([jacob[k] for k in xi.keys()])
+
+            else:
+                J = lambda xi, *args: jacfwd(res, 0)(xi, *args)
+
+        if method == "pinv":
+            LS = lambda xi, *args: np.dot(np.linalg.pinv(J(xi, *args)), res(xi, *args))
+        elif method == "lstsq":
+            LS = lambda xi, *args: np.linalg.lstsq(J(xi, *args), res(xi, *args), rcond=None)[0]
         else:
             TFCPrint.Error("The method entered is not valid. Please enter a valid method.")
 
         if body is None:
             if printOut:
+
                 def body(val):
-                    val['dxi'] = LS(val['xi'],*val['args'])
-                    val['xi'] -= val['dxi']
-                    val['it'] += 1
-                    print("Iteration "+str(val['it'])+":\tMax Residual: "+str(np.max(np.abs(res(val['xi'])))))
-                    return val
-            else:
-                def body(val):
-                    val['dxi'] = LS(val['xi'],*val['args'])
-                    val['xi'] -= val['dxi']
-                    val['it'] += 1
+                    val["dxi"] = LS(val["xi"], *val["args"])
+                    val["xi"] -= val["dxi"]
+                    val["it"] += 1
+                    print(
+                        "Iteration "
+                        + str(val["it"])
+                        + ":\tMax Residual: "
+                        + str(np.max(np.abs(res(val["xi"]))))
+                    )
                     return val
 
-        self._nlls = jit(lambda val: lax.while_loop(cond,body,val))
+            else:
+
+                def body(val):
+                    val["dxi"] = LS(val["xi"], *val["args"])
+                    val["xi"] -= val["dxi"]
+                    val["it"] += 1
+                    return val
+
+        self._nlls = jit(lambda val: lax.while_loop(cond, body, val))
         self._compiled = False
 
-    def run(self,xiInit,*args):
+    def run(self, xiInit, *args):
         """ Runs the JIT-ed nonlinear least-squares function and times it if desired. """
 
         if self._dictFlag:
@@ -585,69 +730,77 @@ class NllsClass:
 
         if self.timer:
             import time
-            timer = getattr(time,self.timerType)
+
+            timer = getattr(time, self.timerType)
 
             if not self._compiled:
-                val = {'xi':xiInit,'dxi':dxi,'it':self._maxIter-1,'args':args}
-                self._nlls(val)['dxi'].block_until_ready()
+                val = {"xi": xiInit, "dxi": dxi, "it": self._maxIter - 1, "args": args}
+                self._nlls(val)["dxi"].block_until_ready()
                 self._compiled = True
 
-            val = {'xi':xiInit,'dxi':dxi,'it':0,'args':args}
+            val = {"xi": xiInit, "dxi": dxi, "it": 0, "args": args}
 
             start = timer()
             val = self._nlls(val)
-            val['dxi'].block_until_ready()
+            val["dxi"].block_until_ready()
             stop = timer()
 
-            return val['xi'],val['it'],stop-start
+            return val["xi"], val["it"], stop - start
 
         else:
-            val = {'xi':xiInit,'dxi':dxi,'it':0,'args':args}
+            val = {"xi": xiInit, "dxi": dxi, "it": 0, "args": args}
             val = self._nlls(val)
 
             self._compiled = True
 
-            return val['xi'],val['it']
+            return val["xi"], val["it"]
+
 
 class ComponentConstraintGraph:
-
-    def __init__(self,N,E):
+    def __init__(self, N, E):
 
         # Check that all edges are connected to valid nodes
         self.nNodes = len(N)
         self.nEdges = len(E)
         for k in range(self.nEdges):
-            if not (E[k]['node0'] in N and E[k]['node1'] in N):
-                TFCPrint.Error("Error either "+E[k]['node0']+" or "+E[k]['node1']+" is not a valid node. Make sure they appear in the nodes list.")
+            if not (E[k]["node0"] in N and E[k]["node1"] in N):
+                TFCPrint.Error(
+                    "Error either "
+                    + E[k]["node0"]
+                    + " or "
+                    + E[k]["node1"]
+                    + " is not a valid node. Make sure they appear in the nodes list."
+                )
 
         # Create all possible source/target pairs. This tells whether node0 is the target or source, node1 will be the opposite.
-        import itertools 
+        import itertools
+
         self.targets = list(itertools.product([0, 1], repeat=self.nEdges))
 
         # Find all targets that are valid trees
         self.goodTargets = []
         for j in range(len(self.targets)):
             flag = True
-            adj = onp.zeros((self.nNodes,self.nNodes),dtype=np.int32)
+            adj = onp.zeros((self.nNodes, self.nNodes), dtype=np.int32)
             for k in range(self.nNodes):
                 kNode = N[k]
                 sources = []
                 targets = []
                 for g in range(self.nEdges):
-                    if E[g]['node0'] == kNode:
+                    if E[g]["node0"] == kNode:
                         if self.targets[j][g]:
-                            adj[N.index(E[g]['node1']),N.index(E[g]['node0'])] = 1
-                    elif E[g]['node1'] == kNode:
+                            adj[N.index(E[g]["node1"]), N.index(E[g]["node0"])] = 1
+                    elif E[g]["node1"] == kNode:
                         if not self.targets[j][g]:
-                            adj[N.index(E[g]['node0']),N.index(E[g]['node1'])] = 1
-            if np.all(np.linalg.matrix_power(adj,self.nNodes) == 0):
+                            adj[N.index(E[g]["node0"]), N.index(E[g]["node1"])] = 1
+            if np.all(np.linalg.matrix_power(adj, self.nNodes) == 0):
                 self.goodTargets.append(j)
 
         # Save nodes and edges for use later
         self.N = N
         self.E = E
 
-    def SaveTrees(self,outputDir,allTrees=False,savePDFs=False):
+    def SaveTrees(self, outputDir, allTrees=False, savePDFs=False):
         import os
         from .Html import HTML, Dot
 
@@ -658,67 +811,90 @@ class ComponentConstraintGraph:
 
         n = len(targets)
 
-        #: Create the main dot file 
-        mainDot = Dot(os.path.join(outputDir,'dotFiles','main'),'main')
-        mainDot.dot.node_attr.update(shape='box')
+        #: Create the main dot file
+        mainDot = Dot(os.path.join(outputDir, "dotFiles", "main"), "main")
+        mainDot.dot.node_attr.update(shape="box")
         for k in range(n):
-            mainDot.dot.node('tree'+str(k),'Tree '+str(k),href=os.path.join('htmlFiles','tree'+str(k)+'.html'))
+            mainDot.dot.node(
+                "tree" + str(k),
+                "Tree " + str(k),
+                href=os.path.join("htmlFiles", "tree" + str(k) + ".html"),
+            )
         mainDot.Render()
 
         #: Create the main file HTML
-        mainHtml = HTML(os.path.join(outputDir,'main.html'))
-        with mainHtml.tag('html'):
-            with mainHtml.tag('body'):
-                with mainHtml.tag('style'):
+        mainHtml = HTML(os.path.join(outputDir, "main.html"))
+        with mainHtml.tag("html"):
+            with mainHtml.tag("body"):
+                with mainHtml.tag("style"):
                     mainHtml.doc.asis(mainHtml.centerClass)
-                mainHtml.doc.stag('img',src=os.path.join('dotFiles','main.svg'),usemap='#main',klass='center')
-                mainHtml.doc.asis(mainHtml.ReadFile(os.path.join(outputDir,'dotFiles','main.cmapx')))
+                mainHtml.doc.stag(
+                    "img", src=os.path.join("dotFiles", "main.svg"), usemap="#main", klass="center"
+                )
+                mainHtml.doc.asis(
+                    mainHtml.ReadFile(os.path.join(outputDir, "dotFiles", "main.cmapx"))
+                )
         mainHtml.WriteFile()
 
         #: Create the tree dot files
         for k in range(n):
-            treeDot = Dot(os.path.join(outputDir,'dotFiles','tree'+str(k)),'tree'+str(k))
-            treeDot.dot.attr(bgcolor='transparent')
-            treeDot.dot.node_attr.update(shape='box')
+            treeDot = Dot(os.path.join(outputDir, "dotFiles", "tree" + str(k)), "tree" + str(k))
+            treeDot.dot.attr(bgcolor="transparent")
+            treeDot.dot.node_attr.update(shape="box")
             for j in range(self.nNodes):
-                treeDot.dot.node(self.N[j],self.N[j])
+                treeDot.dot.node(self.N[j], self.N[j])
             for j in range(self.nEdges):
                 if not targets[k][j]:
-                    treeDot.dot.edge(self.E[j]['node0'],self.E[j]['node1'],label=self.E[j]['name'])
+                    treeDot.dot.edge(
+                        self.E[j]["node0"], self.E[j]["node1"], label=self.E[j]["name"]
+                    )
                 else:
-                    treeDot.dot.edge(self.E[j]['node1'],self.E[j]['node0'],label=self.E[j]['name'])
+                    treeDot.dot.edge(
+                        self.E[j]["node1"], self.E[j]["node0"], label=self.E[j]["name"]
+                    )
 
             if savePDFs:
-                treeDot.Render(formats=['cmapx','svg','pdf'])
+                treeDot.Render(formats=["cmapx", "svg", "pdf"])
             else:
                 treeDot.Render()
 
         #: Create the tree HTML files
         for k in range(n):
-            treeHtml = HTML(os.path.join(outputDir,'htmlFiles','tree'+str(k)+'.html'))
-            with treeHtml.tag('html'):
-                with treeHtml.tag('body'):
-                    with treeHtml.tag('style'):
+            treeHtml = HTML(os.path.join(outputDir, "htmlFiles", "tree" + str(k) + ".html"))
+            with treeHtml.tag("html"):
+                with treeHtml.tag("body"):
+                    with treeHtml.tag("style"):
                         treeHtml.doc.asis(treeHtml.centerClass)
-                    treeHtml.doc.stag('img',src=os.path.join('..','dotFiles','tree'+str(k)+'.svg'),usemap='#tree'+str(k),klass='center')
-                    treeHtml.doc.asis(treeHtml.ReadFile(os.path.join(outputDir,'dotFiles','tree'+str(k)+'.cmapx')))
+                    treeHtml.doc.stag(
+                        "img",
+                        src=os.path.join("..", "dotFiles", "tree" + str(k) + ".svg"),
+                        usemap="#tree" + str(k),
+                        klass="center",
+                    )
+                    treeHtml.doc.asis(
+                        treeHtml.ReadFile(
+                            os.path.join(outputDir, "dotFiles", "tree" + str(k) + ".cmapx")
+                        )
+                    )
             treeHtml.WriteFile()
 
 
-def ScaledQrLs(A,B):
+def ScaledQrLs(A, B):
     """ This function performs least-squares using the scaled QR method. """
-    S = 1./np.sqrt(np.sum(A*A,0))
-    S = np.reshape(S,(A.shape[1],))
-    q,r = np.linalg.qr(A.dot(np.diag(S)))
-    x = S*np.linalg.multi_dot([_MatPinv(r),q.T,B])
+    S = 1.0 / np.sqrt(np.sum(A * A, 0))
+    S = np.reshape(S, (A.shape[1],))
+    q, r = np.linalg.qr(A.dot(np.diag(S)))
+    x = S * np.linalg.multi_dot([_MatPinv(r), q.T, B])
     cn = np.linalg.cond(r)
-    return x,cn
+    return x, cn
+
 
 def _MatPinv(A):
     """ This function is used to better replicate MATLAB's pseudo-inverse. """
-    rcond = onp.max(A.shape)*onp.spacing(np.linalg.norm(A,ord=2))
-    return np.linalg.pinv(A,rcond=rcond)
+    rcond = onp.max(A.shape) * onp.spacing(np.linalg.norm(A, ord=2))
+    return np.linalg.pinv(A, rcond=rcond)
+
 
 def step(x):
     """ This is the unit step function, but the deriative is defined and equal to 0 at every point. """
-    return np.heaviside(x,0)
+    return np.heaviside(x, 0)

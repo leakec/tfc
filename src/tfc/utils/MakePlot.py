@@ -6,89 +6,100 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 from .TFCUtils import TFCPrint
+
 TFCPrint()
 
-class MakePlot():
-    """ This class is used to easily create journal-article-ready plots and subplots. The class can create 2D as well as 3D plots
+
+class MakePlot:
+    """This class is used to easily create journal-article-ready plots and subplots. The class can create 2D as well as 3D plots
     and even has support for twin y-axes."""
 
-    def __init__(self,xlabs,ylabs,twinYlabs=None,titles=None,zlabs=None,name='name'):
+    def __init__(self, xlabs, ylabs, twinYlabs=None, titles=None, zlabs=None, name="name"):
         """ This function initializes subplots based on the inputs provided. """
         # Set the fontsizes and family
         smallSize = 16
         mediumSize = 18
         largeSize = 18
-        plt.rc('font', size=smallSize)
-        plt.rc('axes', titlesize=mediumSize)
-        plt.rc('axes', labelsize=largeSize)
-        plt.rc('xtick', labelsize=mediumSize)
-        plt.rc('ytick', labelsize=mediumSize)
-        plt.rc('legend', fontsize=smallSize)
-        plt.rc('figure', titlesize=largeSize)
+        plt.rc("font", size=smallSize)
+        plt.rc("axes", titlesize=mediumSize)
+        plt.rc("axes", labelsize=largeSize)
+        plt.rc("xtick", labelsize=mediumSize)
+        plt.rc("ytick", labelsize=mediumSize)
+        plt.rc("legend", fontsize=smallSize)
+        plt.rc("figure", titlesize=largeSize)
 
         # Create figure and store basic labels
         self.fig = plt.figure()
         self._name = name
 
         # Consistify all label types
-        if isinstance(xlabs,np.ndarray):
+        if isinstance(xlabs, np.ndarray):
             pass
-        elif isinstance(xlabs,str):
+        elif isinstance(xlabs, str):
             xlabs = np.array([[xlabs]])
-        elif isinstance(xlabs,tuple) or isinstance(xlabs,list):
+        elif isinstance(xlabs, tuple) or isinstance(xlabs, list):
             xlabs = np.array(xlabs)
         else:
-            TFCPrint.Error("The xlabels provided are not of a valid type. Please provide valid xlabels")
+            TFCPrint.Error(
+                "The xlabels provided are not of a valid type. Please provide valid xlabels"
+            )
         if len(xlabs.shape) == 1:
-            xlabs = np.expand_dims(xlabs,1)
+            xlabs = np.expand_dims(xlabs, 1)
 
-        if isinstance(ylabs,np.ndarray):
+        if isinstance(ylabs, np.ndarray):
             pass
-        elif isinstance(ylabs,str):
+        elif isinstance(ylabs, str):
             ylabs = np.array([[ylabs]])
-        elif isinstance(ylabs,tuple) or isinstance(ylabs,list):
+        elif isinstance(ylabs, tuple) or isinstance(ylabs, list):
             ylabs = np.array(ylabs)
         else:
-            TFCPrint.Error("The ylabels provided are not of a valid type. Please provide valid ylabels")
+            TFCPrint.Error(
+                "The ylabels provided are not of a valid type. Please provide valid ylabels"
+            )
         if len(ylabs.shape) == 1:
-            ylabs = np.expand_dims(ylabs,1)
+            ylabs = np.expand_dims(ylabs, 1)
 
         if not zlabs is None:
-            if isinstance(zlabs,np.ndarray):
+            if isinstance(zlabs, np.ndarray):
                 pass
-            elif isinstance(zlabs,str):
+            elif isinstance(zlabs, str):
                 zlabs = np.array([[zlabs]])
-            elif isinstance(zlabs,tuple) or isinstance(zlabs,list):
+            elif isinstance(zlabs, tuple) or isinstance(zlabs, list):
                 zlabs = np.array(zlabs)
             else:
-                TFCPrint.Error("The zlabels provided are not of a valid type. Please provide valid zlabels")
+                TFCPrint.Error(
+                    "The zlabels provided are not of a valid type. Please provide valid zlabels"
+                )
             if len(zlabs.shape) == 1:
-                zlabs = np.expand_dims(zlabs,1)
+                zlabs = np.expand_dims(zlabs, 1)
 
         if titles is not None:
-            if isinstance(titles,np.ndarray):
+            if isinstance(titles, np.ndarray):
                 pass
-            elif isinstance(titles,str):
+            elif isinstance(titles, str):
                 titles = np.array([[titles]])
-            elif isinstance(titles,tuple) or isinstance(titles,list):
+            elif isinstance(titles, tuple) or isinstance(titles, list):
                 titles = np.array(titles)
             else:
-                TFCPrint.Error("The titles provided are not of a valid type. Please provide valid titles.")
+                TFCPrint.Error(
+                    "The titles provided are not of a valid type. Please provide valid titles."
+                )
             if len(titles.shape) == 1:
-                titles = np.expand_dims(titles,1)
+                titles = np.expand_dims(titles, 1)
 
         if twinYlabs is not None:
-            if isinstance(twinYlabs,np.ndarray):
+            if isinstance(twinYlabs, np.ndarray):
                 pass
-            elif isinstance(twinYlabs,str):
+            elif isinstance(twinYlabs, str):
                 twinYlabs = np.array([[twinYlabs]])
-            elif isinstance(twinYlabs,tuple) or isinstance(twinYlabs,list):
+            elif isinstance(twinYlabs, tuple) or isinstance(twinYlabs, list):
                 twinYlabs = np.array(twinYlabs)
             else:
-                TFCPrint.Error("The twin ylabels provided are not of a valid type. Please provide valid twin ylabels")
+                TFCPrint.Error(
+                    "The twin ylabels provided are not of a valid type. Please provide valid twin ylabels"
+                )
             if len(twinYlabs.shape) == 1:
-                twinYlabs = np.expand_dims(twinYlabs,1)
-
+                twinYlabs = np.expand_dims(twinYlabs, 1)
 
         # Create all subplots and add labels
         if zlabs is None:
@@ -97,11 +108,11 @@ class MakePlot():
             count = 0
             for j in range(n[0]):
                 for k in range(n[1]):
-                    if xlabs[j,k] is None:
+                    if xlabs[j, k] is None:
                         continue
-                    self.ax.append(self.fig.add_subplot(n[0],n[1],j*n[1]+k+1))
-                    self.ax[count].set_xlabel(xlabs[j,k])
-                    self.ax[count].set_ylabel(ylabs[j,k])
+                    self.ax.append(self.fig.add_subplot(n[0], n[1], j * n[1] + k + 1))
+                    self.ax[count].set_xlabel(xlabs[j, k])
+                    self.ax[count].set_ylabel(ylabs[j, k])
                     count += 1
         else:
             n = xlabs.shape
@@ -109,23 +120,25 @@ class MakePlot():
             count = 0
             for j in range(n[0]):
                 for k in range(n[1]):
-                    if xlabs[j,k] is None:
+                    if xlabs[j, k] is None:
                         continue
-                    self.ax.append(self.fig.add_subplot(n[0],n[1],j*n[1]+k+1,projection='3d'))
-                    self.ax[count].set_xlabel(xlabs[j,k])
-                    self.ax[count].set_ylabel(ylabs[j,k])
-                    self.ax[count].set_zlabel(zlabs[j,k])
+                    self.ax.append(
+                        self.fig.add_subplot(n[0], n[1], j * n[1] + k + 1, projection="3d")
+                    )
+                    self.ax[count].set_xlabel(xlabs[j, k])
+                    self.ax[count].set_ylabel(ylabs[j, k])
+                    self.ax[count].set_zlabel(zlabs[j, k])
                     count += 1
-        
+
         if twinYlabs is not None:
             self.twinAx = list()
             count = 0
             for j in range(n[0]):
                 for k in range(n[1]):
-                    if xlabs[j,k] is None:
+                    if xlabs[j, k] is None:
                         continue
                     self.twinAx.append(self.ax[count].twinx())
-                    self.twinAx[count].set_ylabel(twinYlabs[j,k])
+                    self.twinAx[count].set_ylabel(twinYlabs[j, k])
                     count += 1
 
         # Add titles if desired
@@ -133,9 +146,9 @@ class MakePlot():
             count = 0
             for j in range(n[0]):
                 for k in range(n[1]):
-                    if titles[j,k] is None:
+                    if titles[j, k] is None:
                         continue
-                    self.ax[count].set_title(titles[j,k])
+                    self.ax[count].set_title(titles[j, k])
                     count += 1
 
         # Set tight layout for the figure
@@ -146,17 +159,18 @@ class MakePlot():
 
         # Get screensize
         import tkinter as tk
+
         root = tk.Tk()
         width = root.winfo_screenwidth()
         height = root.winfo_screenheight()
 
         # Get dpi and set new figsize
         dpi = float(self.fig.get_dpi())
-        self.fig.set_size_inches(width/dpi,height/dpi)
+        self.fig.set_size_inches(width / dpi, height / dpi)
 
-    def PartScreen(self,width,height):
+    def PartScreen(self, width, height):
         """ This function makes the plot width x height inches. """
-        self.fig.set_size_inches(width,height)
+        self.fig.set_size_inches(width, height)
 
     def show(self):
         """ This function shows the plot. """
@@ -166,20 +180,27 @@ class MakePlot():
         """ This function draws the canvas. """
         self.fig.canvas.draw()
 
-    def save(self,fileName,transparent=True,fileType='pdf'):
+    def save(self, fileName, transparent=True, fileType="pdf"):
         """ This function crops and saves the figure. """
-        self.fig.savefig(fileName+'.'+fileType, bbox_inches='tight', pad_inches = 0.05, dpi = 300, format=fileType, transparent=transparent)
+        self.fig.savefig(
+            fileName + "." + fileType,
+            bbox_inches="tight",
+            pad_inches=0.05,
+            dpi=300,
+            format=fileType,
+            transparent=transparent,
+        )
 
-    def savePickle(self,fileName):
+    def savePickle(self, fileName):
         """ This function saves the figure in a pickle format so it can be opened and modified later. """
-        pickle.dump(self.fig,open(fileName+'.pickle','wb'))
+        pickle.dump(self.fig, open(fileName + ".pickle", "wb"))
 
-    def saveAll(self,fileName,transparent=True,fileType='pdf'):
+    def saveAll(self, fileName, transparent=True, fileType="pdf"):
         """ This function invokes the save and savePickle functions. """
-        self.save(fileName,transparent=transparent,fileType=fileType)
+        self.save(fileName, transparent=transparent, fileType=fileType)
         self.savePickle(fileName)
 
-    def animate(self,animFunc,outDir='MyMovie',fileName='images',save=True,delay=10):
+    def animate(self, animFunc, outDir="MyMovie", fileName="images", save=True, delay=10):
         """ Creates an animation using a Python generator. """
 
         iterable = animFunc()
@@ -189,13 +210,17 @@ class MakePlot():
                 os.mkdir(outDir)
             k = 0
 
-            while next(iterable,-1) != -1:
-                plt.pause(delay/1000.)
-                fileNameFull = '{}{:0>6d}'.format(fileName,k)
-                self.save(os.path.join(outDir,fileNameFull),fileType='png')
+            while next(iterable, -1) != -1:
+                plt.pause(delay / 1000.0)
+                fileNameFull = "{}{:0>6d}".format(fileName, k)
+                self.save(os.path.join(outDir, fileNameFull), fileType="png")
                 k += 1
 
-            print('ffmpeg -r 60 -i ./{0}/{1}%06d.png -c:v libx264 -profile:v high -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" ./{0}/MyMovie.mp4'.format(outDir,fileName))
+            print(
+                'ffmpeg -r 60 -i ./{0}/{1}%06d.png -c:v libx264 -profile:v high -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" ./{0}/MyMovie.mp4'.format(
+                    outDir, fileName
+                )
+            )
         else:
-            while next(iterable,-1) != -1:
-                plt.pause(delay/1000.)
+            while next(iterable, -1) != -1:
+                plt.pause(delay / 1000.0)
