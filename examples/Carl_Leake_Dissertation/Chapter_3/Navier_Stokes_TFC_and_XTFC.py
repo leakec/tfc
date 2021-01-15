@@ -28,7 +28,7 @@ n = 10
 if xTfc:
     m = 200
     basis = 'ELMTanh'
-    nC = [-1,]
+    nC = -1
 else:
     m = 10
     basis = 'CP'

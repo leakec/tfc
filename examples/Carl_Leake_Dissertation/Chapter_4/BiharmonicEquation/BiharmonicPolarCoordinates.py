@@ -29,7 +29,7 @@ else:
 # Create the TFC Class:
 N = [n,n]
 if xTFC:
-    nC = [-1,]
+    nC = -1
     myTfc = mtfc(N,nC,m,dim=2,basis='ELMTanh',x0=x0,xf=xf)
 else:
     nC = [4,4]

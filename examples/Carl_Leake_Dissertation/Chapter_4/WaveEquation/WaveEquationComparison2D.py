@@ -22,7 +22,7 @@ def Solve(m,xtfc):
 
     # TFC Constants:
     if xtfc:
-        nC = [-1,]
+        nC = -1
         basis = 'ELMTanh'
     else:
         nC = [2,2,2]

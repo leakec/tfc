@@ -20,7 +20,7 @@ real = lambda x,y,t: np.sin(np.pi*x)*np.sin(np.pi*y)*np.cos(np.pi*np.sqrt(2.)/8.
 
 # TFC Constants:
 if xtfc:
-    nC = [-1,]
+    nC = -1
     basis = 'ELMTanh'
     m = 650
 else:

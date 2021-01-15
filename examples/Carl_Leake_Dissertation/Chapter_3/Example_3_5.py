@@ -29,7 +29,7 @@ for j,n in enumerate(tqdm(nVec)):
 
         # Create the TFC Class:
         N = [n,]*2
-        nC = [-1,]
+        nC = -1
         tfc = mtfc(N,nC,m,dim=2,basis='ELMTanh',x0=x0,xf=xf)
         x = tfc.x
 

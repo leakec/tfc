@@ -1,0 +1,17 @@
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+3.2562E-06 & NAN & NAN & NAN & NAN\\
+\hline
+1.1940E-06 & 8.7433E-11 & NAN & NAN & NAN\\
+\hline
+2.3597E-06 & 1.1846E-10 & 5.4354E-13 & NAN & NAN\\
+\hline
+1.9114E-06 & 6.6735E-11 & 5.7149E-13 & 3.1625E-13 & 1.2024E-13\\
+\hline
+1.1766E-06 & 1.3078E-10 & 6.6747E-13 & 1.3001E-13 & 1.5554E-13\\
+\hline
+7.3557E-07 & 8.8317E-11 & 6.8856E-13 & 2.5446E-13 & 1.0225E-13\\
+\hline
+\end{tabular}
+\end{center}
