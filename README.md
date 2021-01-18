@@ -1,6 +1,8 @@
 # Theory of Functional Connections (TFC)
 **A functional interpolation method with applications in solving differential equations.**
 
+<img src="https://github.com/leakec/tfc/blob/main/docs/Univariate_TFC_Animation.gif" width="600" height="467">
+
 This repository is currently under development. 
 
 ## Installation:
