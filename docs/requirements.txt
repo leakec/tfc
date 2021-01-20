@@ -12,5 +12,3 @@ matplotlib
 colorama
 graphviz
 yattag
-numpydoc
-
