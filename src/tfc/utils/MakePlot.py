@@ -185,8 +185,10 @@ class MakePlot:
         Parameters
         ----------
         width : float
-
+            Width of the plot in inches.
+            
         height : float
+            Height of the plot in inches.
         """
         self.fig.set_size_inches(width, height)
 
