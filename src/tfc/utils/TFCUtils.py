@@ -16,9 +16,10 @@ from jax.util import safe_zip
 from jax.tree_util import register_pytree_node, tree_multimap
 from jax.interpreters.partial_eval import JaxprTracer
 
-##
-# This class is used to print to the terminal in color.
+
 class TFCPrint:
+    """This class is used to print to the terminal in color."""
+
     def __init__(self):
         """This function is the constructor. It initializes the colorama class."""
         initColorama()
@@ -168,13 +169,15 @@ def egradRobust(g, j=0):
     return wrapped
 
 
-##
-# This is the TFC dictionary class. It extends an OrderedDict and
-# adds a few methods that enable:
-#   - Adding dictionaries with the same keys together
-#   - Turning a dictionary into a 1-D array
-#   - Turning a 1-D array into a dictionary
 class TFCDict(OrderedDict):
+    """
+    This is the TFC dictionary class. It extends an OrderedDict and
+    adds a few methods that enable:
+      - Adding dictionaries with the same keys together
+      - Turning a dictionary into a 1-D array
+      - Turning a 1-D array into a dictionary
+    """
+
     def __init__(self, *args):
         """Initialize TFCDict using the OrderedDict method."""
 
@@ -337,9 +340,10 @@ register_pytree_node(
     lambda keys, values: TFCDict(safe_zip(keys, values)),
 )
 
-##
-# This class is like the TFCDict class, but it handles non-flat arrays.
+
 class TFCDictRobust(OrderedDict):
+    """This class is like the TFCDict class, but it handles non-flat arrays."""
+
     def __init__(self, *args):
         """Initialize TFCDictRobust using the OrderedDict method."""
 
@@ -510,13 +514,13 @@ register_pytree_node(
     lambda keys, values: TFCDictRobust(safe_zip(keys, values)),
 )
 
-## JIT-ed least squares.
-# This function takes in an initial guess of zeros, zXi, and a residual function, res, and
-# linear least squares to minimize the res function using the parameters
-# xi.
-#
+
 def LS(zXi, res, *args, J=None, method="pinv", timer=False, timerType="process_time"):
     """
+    JITed least squares.
+    This function takes in an initial guess of zeros, zXi, and a residual function, res, and
+    linear least squares to minimize the res function using the parameters
+    xi.
 
     Parameters
     ----------
@@ -606,10 +610,13 @@ def LS(zXi, res, *args, J=None, method="pinv", timer=False, timerType="process_t
         return zXi
 
 
-## JIT-ed linear least-squares class.
-# Like the LS function, but it is in class form so that the run methd can be called multiple times without re-JITing.
-# See LS for more details.
 class LsClass:
+    """
+    JITed linear least-squares class.
+    Like the LS function, but it is in class form so that the run methd can be called multiple times without re-JITing.
+    See LS for more details.
+    """
+
     def __init__(self, zXi, res, J=None, method="pinv", timer=False, timerType="process_time"):
         """Initialization function. Creates the JIT-ed least-squares function."""
 
@@ -699,6 +706,7 @@ class LsClass:
             self._compiled = True
 
             return zXi
+
 
 def NLLS(
     xiInit,
@@ -881,8 +889,6 @@ def NLLS(
         val = {"xi": xiInit, "dxi": dxi, "it": 0, "args": args}
         val = nlls(val)
         return val["xi"], val["it"]
-
-
 
 
 class NllsClass:

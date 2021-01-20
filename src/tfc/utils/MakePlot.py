@@ -186,7 +186,7 @@ class MakePlot:
         ----------
         width : float
             Width of the plot in inches.
-            
+
         height : float
             Height of the plot in inches.
         """

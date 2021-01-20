@@ -5,6 +5,7 @@ from matplotlib import colors as mcolors
 
 class MakePlot:
     """MakePlot class for Mayavi. """
+
     @staticmethod
     def _str_to_rgb(color):
         """Call matplotlib's colorConverter.to_rgb on input string.
@@ -13,7 +14,7 @@ class MakePlot:
         ----------
         color : str
             Color string
-            
+
 
         Returns
         -------
@@ -49,7 +50,7 @@ class MakePlot:
         ----------
         **kwargs : dict
             keyword arguments
-            
+
         Returns
         -------
         kwargs : dict
@@ -64,13 +65,13 @@ class MakePlot:
 
     @staticmethod
     def ColormapGradient(c1, c2):
-        """ Returns a Mayavi LUT for a gradient that linearly transforms from c1 to c2.
+        """Returns a Mayavi LUT for a gradient that linearly transforms from c1 to c2.
 
         Parameters
         ----------
         c1 : str or list
             Input color as a string or 4-element RGBA list.
-            
+
         c2 : str or list
             Input color as a string or 4-element RGBA list.
 
@@ -90,16 +91,16 @@ class MakePlot:
 
     @staticmethod
     def SetColormapGradient(obj, c1, c2):
-        """ Applies a linear, gradient colormap to the object. The colors in the gradient are c1 and c2.
+        """Applies a linear, gradient colormap to the object. The colors in the gradient are c1 and c2.
 
         Parameters
         ----------
         obj : mlab object
             mlab object to apply the colormap gradient to.
-            
+
         c1 : str or list
             Input color as a string or 4-element RGBA list.
-            
+
         c2 : str or list
             Input color as a string or 4-element RGBA list.
         """
@@ -130,7 +131,7 @@ class MakePlot:
         ----------
         width : float
             Width of the plot in inches.
-            
+
         height : float
             Height of the plot in inches.
         """
@@ -143,7 +144,7 @@ class MakePlot:
         ----------
         animFunc : function generator
             Function that modifies what is displayed on the plot
-            
+
         outDir : str, optional
              Directory to save frames in: only used if save = True. (Default value = "MyMovie")
 
@@ -175,7 +176,7 @@ class MakePlot:
             mlab.animate(func=animFunc, delay=10, ui=True, support_movie=False)()
 
     def save(self, fileName, fileType="pdf"):
-        """ This function saves the figure.
+        """This function saves the figure.
 
         Parameters
         ----------
@@ -214,7 +215,7 @@ class MakePlot:
         ----------
         *args : iterable
             args passed on to view
-            
+
         **kwargs : dict
             kwargs passed on to view
         """
@@ -227,7 +228,7 @@ class MakePlot:
         ----------
         *args : iterable
             args passed on to points3d
-            
+
         **kwargs : dict
             kwargs passed on to points3d after being processed by _ProcessKwargs.
         """
@@ -240,8 +241,8 @@ class MakePlot:
         Parameters
         ----------
         *args : iterable
-            args passed on to plot3d 
-            
+            args passed on to plot3d
+
         **kwargs : dict
             kwargs passed on to plot3d after being processed by _ProcessKwargs.
         """
@@ -255,7 +256,7 @@ class MakePlot:
         ----------
         *args : iterable
             args passed on to surf
-            
+
         **kwargs : dict
             kwargs passed on to surf after being processed by _ProcessKwargs.
         """
@@ -268,8 +269,8 @@ class MakePlot:
         Parameters
         ----------
         *args : iterable
-            args passed on to quiver3d 
-            
+            args passed on to quiver3d
+
         **kwargs : dict
             kwargs passed on to quiver3d after being processed by _ProcessKwargs.
         """
@@ -283,7 +284,7 @@ class MakePlot:
         ----------
         *args : iterable
             args passed on to mesh
-            
+
         **kwargs : dict
             kwargs passed on to mesh after being processed by _ProcessKwargs.
         """
