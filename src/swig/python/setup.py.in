@@ -14,7 +14,7 @@ class CompiledLibInstall(setuptools.command.install.install):
         :return:
         """
         # Get filenames from CMake variable
-        filenames = '${PYTHON_INSTALL_FILES}'.split(';')
+        filenames = "${PYTHON_INSTALL_FILES}".split(";")
 
         # Directory to install to
         install_dir = get_python_lib()
@@ -23,13 +23,13 @@ class CompiledLibInstall(setuptools.command.install.install):
         [shutil.copy(filename, install_dir) for filename in filenames]
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     setuptools.setup(
-        name='BF',
-        version='1.0.0-dev',
-        packages=['BF'],
-        license='Apache License 2.0',
-        author='Carl Leake',
-        author_email='leakec57@gmail.com',
-        cmdclass={'install': CompiledLibInstall}
+        name="BF",
+        version="0.0.7",
+        packages=["BF"],
+        license="MIT",
+        author="Carl Leake",
+        author_email="leakec57@gmail.com",
+        cmdclass={"install": CompiledLibInstall},
     )
