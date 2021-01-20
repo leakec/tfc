@@ -700,15 +700,6 @@ class LsClass:
 
             return zXi
 
-
-## JIT-ed non-linear least squares.
-# This function takes in an initial guess, xiInit (initial values of xi), and a residual function, res, and
-# performs a nonlinear least squares to minimize the res function using the parameters
-# xi. The conditions on terminating the nonlinear least-squares are:
-# 1. max(abs(res)) < tol
-# 2. max(abs(dxi)) < tol, where dxi is the change in xi from the last iteration.
-# 3. Number of iterations > maxIter.
-#
 def NLLS(
     xiInit,
     res,
@@ -724,6 +715,13 @@ def NLLS(
     timerType="process_time",
 ):
     """
+    JIT-ed non-linear least squares.
+    This function takes in an initial guess, xiInit (initial values of xi), and a residual function, res, and
+    performs a nonlinear least squares to minimize the res function using the parameters
+    xi. The conditions on terminating the nonlinear least-squares are:
+    1. max(abs(res)) < tol
+    2. max(abs(dxi)) < tol, where dxi is the change in xi from the last iteration.
+    3. Number of iterations > maxIter.
 
     Parameters
     ----------
@@ -885,12 +883,13 @@ def NLLS(
         return val["xi"], val["it"]
 
 
-## JIT-ed non-linear least squares class.
-# Like the NLLS function, but it is in class form so that the run methd can be called multiple times w/o re-JITing
 
 
 class NllsClass:
-    """ """
+    """
+    JITed nonlinear least squares class.
+    Like the NLLS function, but it is in class form so that the run methd can be called multiple times without re-JITing
+    """
 
     def __init__(
         self,
