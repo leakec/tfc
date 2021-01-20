@@ -20,7 +20,7 @@ from jax.interpreters.partial_eval import JaxprTracer
 # This class is used to print to the terminal in color.
 class TFCPrint:
     def __init__(self):
-    """This function is the constructor. It initializes the colorama class."""
+        """This function is the constructor. It initializes the colorama class."""
         initColorama()
 
     @staticmethod
@@ -57,7 +57,7 @@ def egrad(g, j=0):
     ----------
     g : function
         Function to take the derivative of.
-        
+
     j : integer, optional
         Parameter with which to take the derivative with respect to. (Default value = 0)
 
@@ -133,7 +133,7 @@ def egradRobust(g, j=0):
     ----------
     g : function
         Function to take the derivative of.
-        
+
     j : integer, optional
         Parameter with which to take the derivative with respect to. (Default value = 0)
 
@@ -176,7 +176,7 @@ def egradRobust(g, j=0):
 #   - Turning a 1-D array into a dictionary
 class TFCDict(OrderedDict):
     def __init__(self, *args):
-    """Initialize TFCDict using the OrderedDict method."""
+        """Initialize TFCDict using the OrderedDict method."""
 
         # Store dictionary and keep a record of the keys. Keys will stay in same
         # order, so that adding and subtracting is repeatable.
@@ -240,7 +240,7 @@ class TFCDict(OrderedDict):
         return self
 
     def __iadd__(self, o):
-        """ Used to overload "+=" for TFCDict so that 2 TFCDict's can be added together.
+        """Used to overload "+=" for TFCDict so that 2 TFCDict's can be added together.
 
         Parameters
         ----------
@@ -262,7 +262,7 @@ class TFCDict(OrderedDict):
         return self
 
     def __isub__(self, o):
-        """ Used to overload "-=" for TFCDict so that 2 TFCDict's can be subtracted.
+        """Used to overload "-=" for TFCDict so that 2 TFCDict's can be subtracted.
 
         Parameters
         ----------
@@ -284,7 +284,7 @@ class TFCDict(OrderedDict):
         return self
 
     def __add__(self, o):
-        """ Used to overload "+" for TFCDict so that 2 TFCDict's can be added together.
+        """Used to overload "+" for TFCDict so that 2 TFCDict's can be added together.
 
         Parameters
         ----------
@@ -307,7 +307,7 @@ class TFCDict(OrderedDict):
         return out
 
     def __sub__(self, o):
-        """ Used to overload "-" for TFCDict so that 2 TFCDict's can be subtracted.
+        """Used to overload "-" for TFCDict so that 2 TFCDict's can be subtracted.
 
         Parameters
         ----------
@@ -341,7 +341,7 @@ register_pytree_node(
 # This class is like the TFCDict class, but it handles non-flat arrays.
 class TFCDictRobust(OrderedDict):
     def __init__(self, *args):
-    """Initialize TFCDictRobust using the OrderedDict method."""
+        """Initialize TFCDictRobust using the OrderedDict method."""
 
         # Store dictionary and keep a record of the keys. Keys will stay in same
         # order, so that adding and subtracting is repeatable.
@@ -413,7 +413,7 @@ class TFCDictRobust(OrderedDict):
         return self
 
     def __iadd__(self, o):
-        """ Used to overload "+=" for TFCDictRobust so that 2 TFCDictRobust's can be added together.
+        """Used to overload "+=" for TFCDictRobust so that 2 TFCDictRobust's can be added together.
 
         Parameters
         ----------
@@ -435,7 +435,7 @@ class TFCDictRobust(OrderedDict):
         return self
 
     def __isub__(self, o):
-        """ Used to overload "-=" for TFCDictRobust so that 2 TFCDictRobust's can be subtracted.
+        """Used to overload "-=" for TFCDictRobust so that 2 TFCDictRobust's can be subtracted.
 
         Parameters
         ----------
@@ -457,7 +457,7 @@ class TFCDictRobust(OrderedDict):
         return self
 
     def __add__(self, o):
-        """ Used to overload "+" for TFCDictRobust so that 2 TFCDictRobust's can be added together.
+        """Used to overload "+" for TFCDictRobust so that 2 TFCDictRobust's can be added together.
 
         Parameters
         ----------
@@ -480,7 +480,7 @@ class TFCDictRobust(OrderedDict):
         return out
 
     def __sub__(self, o):
-        """ Used to overload "-" for TFCDictRobust so that 2 TFCDictRobust's can be subtracted.
+        """Used to overload "-" for TFCDictRobust so that 2 TFCDictRobust's can be subtracted.
 
         Parameters
         ----------
@@ -522,13 +522,13 @@ def LS(zXi, res, *args, J=None, method="pinv", timer=False, timerType="process_t
     ----------
     zXi : pytree or array-like
         Unknown parameters to be found using least-squares.
-        
+
     res : function
         Residual function (also known as the loss function) with signature res(xi,*args).
-        
+
     *args : iterable
         Any additional arguments taken by res other than xi.
-        
+
     J : function, optional
          User specified Jacobian. If None, then the Jacobian of res with respect to xi will be calculated via automatic differentiation. (Default value = None)
 
@@ -539,7 +539,7 @@ def LS(zXi, res, *args, J=None, method="pinv", timer=False, timerType="process_t
 
     timer : bool, optional
          Boolean that chooses whether to time the code or not. (Default value = False). Note that setting to true adds a slight increase in runtime.
-         As one iteration of the non-linear least squares is run first to avoid timining the JAX trace. 
+         As one iteration of the non-linear least squares is run first to avoid timining the JAX trace.
 
     timerType : str, optional
          Any timer from the time module. (Default value = "process_time")
@@ -548,7 +548,7 @@ def LS(zXi, res, *args, J=None, method="pinv", timer=False, timerType="process_t
     -------
     xi : pytree or array-like
          Unknowns that minimize res as found via least-squares. Type will be the same as zXi specified in the input.
-    
+
     time : float
          Computation time as calculated by timerType specified. This output is only returned if timer = True.
     """
@@ -609,10 +609,9 @@ def LS(zXi, res, *args, J=None, method="pinv", timer=False, timerType="process_t
 ## JIT-ed linear least-squares class.
 # Like the LS function, but it is in class form so that the run methd can be called multiple times without re-JITing.
 # See LS for more details.
-
 class LsClass:
     def __init__(self, zXi, res, J=None, method="pinv", timer=False, timerType="process_time"):
-    """Initialization function. Creates the JIT-ed least-squares function."""
+        """Initialization function. Creates the JIT-ed least-squares function."""
 
         self.timerType = timerType
         self.timer = timer
@@ -664,7 +663,7 @@ class LsClass:
         ----------
         zXi : pytree or array-like
             Unknown parameters to be found using least-squares.
-            
+
         *args : iterable
             Any additional arguments taken by res other than xi.
 
@@ -672,7 +671,7 @@ class LsClass:
         -------
         xi : pytree or array-like
              Unknowns that minimize res as found via least-squares. Type will be the same as zXi specified in the input.
-        
+
         time : float
              Computation time as calculated by timerType specified. This output is only returned if timer = True.
 
@@ -730,13 +729,13 @@ def NLLS(
     ----------
     xiInit : pytree or array-like
         Initial guess for the unkown parameters.
-        
+
     res : function
         Residual function (also known as the loss function) with signature res(xi,*args).
-        
+
     *args : iterable
         Any additional arguments taken by res other than xi.
-        
+
     J : function
          User specified Jacobian. If None, then the Jacobian of res with respect to xi will be calculated via automatic differentiation. (Default value = None)
 
@@ -761,10 +760,10 @@ def NLLS(
 
     timer : bool, optional
          Boolean that chooses whether to time the code or not. (Default value = False). Note that setting to true adds a slight increase in runtime.
-         As one iteration of the non-linear least squares is run first to avoid timining the JAX trace. 
+         As one iteration of the non-linear least squares is run first to avoid timining the JAX trace.
 
     printOut : bool, optional
-         NOT CURRENTLY IMPLEMETNED; it will be implemented if JAX allows printing from within JITed functions. The printout will be 
+         NOT CURRENTLY IMPLEMETNED; it will be implemented if JAX allows printing from within JITed functions. The printout will be
          max(abs(res)) at each iteration. Controls whether the NLLS prints out information each interaton or not. (Default value = False)
 
     timerType : str
@@ -774,10 +773,10 @@ def NLLS(
     -------
     xi : pytree or array-like
          Unknowns that minimize res as found via least-squares. Type will be the same as zXi specified in the input.
-    
+
     it : int
          Number of NLLS iterations performed..
-    
+
     time : float
          Computation time as calculated by timerType specified. This output is only returned if timer = True.
     """
@@ -892,6 +891,7 @@ def NLLS(
 
 class NllsClass:
     """ """
+
     def __init__(
         self,
         xiInit,
@@ -1001,7 +1001,7 @@ class NllsClass:
         ----------
         xiInit : pytree or array-like
             Initial guess for the unkown parameters.
-            
+
         *args : iterable
             Any additional arguments taken by res other than xi.
 
@@ -1009,10 +1009,10 @@ class NllsClass:
         -------
         xi : pytree or array-like
              Unknowns that minimize res as found via least-squares. Type will be the same as zXi specified in the input.
-        
+
         it : int
              Number of NLLS iterations performed..
-        
+
         time : float
              Computation time as calculated by timerType specified. This output is only returned if timer = True.
 
@@ -1053,6 +1053,7 @@ class NllsClass:
 
 class ComponentConstraintGraph:
     """ Creates a graph of all valid ways in which component constraints can be embedded. """
+
     def __init__(self, N, E):
         """Class constructor.
 
@@ -1118,7 +1119,7 @@ class ComponentConstraintGraph:
         ----------
         outputDir : str
             Output directory to save in.
-            
+
         allGraphs : bool, optional
              Boolean that conrols whether all graphs are saved or just valid graphs. (Default value = False)
 
@@ -1210,7 +1211,7 @@ def ScaledQrLs(A, B):
     ----------
     A : array-like
         A matrix in A*x = B.
-        
+
     B : array-like
         B matrix in A*x = B.
 
@@ -1237,7 +1238,7 @@ def _MatPinv(A):
     ----------
     A : array-like
         Matrix to be inverted.
-        
+
     Returns
     -------
     Ainv : array-like
@@ -1254,7 +1255,7 @@ def step(x):
     ----------
     x : array-like
         Array to apply step to.
-        
+
 
     Returns
     -------
