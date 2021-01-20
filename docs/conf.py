@@ -31,6 +31,7 @@ needs_sphinx = '2.1'
 extensions = ['breathe',
               'exhale',
               'nbsphinx',
+              'numpydoc',
               'sphinx.ext.mathjax',
               'sphinx.ext.viewcode',
               'sphinx.ext.autodoc',

@@ -12,10 +12,22 @@ TFCPrint()
 
 class MakePlot:
     """This class is used to easily create journal-article-ready plots and subplots. The class can create 2D as well as 3D plots
-    and even has support for twin y-axes."""
+    and even has support for twin y-axes.
+    """
 
-    def __init__(self, xlabs, ylabs, twinYlabs=None, titles=None, zlabs=None, name="name"):
-        """ This function initializes subplots based on the inputs provided. """
+    def __init__(self, xlabs, ylabs, twinYlabs=None, titles=None, zlabs=None):
+        """This function initializes subplots based on the inputs provided.
+
+        Parameters
+        ----------
+        xlabs: list or array-like
+            The x-axes labels of for the plots
+        ylabs: list or array-like
+            The y-axes labels of for the plots
+        zlabs: list or array-like, optional
+            The z-axes labels of for the plots. Setting this forces subplots to be 3D. (Default value = None)
+        """
+
         # Set the fontsizes and family
         smallSize = 16
         mediumSize = 18
@@ -30,7 +42,6 @@ class MakePlot:
 
         # Create figure and store basic labels
         self.fig = plt.figure()
-        self._name = name
 
         # Consistify all label types
         if isinstance(xlabs, np.ndarray):
@@ -155,7 +166,7 @@ class MakePlot:
         self.fig.tight_layout()
 
     def FullScreen(self):
-        """ This function makes the plot fullscreen. """
+        """This function makes the plot fullscreen."""
 
         # Get screensize
         import tkinter as tk
@@ -169,19 +180,38 @@ class MakePlot:
         self.fig.set_size_inches(width / dpi, height / dpi)
 
     def PartScreen(self, width, height):
-        """ This function makes the plot width x height inches. """
+        """This function makes the plot width x height inches.
+
+        Parameters
+        ----------
+        width : float
+
+        height : float
+        """
         self.fig.set_size_inches(width, height)
 
     def show(self):
-        """ This function shows the plot. """
+        """This function shows the plot."""
         self.fig.show()
 
     def draw(self):
-        """ This function draws the canvas. """
+        """This function draws the canvas."""
         self.fig.canvas.draw()
 
     def save(self, fileName, transparent=True, fileType="pdf"):
-        """ This function crops and saves the figure. """
+        """This function crops and saves the figure.
+
+        Parameters
+        ----------
+        fileName : str
+            Filename where the figure should be saved. Note, this should not include the file extension.
+
+        transparent : bool, optional
+            Whether to save the plot with transparency or not. (Default value = True)
+
+        fileType : str, optional
+            File exension to use. (Default value = "pdf")
+        """
         self.fig.savefig(
             fileName + "." + fileType,
             bbox_inches="tight",
@@ -192,16 +222,52 @@ class MakePlot:
         )
 
     def savePickle(self, fileName):
-        """ This function saves the figure in a pickle format so it can be opened and modified later. """
+        """This function saves the figure in a pickle format so it can be opened and modified later.
+
+        Parameters
+        ----------
+        fileName : str
+            Filename where the figure should be saved. Note, this should not include the file extension.
+        """
         pickle.dump(self.fig, open(fileName + ".pickle", "wb"))
 
     def saveAll(self, fileName, transparent=True, fileType="pdf"):
-        """ This function invokes the save and savePickle functions. """
+        """This function invokes the save and savePickle functions.
+
+        Parameters
+        ----------
+        fileName : str
+            Filename where the figure should be saved. Note, this should not include the file extension.
+
+        transparent : bool, optional
+            Whether to save the plot with transparency or not. (Default value = True)
+
+        fileType : str, optional
+            File exension to use. (Default value = "pdf")
+        """
         self.save(fileName, transparent=transparent, fileType=fileType)
         self.savePickle(fileName)
 
     def animate(self, animFunc, outDir="MyMovie", fileName="images", save=True, delay=10):
-        """ Creates an animation using a Python generator. """
+        """Creates an animation using a Python generator.
+
+        Parameters
+        ----------
+        animFunc : generator function
+            Function that modifies what is displayed on the plot
+
+        outDir : str, optional
+             Directory to save frames in: only used if save = True. (Default value = "MyMovie")
+
+        fileName : str, optional
+             Filename for the frames: only used if save = True. (Default value = "images")
+
+        save : bool, optional
+             Controls whether the function saves the frames of the animation or not. (Default value = True)
+
+        delay : integer, optional
+             Delay in milliseconds between frames: only used if save = False. (Default value = 10)
+        """
 
         iterable = animFunc()
 

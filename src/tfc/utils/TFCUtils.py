@@ -20,28 +20,67 @@ from jax.interpreters.partial_eval import JaxprTracer
 # This class is used to print to the terminal in color.
 class TFCPrint:
     def __init__(self):
-        """ This function is the constructor. It initializes the colorama class. """
+    """This function is the constructor. It initializes the colorama class."""
         initColorama()
 
     @staticmethod
     def Error(stringIn):
         """This function prints errors. It prints the text in 'stringIn' in bright red and
-        exits the program."""
+        exits the program.
+
+        Parameters
+        ----------
+        stringIn : str
+            error string
+        """
         print(fg.RED + style.BRIGHT + stringIn)
         print(style.RESET_ALL, end="")
         sys.exit()
 
     @staticmethod
     def Warning(stringIn):
-        """ This function prints warnings. It prints the text in 'stringIn' in bright yellow."""
+        """This function prints warnings. It prints the text in 'stringIn' in bright yellow.
+
+        Parameters
+        ----------
+        stringIn : str
+            warning string
+        """
         print(fg.YELLOW + style.BRIGHT + stringIn)
         print(style.RESET_ALL, end="")
 
 
 def egrad(g, j=0):
-    """ This function mimics egrad from autograd. """
+    """This function mimics egrad from autograd.
+
+    Parameters
+    ----------
+    g : function
+        Function to take the derivative of.
+        
+    j : integer, optional
+        Parameter with which to take the derivative with respect to. (Default value = 0)
+
+    Returns
+    -------
+    wrapped : function
+        Derivative function
+    """
 
     def wrapped(*args):
+        """
+        Wrapper for derivative of g with respect to parameter number j.
+
+        Parameters
+        ----------
+        *args : iterable
+            function arguments to g
+
+        Returns
+        -------
+        x_bar: array-like
+            derivative of g with respect to parameter number j
+        """
         tans = tuple(
             [
                 onp.ones(args[i].shape) if i == j else onp.zeros(args[i].shape)
@@ -56,22 +95,70 @@ def egrad(g, j=0):
 
 @partial(partial, tree_multimap)
 def onesRobust(val):
-    """ Returns ones_like val, but can handle arrays and dictionaries. """
+    """Returns ones_like val, but can handle arrays and dictionaries.
+
+    Parameters
+    ----------
+    val : pytree
+
+    Returns
+    -------
+    ones_like_val : pytree
+        Pytree with the same structure as val with all elements equal to one.
+
+    """
     return onp.ones(val.shape)
 
 
 @partial(partial, tree_multimap)
 def zerosRobust(val):
-    """ Returns zeros_like val, but can handle arrays and dictionaries. """
+    """Returns zeros_like val, but can handle arrays and dictionaries.
+
+    Parameters
+    ----------
+    val : pytree
+
+    Returns
+    -------
+    zeros_like_val : pytree
+        Pytree with the same structure as val with all elements equal to zero.
+    """
     return onp.zeros(val.shape)
 
 
 def egradRobust(g, j=0):
-    """ This function mimics egrad from autograd, but can also handle dictionaries. """
+    """This function mimics egrad from autograd, but can also handle dictionaries.
+
+    Parameters
+    ----------
+    g : function
+        Function to take the derivative of.
+        
+    j : integer, optional
+        Parameter with which to take the derivative with respect to. (Default value = 0)
+
+    Returns
+    -------
+    wrapped : function
+        Derivative function
+    """
     if g.__qualname__ == "jit.<locals>.f_jitted":
         g = g.__wrapped__
 
     def wrapped(*args):
+        """
+        Wrapper for derivative of g with respect to parameter number j.
+
+        Parameters
+        ----------
+        *args : iterable
+            function arguments to g
+
+        Returns
+        -------
+        x_bar: array-like
+            derivative of g with respect to parameter number j
+        """
         tans = tuple(
             [onesRobust(args[i]) if i == j else zerosRobust(args[i]) for i in range(len(args))]
         )
@@ -89,7 +176,7 @@ def egradRobust(g, j=0):
 #   - Turning a 1-D array into a dictionary
 class TFCDict(OrderedDict):
     def __init__(self, *args):
-        """ Initialize TfcDict using the OrderedDict method. """
+    """Initialize TFCDict using the OrderedDict method."""
 
         # Store dictionary and keep a record of the keys. Keys will stay in same
         # order, so that adding and subtracting is repeatable.
@@ -99,7 +186,7 @@ class TFCDict(OrderedDict):
         self.getSlices()
 
     def getSlices(self):
-        """ Function that creates slices for each of the keys in the dictionary. """
+        """Function that creates slices for each of the keys in the dictionary."""
         if all(isinstance(value, np.ndarray) for value in self.values()):
             arrLen = 0
             self._slices = [
@@ -118,29 +205,53 @@ class TFCDict(OrderedDict):
             ] * self._nKeys
 
     def update(self, *args):
-        """ Overload the update method to update the _keys variable as well. """
+        """Overload the update method to update the _keys variable as well.
+
+        Parameters
+        ----------
+        *args : iterable
+            Same as *args for the update method on ordered dict.
+        """
         super().update(*args)
         self._keys = list(self.keys())
         self._nKeys = len(self._keys)
         self.getSlices()
 
     def toArray(self):
-        """ Send dictionary to a flat JAX array. """
+        """Send dictionary to a flat JAX array."""
         return np.hstack([self[self._keys[k]] for k in range(self._nKeys)])
 
     def toDict(self, arr):
-        """ Send a flat JAX array to a TfcDict with the same keys."""
+        """Send a flat JAX array to a TFCDict with the same keys.
+
+        Parameters
+        ----------
+        arr : array-like
+            Flat JAX array to convert to TFCDict. Must have the same number of elements as total number of elements in the dictionary.
+        """
         arr = arr.flatten()
         return TFCDict(zip(self._keys, [arr[self._slices[k]] for k in range(self._nKeys)]))
 
     def block_until_ready(self):
         """Mimics block_until_ready for jax arrays. Used to halt the program until the computation that created the
-        dictionary is finished."""
+        dictionary is finished.
+        """
         self[self._keys[0]].block_until_ready()
         return self
 
     def __iadd__(self, o):
-        """ Used to overload "+=" for TfcDict so that 2 TfcDict's can be added together."""
+        """ Used to overload "+=" for TFCDict so that 2 TFCDict's can be added together.
+
+        Parameters
+        ----------
+        o : array-like or Python dictionary or TFCDict
+            Values to add to the current dicitonary.
+
+        Returns
+        ----------
+        self : TFCDict
+            A copy of self after adding in the values from o.
+        """
         if isinstance(o, dict) or (type(o) is type(self)):
             for key in self._keys:
                 self[key] += o[key]
@@ -151,7 +262,18 @@ class TFCDict(OrderedDict):
         return self
 
     def __isub__(self, o):
-        """ Used to overload "-=" for TfcDict so that 2 TfcDict's can be subtracted."""
+        """ Used to overload "-=" for TFCDict so that 2 TFCDict's can be subtracted.
+
+        Parameters
+        ----------
+        o : array-like or Python dictionary or TFCDict
+            Values to subtract from the current dicitonary.
+
+        Returns
+        ----------
+        self : TFCDict
+            A copy of self after subtracting the values from o.
+        """
         if isinstance(o, dict) or (type(o) is type(self)):
             for key in self._keys:
                 self[key] -= o[key]
@@ -162,7 +284,18 @@ class TFCDict(OrderedDict):
         return self
 
     def __add__(self, o):
-        """ Used to overload "+" for TfcDict so that 2 TfcDict's can be added together."""
+        """ Used to overload "+" for TFCDict so that 2 TFCDict's can be added together.
+
+        Parameters
+        ----------
+        o : array-like or Python dictionary or TFCDict
+            Values to add to the current dicitonary.
+
+        Returns
+        ----------
+        out : TFCDict
+            A TFCDict with values = self + o.
+        """
         out = TFCDict(self)
         if isinstance(o, dict) or (type(o) is type(self)):
             for key in self._keys:
@@ -174,7 +307,18 @@ class TFCDict(OrderedDict):
         return out
 
     def __sub__(self, o):
-        """ Used to overload "-" for TfcDict so that 2 TfcDict's can be subtracted."""
+        """ Used to overload "-" for TFCDict so that 2 TFCDict's can be subtracted.
+
+        Parameters
+        ----------
+        o : array-like or Python dictionary or TFCDict
+            Values to subtract from the current dicitonary.
+
+        Returns
+        ----------
+        self : TFCDict
+            A TFCDict with values = self - o.
+        """
         out = TFCDict(self)
         if isinstance(o, dict) or (type(o) is type(self)):
             for key in self._keys:
@@ -197,7 +341,7 @@ register_pytree_node(
 # This class is like the TFCDict class, but it handles non-flat arrays.
 class TFCDictRobust(OrderedDict):
     def __init__(self, *args):
-        """ Initialize TFCDictRobust using the OrderedDict method. """
+    """Initialize TFCDictRobust using the OrderedDict method."""
 
         # Store dictionary and keep a record of the keys. Keys will stay in same
         # order, so that adding and subtracting is repeatable.
@@ -207,7 +351,7 @@ class TFCDictRobust(OrderedDict):
         self.getSlices()
 
     def getSlices(self):
-        """ Function that creates slices for each of the keys in the dictionary. """
+        """Function that creates slices for each of the keys in the dictionary."""
         if all(isinstance(value, np.ndarray) for value in self.values()):
             arrLen = 0
             self._slices = [
@@ -226,18 +370,30 @@ class TFCDictRobust(OrderedDict):
             ] * self._nKeys
 
     def update(self, *args):
-        """ Overload the update method to update the _keys variable as well. """
+        """Overload the update method to update the _keys variable as well.
+
+        Parameters
+        ----------
+        *args : iterable
+            Same as *args for the update method on ordered dict.
+        """
         super().update(*args)
         self._keys = list(self.keys())
         self._nKeys = len(self._keys)
         self.getSlices()
 
     def toArray(self):
-        """ Send dictionary to a flat JAX array. """
+        """Send dictionary to a flat JAX array."""
         return np.hstack([self[self._keys[k]].flatten() for k in range(self._nKeys)])
 
     def toDict(self, arr):
-        """ Send a flat JAX array to a TfcDict with the same keys."""
+        """Send a flat JAX array to a TFCDictRobust with the same keys.
+
+        Parameters
+        ----------
+        arr : array-like
+            Flat JAX array to convert to TFCDictRobust. Must have the same number of elements as total number of elements in the dictionary.
+        """
         arr = arr.flatten()
         return TFCDictRobust(
             zip(
@@ -251,12 +407,24 @@ class TFCDictRobust(OrderedDict):
 
     def block_until_ready(self):
         """Mimics block_until_ready for jax arrays. Used to halt the program until the computation that created the
-        dictionary is finished."""
+        dictionary is finished.
+        """
         self[self._keys[0]].block_until_ready()
         return self
 
     def __iadd__(self, o):
-        """ Used to overload "+=" for TfcDict so that 2 TfcDict's can be added together."""
+        """ Used to overload "+=" for TFCDictRobust so that 2 TFCDictRobust's can be added together.
+
+        Parameters
+        ----------
+        o : array-like or Python dictionary or TFCDictRobust
+            Values to add to the current dicitonary.
+
+        Returns
+        ----------
+        self : TFCDictRobust
+            A copy of self after adding in the values from o.
+        """
         if isinstance(o, dict) or (type(o) is type(self)):
             for key in self._keys:
                 self[key] += o[key]
@@ -267,7 +435,18 @@ class TFCDictRobust(OrderedDict):
         return self
 
     def __isub__(self, o):
-        """ Used to overload "-=" for TfcDict so that 2 TfcDict's can be subtracted."""
+        """ Used to overload "-=" for TFCDictRobust so that 2 TFCDictRobust's can be subtracted.
+
+        Parameters
+        ----------
+        o : array-like or Python dictionary or TFCDictRobust
+            Values to subtract from the current dicitonary.
+
+        Returns
+        ----------
+        self : TFCDictRobust
+            A copy of self after subtracting the values from o.
+        """
         if isinstance(o, dict) or (type(o) is type(self)):
             for key in self._keys:
                 self[key] -= o[key]
@@ -278,7 +457,18 @@ class TFCDictRobust(OrderedDict):
         return self
 
     def __add__(self, o):
-        """ Used to overload "+" for TfcDict so that 2 TfcDict's can be added together."""
+        """ Used to overload "+" for TFCDictRobust so that 2 TFCDictRobust's can be added together.
+
+        Parameters
+        ----------
+        o : array-like or Python dictionary or TFCDictRobust
+            Values to add to the current dicitonary.
+
+        Returns
+        ----------
+        out : TFCDictRobust
+            A TFCDictRobust with values = self + o.
+        """
         out = TFCDictRobust(self)
         if isinstance(o, dict) or (type(o) is type(self)):
             for key in self._keys:
@@ -290,7 +480,18 @@ class TFCDictRobust(OrderedDict):
         return out
 
     def __sub__(self, o):
-        """ Used to overload "-" for TfcDict so that 2 TfcDict's can be subtracted."""
+        """ Used to overload "-" for TFCDictRobust so that 2 TFCDictRobust's can be subtracted.
+
+        Parameters
+        ----------
+        o : array-like or Python dictionary or TFCDictRobust
+            Values to subtract from the current dicitonary.
+
+        Returns
+        ----------
+        self : TFCDictRobust
+            A TFCDictRobust with values = self - o.
+        """
         out = TFCDictRobust(self)
         if isinstance(o, dict) or (type(o) is type(self)):
             for key in self._keys:
@@ -314,23 +515,43 @@ register_pytree_node(
 # linear least squares to minimize the res function using the parameters
 # xi.
 #
-# The outputs of this function are:
-# 1. xi: The values of xi that minimize the residual.
-# 2. time: If timer = True, then the third output is the time the nonlinear least-squares took;
-#          otherwise, there is no third output.
-#
-# The option kwarg arguments are:
-# - J: User-specified jacobian that takes in argument xi. Default value is the jacobian of
-#      res with respect to xi.
-# - method: Method used to invert the matrix. The default is pinv. The two options are:
-#   * pinv: Use np.linalg.pinv
-#   * lstsq: Use np.linalg.lstsq
-# - timer: Setting this to True will time the non-linear least squares. Note that doing so
-#          adds a slight increase in runtime. As one iteration of the non-linear least squares
-#          is run first to avoid timining the JAX trace. The default is False.
-
-
 def LS(zXi, res, *args, J=None, method="pinv", timer=False, timerType="process_time"):
+    """
+
+    Parameters
+    ----------
+    zXi : pytree or array-like
+        Unknown parameters to be found using least-squares.
+        
+    res : function
+        Residual function (also known as the loss function) with signature res(xi,*args).
+        
+    *args : iterable
+        Any additional arguments taken by res other than xi.
+        
+    J : function, optional
+         User specified Jacobian. If None, then the Jacobian of res with respect to xi will be calculated via automatic differentiation. (Default value = None)
+
+    method : {"pinv","lstsq"}, optional
+         Method for least-squares inversion. (Default value = "pinv")
+         * pinv - Use np.linalg.pinv
+         * lstsq - Use np.linalg.lstsq
+
+    timer : bool, optional
+         Boolean that chooses whether to time the code or not. (Default value = False). Note that setting to true adds a slight increase in runtime.
+         As one iteration of the non-linear least squares is run first to avoid timining the JAX trace. 
+
+    timerType : str, optional
+         Any timer from the time module. (Default value = "process_time")
+
+    Returns
+    -------
+    xi : pytree or array-like
+         Unknowns that minimize res as found via least-squares. Type will be the same as zXi specified in the input.
+    
+    time : float
+         Computation time as calculated by timerType specified. This output is only returned if timer = True.
+    """
 
     if isinstance(zXi, TFCDict) or isinstance(zXi, TFCDictRobust):
         dictFlag = True
@@ -366,6 +587,8 @@ def LS(zXi, res, *args, J=None, method="pinv", timer=False, timerType="process_t
     else:
         TFCPrint.Error("The method entered is not valid. Please enter a valid method.")
 
+    zXi = zerosRobust(zXi)
+
     if timer:
         import time
 
@@ -384,12 +607,12 @@ def LS(zXi, res, *args, J=None, method="pinv", timer=False, timerType="process_t
 
 
 ## JIT-ed linear least-squares class.
-# Like the LS function, but it is in class form so that the run methd can be called multiple times w/o re-JITing
-
+# Like the LS function, but it is in class form so that the run methd can be called multiple times without re-JITing.
+# See LS for more details.
 
 class LsClass:
     def __init__(self, zXi, res, J=None, method="pinv", timer=False, timerType="process_time"):
-        """ Initialization function. Creates the JIT-ed least-squares function. """
+    """Initialization function. Creates the JIT-ed least-squares function."""
 
         self.timerType = timerType
         self.timer = timer
@@ -435,7 +658,25 @@ class LsClass:
         self._compiled = False
 
     def run(self, zXi, *args):
-        """ Runs the JIT-ed least-squares function and times it if desired. """
+        """Runs the JIT-ed least-squares function and times it if desired.
+
+        Parameters
+        ----------
+        zXi : pytree or array-like
+            Unknown parameters to be found using least-squares.
+            
+        *args : iterable
+            Any additional arguments taken by res other than xi.
+
+        Returns
+        -------
+        xi : pytree or array-like
+             Unknowns that minimize res as found via least-squares. Type will be the same as zXi specified in the input.
+        
+        time : float
+             Computation time as calculated by timerType specified. This output is only returned if timer = True.
+
+        """
 
         if self.timer:
             import time
@@ -464,36 +705,11 @@ class LsClass:
 ## JIT-ed non-linear least squares.
 # This function takes in an initial guess, xiInit (initial values of xi), and a residual function, res, and
 # performs a nonlinear least squares to minimize the res function using the parameters
-# xi. The conditions on stopping the nonlinear least-squares are:
+# xi. The conditions on terminating the nonlinear least-squares are:
 # 1. max(abs(res)) < tol
 # 2. max(abs(dxi)) < tol, where dxi is the change in xi from the last iteration.
 # 3. Number of iterations > maxIter.
 #
-# The outputs of this function are:
-# 1. xi: The values of xi that minimize the residual.
-# 2. it: The number of iterations.
-# 3. time: If timer = True, then the third output is the time the nonlinear least-squares took;
-#          otherwise, there is no third output.
-#
-# The option kwarg arguments are:
-# - J: User-specified jacobian that takes in argument xi. Default value is the jacobian of
-#      res with respect to xi.
-# - tol: Tolerance for stopping the while loop. Default is 1e-13.
-# - maxIter: Maximum number of nonlinear least-squares iterations. Default is 50.
-# - method: Method used to invert the matrix at each iteration. The default is pinv. The two options are,
-# - cond: User specified condition function. Default is None, which results in a condition
-#   that checks the three stopping conditions specified above.
-# - body: User specified body function. Default is None, which results in a body function that performs
-#   least-squares using the method provided and updates xi, dxi, and it.
-#   * pinv: Use np.linalg.pinv
-#   * lstsq: Use np.linalg.lstsq
-# - timer: Setting this to True will time the non-linear least squares. Note that doing so
-#          adds a slight increase in runtime. As one iteration of the non-linear least squares
-#          is run first to avoid timining the JAX trace. The default is False.
-# - printOut: Currently this option is not implemented. If JAX allows printing in JIT-ed functions,
-#             then it will dislpay the value of max(abs(res)) at each iteration.
-
-
 def NLLS(
     xiInit,
     res,
@@ -508,6 +724,63 @@ def NLLS(
     printOut=False,
     timerType="process_time",
 ):
+    """
+
+    Parameters
+    ----------
+    xiInit : pytree or array-like
+        Initial guess for the unkown parameters.
+        
+    res : function
+        Residual function (also known as the loss function) with signature res(xi,*args).
+        
+    *args : iterable
+        Any additional arguments taken by res other than xi.
+        
+    J : function
+         User specified Jacobian. If None, then the Jacobian of res with respect to xi will be calculated via automatic differentiation. (Default value = None)
+
+    cond : function, optional
+         User specified condition function. If None, then the default cond function is used which checks the three termination criteria
+         provided in the class description. (Default value = None)
+
+    body : function, optional
+         User specified while-loop body function. If None, then use the default body function which updates xi using a NLLS interation and the method provided.
+         (Default value = None)
+
+    tol : float
+         Tolerance used in the default termination criteria: see class description for more details. (Default value = 1e-13)
+
+    maxIter : int, optional
+         Maximum number of iterations. (Default value = 50)
+
+    method : {"pinv","lstsq"}, optional
+         Method for least-squares inversion. (Default value = "pinv")
+         * pinv - Use np.linalg.pinv
+         * lstsq - Use np.linalg.lstsq
+
+    timer : bool, optional
+         Boolean that chooses whether to time the code or not. (Default value = False). Note that setting to true adds a slight increase in runtime.
+         As one iteration of the non-linear least squares is run first to avoid timining the JAX trace. 
+
+    printOut : bool, optional
+         NOT CURRENTLY IMPLEMETNED; it will be implemented if JAX allows printing from within JITed functions. The printout will be 
+         max(abs(res)) at each iteration. Controls whether the NLLS prints out information each interaton or not. (Default value = False)
+
+    timerType : str
+         Any timer from the time module. (Default value = "process_time")
+
+    Returns
+    -------
+    xi : pytree or array-like
+         Unknowns that minimize res as found via least-squares. Type will be the same as zXi specified in the input.
+    
+    it : int
+         Number of NLLS iterations performed..
+    
+    time : float
+         Computation time as calculated by timerType specified. This output is only returned if timer = True.
+    """
 
     if timer and printOut:
         TFCPrint.Warning(
@@ -618,6 +891,7 @@ def NLLS(
 
 
 class NllsClass:
+    """ """
     def __init__(
         self,
         xiInit,
@@ -721,7 +995,28 @@ class NllsClass:
         self._compiled = False
 
     def run(self, xiInit, *args):
-        """ Runs the JIT-ed nonlinear least-squares function and times it if desired. """
+        """Runs the JIT-ed nonlinear least-squares function and times it if desired.
+
+        Parameters
+        ----------
+        xiInit : pytree or array-like
+            Initial guess for the unkown parameters.
+            
+        *args : iterable
+            Any additional arguments taken by res other than xi.
+
+        Returns
+        -------
+        xi : pytree or array-like
+             Unknowns that minimize res as found via least-squares. Type will be the same as zXi specified in the input.
+        
+        it : int
+             Number of NLLS iterations performed..
+        
+        time : float
+             Computation time as calculated by timerType specified. This output is only returned if timer = True.
+
+        """
 
         if self._dictFlag:
             dxi = np.ones_like(xiInit.toArray())
@@ -757,7 +1052,21 @@ class NllsClass:
 
 
 class ComponentConstraintGraph:
+    """ Creates a graph of all valid ways in which component constraints can be embedded. """
     def __init__(self, N, E):
+        """Class constructor.
+
+        Parameters
+        ----------
+        N : list
+            A list of strings that specify the node names. These node names typically coincide with
+            the names of the dependent variables.
+        E : Python dictionary
+            A dictionary with the following fields:
+            * name - Name of the component constraint.
+            * node0 - The name of one of the nodes that makes up the component constraint.  Must correspond with an element of the list given in N.
+            * node1 - The name of one of the nodes that makes up the component constraint.  Must correspond with an element of the list given in N.
+        """
 
         # Check that all edges are connected to valid nodes
         self.nNodes = len(N)
@@ -800,11 +1109,26 @@ class ComponentConstraintGraph:
         self.N = N
         self.E = E
 
-    def SaveTrees(self, outputDir, allTrees=False, savePDFs=False):
+    def SaveGraphs(self, outputDir, allGraphs=False, savePDFs=False):
+        """
+        Saves the graphs.
+        The graphs are saved in a clickable HTML structure. They can also be saved as PDFs.
+
+        Parameters
+        ----------
+        outputDir : str
+            Output directory to save in.
+            
+        allGraphs : bool, optional
+             Boolean that conrols whether all graphs are saved or just valid graphs. (Default value = False)
+
+        savePDFs : bool, optional
+             Boolean that controls whether the graphs are also saved as PDFs. (Default value = False)
+        """
         import os
         from .Html import HTML, Dot
 
-        if allTrees:
+        if allGraphs:
             targets = self.targets
         else:
             targets = [self.targets[k] for k in self.goodTargets]
@@ -880,7 +1204,24 @@ class ComponentConstraintGraph:
 
 
 def ScaledQrLs(A, B):
-    """ This function performs least-squares using the scaled QR method. """
+    """This function performs least-squares using a scaled QR method.
+
+    Parameters
+    ----------
+    A : array-like
+        A matrix in A*x = B.
+        
+    B : array-like
+        B matrix in A*x = B.
+
+    Returns
+    -------
+    x : array-like
+        Solution to A*x = B solved using a scaled QR method.
+
+    cn : array-like
+        Condition number.
+    """
     S = 1.0 / np.sqrt(np.sum(A * A, 0))
     S = np.reshape(S, (A.shape[1],))
     q, r = np.linalg.qr(A.dot(np.diag(S)))
@@ -890,11 +1231,34 @@ def ScaledQrLs(A, B):
 
 
 def _MatPinv(A):
-    """ This function is used to better replicate MATLAB's pseudo-inverse. """
+    """This function is used to better replicate MATLAB's pseudo-inverse.
+
+    Parameters
+    ----------
+    A : array-like
+        Matrix to be inverted.
+        
+    Returns
+    -------
+    Ainv : array-like
+        Inverse of A.
+    """
     rcond = onp.max(A.shape) * onp.spacing(np.linalg.norm(A, ord=2))
     return np.linalg.pinv(A, rcond=rcond)
 
 
 def step(x):
-    """ This is the unit step function, but the deriative is defined and equal to 0 at every point. """
+    """This is the unit step function, but the deriative is defined and equal to 0 at every point.
+
+    Parameters
+    ----------
+    x : array-like
+        Array to apply step to.
+        
+
+    Returns
+    -------
+    step_x : array-like
+        step(x)
+    """
     return np.heaviside(x, 0)
