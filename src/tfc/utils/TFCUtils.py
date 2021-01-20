@@ -506,7 +506,7 @@ def NLLS(
     method="pinv",
     timer=False,
     printOut=False,
-    timerType="process_time"
+    timerType="process_time",
 ):
 
     if timer and printOut:
