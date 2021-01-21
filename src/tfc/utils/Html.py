@@ -4,7 +4,14 @@ from yattag import Doc, indent
 
 
 class HTML:
-    """This contains helper functions for creating HTML files with yattag."""
+    """
+    This contains helper functions for creating HTML files with yattag.
+
+    Parameters
+    ----------
+    outFile: str
+        Output file
+    """
 
     def __init__(self, outFile):
         """This function initializes the header file, and saves useful variables to self.
@@ -54,7 +61,18 @@ class HTML:
 
 
 class Dot:
-    """This class contains helper functions used to create dot graphs."""
+    """
+    This class contains helper functions used to create dot graphs.
+
+    Parameters
+    ----------
+    outFile : str
+        Name of the filename under which the dot file should be saved.
+    
+    name: str
+        What the dot file should be called by Digrapph.
+
+    """
 
     def __init__(self, outFile, name):
         """ This function initizes the class and creates the digraph. """

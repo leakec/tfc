@@ -13,6 +13,15 @@ TFCPrint()
 class MakePlot:
     """This class is used to easily create journal-article-ready plots and subplots. The class can create 2D as well as 3D plots
     and even has support for twin y-axes.
+
+    Parameters
+    ----------
+    xlabs: list or array-like
+        The x-axes labels of for the plots
+    ylabs: list or array-like
+        The y-axes labels of for the plots
+    zlabs: list or array-like, optional
+        The z-axes labels of for the plots. Setting this forces subplots to be 3D. (Default value = None)
     """
 
     def __init__(self, xlabs, ylabs, twinYlabs=None, titles=None, zlabs=None):

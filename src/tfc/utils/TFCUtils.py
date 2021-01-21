@@ -1057,7 +1057,20 @@ class NllsClass:
 
 
 class ComponentConstraintGraph:
-    """ Creates a graph of all valid ways in which component constraints can be embedded. """
+    """
+     Creates a graph of all valid ways in which component constraints can be embedded.
+
+    Parameters
+    ----------
+    N : list
+        A list of strings that specify the node names. These node names typically coincide with
+        the names of the dependent variables.
+    E : Python dictionary
+        A dictionary with the following fields:
+        * name - Name of the component constraint.
+        * node0 - The name of one of the nodes that makes up the component constraint.  Must correspond with an element of the list given in N.
+        * node1 - The name of one of the nodes that makes up the component constraint.  Must correspond with an element of the list given in N.
+    """
 
     def __init__(self, N, E):
         """Class constructor.
