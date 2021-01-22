@@ -173,9 +173,9 @@ class TFCDict(OrderedDict):
     """
     This is the TFC dictionary class. It extends an OrderedDict and
     adds a few methods that enable:
-      - Adding dictionaries with the same keys together
-      - Turning a dictionary into a 1-D array
-      - Turning a 1-D array into a dictionary
+    - Adding dictionaries with the same keys together
+    - Turning a dictionary into a 1-D array
+    - Turning a 1-D array into a dictionary
     """
 
     def __init__(self, *args):
