@@ -22,10 +22,10 @@ Welcome to the documentation for TFC!
 .. toctree::
     :maxdepth: 1
     :caption: API Documentation
-    
-    Exhale/exhale_root
-    _static/index.html
-`Doxygen Documentation <_static/index.html>`_
+
+    Python API <py-modindex.html#http://>
+    C++ API (Doxygen) <_static/index.html#http://>
+    C++ API (Exhale) <Exhale/exhale_root>
 
 Mathematical Documentation
 =================

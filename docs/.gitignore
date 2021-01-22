@@ -2,4 +2,5 @@
 SphinxDocumentation.html
 notebooks/.ipynb_checkpoints
 Exhale
+DoxygenOutput
 _build

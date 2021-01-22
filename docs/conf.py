@@ -4,7 +4,10 @@ if not os.path.exists('_build'):
     os.makedirs('_build')
 if not os.path.exists('_build/doxygen'):
     os.makedirs('_build/doxygen')
+if not os.path.exists('DoxygenOutput'):
+    os.makedirs('DoxygenOutput')
 subprocess.call('cd _build/doxygen; doxygen ../../Doxyfile', shell=True)
+subprocess.call('cp -r _build/doxygen/html DoxygenOutput/', shell=True)
 
 # -- Project information -----------------------------------------------------
 
@@ -46,7 +49,7 @@ breathe_projects = {"TFC":"_build/doxygen/xml"}
 exhale_args = {
         "containmentFolder":"./Exhale",
         "rootFileName":"exhale_root.rst",
-        "rootFileTitle":"Public API: tfc package",
+        "rootFileTitle":"C++ Documentation",
         "doxygenStripFromPath":"..",
         "createTreeView":True
         }
@@ -69,7 +72,7 @@ html_theme = 'sphinx_rtd_theme'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_build/doxygen/html']
+html_static_path = ['DoxygenOutput/html']
 
 # Choose Pygments style
 pygments_style = None
