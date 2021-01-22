@@ -12,18 +12,18 @@ Subpackages
 Submodules
 ----------
 
-tfc.TFC module
---------------
+tfc.mtfc module
+---------------
 
-.. automodule:: tfc.TFC
+.. automodule:: tfc.mtfc
    :members:
    :undoc-members:
    :show-inheritance:
 
-tfc.nTFC module
+tfc.utfc module
 ---------------
 
-.. automodule:: tfc.nTFC
+.. automodule:: tfc.utfc
    :members:
    :undoc-members:
    :show-inheritance:
