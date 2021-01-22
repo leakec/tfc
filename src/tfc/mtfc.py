@@ -338,7 +338,7 @@ class mtfc:
 
         Returns
         -------
-        H : array-like
+        Hx : array-like
             Derivative of the basis function matrix with respect to the first variable.
         """
         return self._Hxjax(*x, full=full)
