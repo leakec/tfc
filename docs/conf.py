@@ -1,13 +1,15 @@
 # Build Doxygen docs
 import os, subprocess
+onRtd = os.environ.get('READTHEDOCS') == 'True'
 if not os.path.exists('_build'):
     os.makedirs('_build')
 if not os.path.exists('_build/doxygen'):
     os.makedirs('_build/doxygen')
-if not os.path.exists('DoxygenOutput'):
-    os.makedirs('DoxygenOutput')
 subprocess.call('cd _build/doxygen; doxygen ../../Doxyfile', shell=True)
-subprocess.call('cp -r _build/doxygen/html DoxygenOutput/', shell=True)
+if not onRtd:
+    if not os.path.exists('DoxygenOutput'):
+        os.makedirs('DoxygenOutput')
+    subprocess.call('cp -r _build/doxygen/html DoxygenOutput/', shell=True)
 
 # -- Project information -----------------------------------------------------
 
@@ -72,7 +74,10 @@ html_theme = 'sphinx_rtd_theme'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['DoxygenOutput/html']
+if onRtd:
+    html_static_path = ['_build/doxygen/html']
+else:
+    html_static_path = ['DoxygenOutput/html']
 
 # Choose Pygments style
 pygments_style = None
