@@ -1,5 +1,5 @@
 Welcome to the documentation for TFC!
-===============================
+=====================================
 
 .. toctree::
     :maxdepth: 1
@@ -23,12 +23,10 @@ Welcome to the documentation for TFC!
     :maxdepth: 1
     :caption: API Documentation
 
-    Python API <py-modindex.html#http://>
-    C++ API (Doxygen) <_static/index.html#http://>
-    C++ API (Exhale) <Exhale/exhale_root>
+    api
 
 Mathematical Documentation
-=================
+==========================
 Any users interested in the theory behind this method should start `here <https://www.mdpi.com/2227-7390/8/8/1303>`_; note that this journal article is open access, so you should be able to download it for free. The curious user can continue their study of the theory by visiting this `link <https://www.researchgate.net/project/Theory-of-Functional-Connections>`_ for a complete list of TFC publications with free downloadable PDFs.
     
 Indices and tables
