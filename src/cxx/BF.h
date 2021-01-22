@@ -111,9 +111,6 @@ class BasisFunc{
 /** Pointer for XLA-type function that can be cast to void* and put in a PyCapsule. */
 typedef void(*xlaFnType)(void*,void**);
 
-/** Function used to wrap BasisFunc->xla in C-style function that can be cast to void*. */
-void xlaWrapper(void* out, void** in);
-
 #ifdef HAS_CUDA
 	/** Pointer for GPU compatible XLA-type function that can be cast to void* and put in a PyCapsule. */
 	typedef void(*xlaGpuFnType)(CUstream,void**,const char*,size_t);
