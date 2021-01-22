@@ -11,26 +11,40 @@ from jax.lib import xla_client
 
 from .utils.TFCUtils import TFCPrint
 
-##
-# This is the multivariate TFC class. It acts as a container that holds:
-#  - The linear map from the domain of the DE to the domain of the free-function.
-#  - The necessary JAX code that enables automatic differentiation of the constrained experssion and Jacobians of the residual with respect to the unknown coefficients in the linear combination of basis functions that make up the free function.
-#  - Other useful TFC related functions such as collocation point creation.
-# In addition, this class ties these methods together to form a utility that enables a higher level of code abstraction
-# such that the end-user scripts are simple, clear, and elegant implementations of TFC.
-class mtfc:
 
-    ##
-    # This function is the constructor for the multivarite TFC class. Its inputs are as follows:
-    #    * N - Number of points to use when discretizing the domain.
-    #    * nC - Number of functions to remove from the beginning of free function linear expansion. This variable is used to account for basis functions that are linearly dependent on support functions used in the construction of the constrained expressions. The constraints for each dimension can be expressed in 1 of 2 ways. Note that a value of -1 is used to indicate no constraints exist for a particular dimension.
-    #           -# As an integer. When expressed as an integer, the first nC basis functions are removed from the free function.
-    #           -# As a set of integers. The basis functions corresponding to the numbers given in the set are removed from the free function.
-    #    * deg - Degree of the basis function expansion. This number is one less than the number of basis functions used.
-    #    * basis - This optional string argument specifies the basis functions to be used. The default is Chebyshev orthogonal polynomails.
-    #    * c - This argument acts as the constant in the linear map that maps the DE domain to the basis function domain.
-    #    * x0 - This optional argument specifies the beginning of the DE domain. The default value "None" will result in a DE domain that begins at 0.
-    #    * z - This optional argument is used to specify the basis function domain discretization. The default value will result in the typical collocation discretiztaion.
+class mtfc:
+    """
+    This is the multivariate TFC class. It acts as a container that holds:
+      - The linear map from the domain of the DE to the domain of the free-function.
+      - The necessary JAX code that enables automatic differentiation of the constrained experssion and Jacobians of the residual with respect to the unknown coefficients in the linear combination of basis functions that make up the free function.
+      - Other useful TFC related functions such as collocation point creation.
+    In addition, this class ties these methods together to form a utility that enables a higher level of code abstraction
+    such that the end-user scripts are simple, clear, and elegant implementations of TFC.
+
+    Parameters
+    ----------
+    N : list or array-like
+        Number of points to use per-dimension when discretizing the domain. List or array must be same lenght as number of dimensions.
+
+    nC : int or list or array-like
+        Number of functions to remove from the beginning of free function linear expansion. This variable is used to account for basis functions that are linearly dependent on support functions used in the construction of the constrained expressions. The constraints for each dimension can be expressed in 1 of 2 ways. Note that a value of -1 is used to indicate no constraints exist for a particular dimension.
+        1. As an integer. When expressed as an integer, the first nC basis functions are removed from the free function.
+        2. As a list or array. When expressed as a list or array, the basis functions corresponding to the numbers given by the list or array are removed from the free function.
+
+    deg : int
+        Degree of the basis function expansion.
+
+    basis : {"CP","LeP","FS","ELMTanh","ELMSigmoid","ELMSin","ELMSwish","ELMReLU"}, optional
+        This optional keyword argument specifies the basis functions to be used. (Default value = "CP")
+
+    x0 : list or array-like
+        Specifies the beginning of the DE domain. (Default value = None)
+
+    xf : list or array-like
+        Specifies the end of the DE domain. (Default value = None)
+
+    """
+
     def __init__(self, n, nC, deg, dim=2, basis="CP", x0=None, xf=None):
 
         # Store givens
@@ -292,38 +306,161 @@ class mtfc:
     #     * x - The discretization points.
     #     * full - This optional boolean argument when set to True will ignore the basis functions removed by the nC argument in the TFC constructor. The default is False.
     def H(self, *x, full=False):
+        """
+        This function computes the basis function matrix for the points specified by *x.
+
+        Parameters
+        ----------
+        *x : iterable of array-like
+            Points to calculate the basis functions at.
+
+        full : bool, optional
+            If true then the values specified by nC to the utfc class are ignored and all basis functions are computed. (Default value = False)
+
+        Returns
+        -------
+        H : array-like
+            Basis function matrix.
+        """
         return self._Hjax(*x, full=full)
 
     def Hx(self, *x, full=False):
-        """ This function returns a pointer to the deriative of H with respect to x. See documentation of H for more details. """
+        """
+        This function computes the derivative of the basis function matrix for the points specified by *x with respect to the first variable.
+
+        Parameters
+        ----------
+        *x : iterable of array-like
+            Points to calculate the basis functions at.
+
+        full : bool, optional
+            If true then the values specified by nC to the utfc class are ignored and all basis functions are computed. (Default value = False)
+
+        Returns
+        -------
+        H : array-like
+            Derivative of the basis function matrix with respect to the first variable.
+        """
         return self._Hxjax(*x, full=full)
 
     def Hx2(self, *x, full=False):
-        """ This function returns a pointer to the second deriative of H with respect to x. See documentation of H for more details. """
+        """
+        This function computes the second derivative of the basis function matrix for the points specified by *x with respect to the first variable.
+
+        Parameters
+        ----------
+        *x : iterable of array-like
+            Points to calculate the basis functions at.
+
+        full : bool, optional
+            If true then the values specified by nC to the utfc class are ignored and all basis functions are computed. (Default value = False)
+
+        Returns
+        -------
+        Hx2 : array-like
+            Second derivative of the basis function matrix with respect to the first variable.
+        """
         return self._Hx2jax(*x, full=full)
 
     def Hy2(self, *x, full=False):
-        """ This function returns a pointer to the second deriative of H with respect to y. See documentation of H for more details. """
+        """
+        This function computes the second derivative of the basis function matrix for the points specified by *x with respect to the second variable.
+
+        Parameters
+        ----------
+        *x : iterable of array-like
+            Points to calculate the basis functions at.
+
+        full : bool, optional
+            If true then the values specified by nC to the utfc class are ignored and all basis functions are computed. (Default value = False)
+
+        Returns
+        -------
+        Hy2 : array-like
+            Second derivative of the basis function matrix with respect to the second variable.
+        """
         return self._Hy2jax(*x, full=full)
 
     def Hx2y(self, *x, full=False):
-        """ This function returns a pointer of the mixed derivative d^3H/dx^2dy. See documentation of H for more details. """
+        """
+        This function computes the mixed derivative (second order derivative with respect to the first variable and first order with respect
+        to the second variable) of the basis function matrix for the points specified by *x.
+
+        Parameters
+        ----------
+        *x : iterable of array-like
+            Points to calculate the basis functions at.
+
+        full : bool, optional
+            If true then the values specified by nC to the utfc class are ignored and all basis functions are computed. (Default value = False)
+
+        Returns
+        -------
+        Hx2y : array-like
+            Mixed derivative of the basis function matrix with respect to the first variable.
+        """
         return self._Hx2yjax(*x, full=full)
 
     def Hy(self, *x, full=False):
-        """ This function returns a pointer to the deriative of H with respect to y. See documentation of H for more details. """
+        """
+        This function computes the derivative of the basis function matrix for the points specified by *x with respect to the second variable.
+
+        Parameters
+        ----------
+        *x : iterable of array-like
+            Points to calculate the basis functions at.
+
+        full : bool, optional
+            If true then the values specified by nC to the utfc class are ignored and all basis functions are computed. (Default value = False)
+
+        Returns
+        -------
+        Hy : array-like
+            Derivative of the basis function matrix with respect to the second variable.
+        """
         return self._Hyjax(*x, full=full)
 
     def Hxy(self, *x, full=False):
-        """ This function returns a pointer of the mixed derivative d^2H/dxdy. See documentation of H for more details. """
+        """
+        This function computes the mixed derivative (first order derivative with respect to the first variable and first order with respect
+        to the second variable) of the basis function matrix for the points specified by *x.
+
+        Parameters
+        ----------
+        *x : iterable of array-like
+            Points to calculate the basis functions at.
+
+        full : bool, optional
+            If true then the values specified by nC to the utfc class are ignored and all basis functions are computed. (Default value = False)
+
+        Returns
+        -------
+        Hxy : array-like
+            Mixed derivative of the basis function matrix with respect to the first variable.
+        """
         return self._Hxyjax(*x, full=full)
 
     def Hz(self, *x, full=False):
-        """ This function returns a pointer to the deriative of H with respect to z. See documentation of H for more details. """
+        """
+        This function computes the derivative of the basis function matrix for the points specified by *x with respect to the third variable.
+
+        Parameters
+        ----------
+        *x : iterable of array-like
+            Points to calculate the basis functions at.
+
+        full : bool, optional
+            If true then the values specified by nC to the utfc class are ignored and all basis functions are computed. (Default value = False)
+
+        Returns
+        -------
+        Hz : array-like
+            Derivative of the basis function matrix with respect to the third variable.
+        """
         return self._Hzjax(*x, full=full)
 
     def SetupJAX(self):
-        """ This function is used internally by TFC to setup autograd primatives and create desired behavior when taking derivatives of TFC constrained expressions. """
+        """This function is used internally by TFC to setup autograd primatives and create desired behavior when taking derivatives of TFC constrained expressions."""
 
         # Helper functions
         def _constant_bool(c, a):
