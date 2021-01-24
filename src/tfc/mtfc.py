@@ -15,9 +15,11 @@ from .utils.TFCUtils import TFCPrint
 class mtfc:
     """
     This is the multivariate TFC class. It acts as a container that holds:
-      - The linear map from the domain of the DE to the domain of the free-function.
-      - The necessary JAX code that enables automatic differentiation of the constrained experssion and Jacobians of the residual with respect to the unknown coefficients in the linear combination of basis functions that make up the free function.
-      - Other useful TFC related functions such as collocation point creation.
+
+    * The linear map from the domain of the DE to the domain of the free-function.
+    * The necessary JAX code that enables automatic differentiation of the constrained experssion and Jacobians of the residual with respect to the unknown coefficients in the linear combination of basis functions that make up the free function.
+    * Other useful TFC related functions such as collocation point creation.
+
     In addition, this class ties these methods together to form a utility that enables a higher level of code abstraction
     such that the end-user scripts are simple, clear, and elegant implementations of TFC.
 
@@ -28,6 +30,7 @@ class mtfc:
 
     nC : int or list or array-like
         Number of functions to remove from the beginning of free function linear expansion. This variable is used to account for basis functions that are linearly dependent on support functions used in the construction of the constrained expressions. The constraints for each dimension can be expressed in 1 of 2 ways. Note that a value of -1 is used to indicate no constraints exist for a particular dimension.
+
         1. As an integer. When expressed as an integer, the first nC basis functions are removed from the free function.
         2. As a list or array. When expressed as a list or array, the basis functions corresponding to the numbers given by the list or array are removed from the free function.
 
@@ -301,10 +304,6 @@ class mtfc:
 
         self.SetupJAX()
 
-    ## This function returns the a JAX function that returns a matrix of the basis functions evaluated at each discretization point.
-    #  This function can be automatically differentiated via JAX commands. The returned function pointer has the following arguments:
-    #     * x - The discretization points.
-    #     * full - This optional boolean argument when set to True will ignore the basis functions removed by the nC argument in the TFC constructor. The default is False.
     def H(self, *x, full=False):
         """
         This function computes the basis function matrix for the points specified by *x.

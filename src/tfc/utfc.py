@@ -15,10 +15,12 @@ from .utils.TFCUtils import TFCPrint
 class utfc:
     """
     This is the univariate TFC class. It acts as a container that creates and stores:
-     - The linear map between the free function domain (z) and the problem domain (x).
-     - The basis functions or ELMs that make up the free function.
-     - The necessary JAX code that enables automatic differentiation of the free function.
-     - Other useful TFC related functions such as collocation point creation.
+
+    * The linear map between the free function domain (z) and the problem domain (x).
+    * The basis functions or ELMs that make up the free function.
+    * The necessary JAX code that enables automatic differentiation of the free function.
+    * Other useful TFC related functions such as collocation point creation.
+
     In addition, this class ties these methods together to form a utility that enables a higher level of code abstraction
     such that the end-user scripts are simple, clear, and elegant implementations of TFC.
 
@@ -28,8 +30,10 @@ class utfc:
         Number of points to use when discretizing the domain.
     nC : int or list or array-like
         Number of functions to remove from the free function linear expansion. This variable is used to account for basis functions that are linearly dependent on support functions used in the construction of the constrained expressions. It can be expressed in 1 of 2 ways.
+
         1. As an integer. When expressed as an integer, the first nC basis functions are removed from the free function.
         2. As a list or array. When expressed as a list or array, the basis functions corresponding to the numbers given by the list or array are removed from the free function.
+
     m : int
         Degree of the basis function expansion. This number is one less than the number of basis functions used before removing those specified by nC.
     x0 : float, optional
