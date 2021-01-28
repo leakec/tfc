@@ -8,3 +8,8 @@ colorama
 graphviz
 yattag
 
+# Optional
+# mayavi # Used by MayaviMakePlot
+# plotly # Used by PlotlyMakePlot
+# pdfCropMargins # Used to crop pdfs in PlotlyMakePlot
+# kaleido # Used to save plotly plots
