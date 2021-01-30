@@ -24,6 +24,7 @@ class MakePlot:
         The titles for the plots. (Default value = None)
     """
 
+    _backgroundColor = "rgba(0,0,0,0)"
     _gridColor = "rgb(176, 176, 176)"
     _fontSize = 16
 
@@ -157,9 +158,15 @@ class MakePlot:
                         self.fig["layout"]["scene"]["xaxis"]["gridcolor"] = self._gridColor
                         self.fig["layout"]["scene"]["yaxis"]["gridcolor"] = self._gridColor
                         self.fig["layout"]["scene"]["zaxis"]["gridcolor"] = self._gridColor
-                        self.fig["layout"]["scene"]["xaxis"]["backgroundcolor"] = "white"
-                        self.fig["layout"]["scene"]["yaxis"]["backgroundcolor"] = "white"
-                        self.fig["layout"]["scene"]["zaxis"]["backgroundcolor"] = "white"
+                        self.fig["layout"]["scene"]["xaxis"][
+                            "backgroundcolor"
+                        ] = self._backgroundColor
+                        self.fig["layout"]["scene"]["yaxis"][
+                            "backgroundcolor"
+                        ] = self._backgroundColor
+                        self.fig["layout"]["scene"]["zaxis"][
+                            "backgroundcolor"
+                        ] = self._backgroundColor
                     else:
                         self.fig["layout"]["scene" + str(row + col + 1)]["xaxis"][
                             "gridcolor"
@@ -172,21 +179,24 @@ class MakePlot:
                         ] = self._gridColor
                         self.fig["layout"]["scene" + str(row + col + 1)]["xaxis"][
                             "backgroundcolor"
-                        ] = "white"
+                        ] = self._backgroundColor
                         self.fig["layout"]["scene" + str(row + col + 1)]["yaxis"][
                             "backgroundcolor"
-                        ] = "white"
+                        ] = self._backgroundColor
                         self.fig["layout"]["scene" + str(row + col + 1)]["zaxis"][
                             "backgroundcolor"
-                        ] = "white"
+                        ] = self._backgroundColor
         else:
             self.fig.update_xaxes(gridcolor=self._gridColor, linecolor="black")
             self.fig.update_yaxes(gridcolor=self._gridColor, linecolor="black")
-            self.fig.update_layout(plot_bgcolor="rgba(0,0,0,0)")
+            self.fig.update_layout(plot_bgcolor=self._backgroundColor)
 
         # Update layout
         self.fig.update_layout(
-            margin=dict(t=50, b=50, r=50, l=50), autosize=True, font=dict(size=MakePlot._fontSize)
+            margin=dict(t=50, b=50, r=50, l=50),
+            autosize=True,
+            font=dict(size=MakePlot._fontSize),
+            paper_bgcolor=self._backgroundColor,
         )
 
     def Surface(self, row=None, col=None, **kwargs):
@@ -361,6 +371,23 @@ class MakePlot:
         fileNameFull = fileName + "." + fileType
         if fileType == "html":
             self.fig.write_html(fileNameFull, **kwargs)
+        elif fileType == "png" and tight == True:
+            from io import BytesIO
+            from PIL import Image
+
+            dark = BytesIO()
+            dark.write(self.fig.to_image(fileType, **kwargs))
+            dark.seek(0)
+            pilImage = Image.open(dark)
+            pngArray = np.array(pilImage)
+            blankPx = pngArray[0, 0, :]
+            mask = pngArray != blankPx
+            coords = np.argwhere(mask)
+            x0, y0, z0 = coords.min(axis=0)
+            x1, y1, z1 = coords.max(axis=0) + 1
+            croppedBox = pngArray[x0:x1, y0:y1, z0:z1]
+            pilImage = Image.fromarray(croppedBox, "RGBA")
+            pilImage.save(fileNameFull)
         else:
             self.fig.write_image(fileNameFull, **kwargs)
             if fileType == "pdf" and tight:
