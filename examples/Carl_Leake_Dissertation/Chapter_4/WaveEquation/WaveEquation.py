@@ -4,7 +4,7 @@ from jax import jacfwd, jit
 from matplotlib import cm
 
 from tfc import mtfc
-from tfc.utils import LS, egrad, MakePlot
+from tfc.utils import LS, egrad
 
 # Constants and switches:
 n = 30
@@ -12,6 +12,7 @@ x0 = np.array([0.,0.])
 xf = np.array([1.,1.])
 
 xtfc = False
+usePlotly = True
 
 # Real analytical solution:
 real = lambda x,t: np.sin(np.pi*x)*np.cos(np.pi*t)
@@ -64,20 +65,42 @@ print("Max error test: "+str(np.max(err)))
 print("Mean error test: "+str(np.mean(err)))
 
 # Create plots
-p = MakePlot(r'$x$',r'$t$',zlabs=r'$u(x,t)$')
-p.ax[0].plot_surface(x[0].reshape((n,n)),x[1].reshape((n,n)),real(*x).reshape((n,n)),
-                     cmap=cm.gist_rainbow,antialiased=False,rcount=n,ccount=n)
+if usePlotly:
+    from tfc.utils.PlotlyMakePlot import MakePlot
 
-p.ax[0].tick_params(axis='z', which='major', pad=10)
-p.ax[0].xaxis.labelpad = 20
-p.ax[0].yaxis.labelpad = 20
-p.ax[0].zaxis.labelpad = 20
-p.ax[0].view_init(azim=-25,elev=25)
+    p = MakePlot(r'x',r't',zlabs=r'u(x,t)')
+    p.Surface(x=x[0].reshape((n,n)),
+              y=x[1].reshape((n,n)),
+              z=real(*x).reshape((n,n)),
+              colorscale='twilight',
+              showscale=False)
+    p.view(azimuth=-135,elevation=20)
+    p.fig['layout']['scene']['aspectmode']='cube'
+    p.PartScreen(9,8)
+    p.show()
 
-p.PartScreen(8,7)
-p.show()
+    p1 = MakePlot('x','y',zlabs='error')
+    p1.Surface(x=dark[0],y=dark[1],z=err.reshape((nTest,nTest)),
+              colorscale='twilight')
+    p1.show()
 
-p1 = MakePlot('x','y',zlabs='error')
-p1.ax[0].plot_surface(*dark,err.reshape((nTest,nTest)),cmap=cm.gist_rainbow)
-p1.FullScreen()
-p1.show()
+else:
+    from tfc.utils import MakePlot
+
+    p = MakePlot(r'$x$',r'$t$',zlabs=r'$u(x,t)$')
+    p.ax[0].plot_surface(x[0].reshape((n,n)),x[1].reshape((n,n)),real(*x).reshape((n,n)),
+                         cmap=cm.gist_rainbow,antialiased=False,rcount=n,ccount=n)
+
+    p.ax[0].tick_params(axis='z', which='major', pad=10)
+    p.ax[0].xaxis.labelpad = 20
+    p.ax[0].yaxis.labelpad = 20
+    p.ax[0].zaxis.labelpad = 20
+    p.ax[0].view_init(azim=-25,elev=25)
+
+    p.PartScreen(8,7)
+    p.show()
+
+    p1 = MakePlot('x','y',zlabs='error')
+    p1.ax[0].plot_surface(*dark,err.reshape((nTest,nTest)),cmap=cm.gist_rainbow)
+    p1.FullScreen()
+    p1.show()

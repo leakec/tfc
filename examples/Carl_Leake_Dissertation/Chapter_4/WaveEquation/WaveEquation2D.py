@@ -4,7 +4,7 @@ from jax import jacfwd, jit
 from matplotlib import cm
 
 from tfc import mtfc
-from tfc.utils import LS, egrad, MakePlot
+from tfc.utils import LS, egrad
 
 # Constants and switches:
 n = 11
@@ -13,7 +13,7 @@ x0 = np.array([0.,0.,0.])
 xf = np.array([1.,1.,1.])
 
 xtfc = True
-createPlots = False
+usePlotly = True
 
 # Real analytical solution:
 real = lambda x,y,t: np.sin(np.pi*x)*np.sin(np.pi*y)*np.cos(np.pi*np.sqrt(2.)/8.*t)
@@ -71,10 +71,26 @@ print("Mean error test: "+str(np.mean(err)))
 # Create plots
 n = 100
 X,Y = np.meshgrid(np.linspace(0.,1.,100),np.linspace(0.,1.,100))
-p = MakePlot(r'$x$',r'$y$',zlabs=r'$u(x,y,0.5)$')
-p.ax[0].plot_surface(X,Y,real(X,Y,0.5*np.ones_like(X)),cmap=cm.gist_rainbow,antialiased=False,rcount=n,ccount=n)
-p.ax[0].xaxis.labelpad = 20
-p.ax[0].yaxis.labelpad = 20
-p.ax[0].zaxis.labelpad = 20
-p.PartScreen(8,7)
-p.show()
+
+if usePlotly:
+    from tfc.utils.PlotlyMakePlot import MakePlot
+    p = MakePlot(r'x',r'y',zlabs=r'u(x,y,0.5)')
+    p.Surface(x=X,
+              y=Y,
+              z=real(X,Y,0.5*np.ones_like(X)),
+              colorscale='twilight',
+              showscale=False)
+    p.view(azimuth=45,elevation=40)
+    p.fig['layout']['scene']['aspectmode']='cube'
+    p.PartScreen(9,8)
+    p.show()
+
+else:
+    from tfc.utils import MakePlot
+    p = MakePlot(r'$x$',r'$y$',zlabs=r'$u(x,y,0.5)$')
+    p.ax[0].plot_surface(X,Y,real(X,Y,0.5*np.ones_like(X)),cmap=cm.gist_rainbow,antialiased=False,rcount=n,ccount=n)
+    p.ax[0].xaxis.labelpad = 20
+    p.ax[0].yaxis.labelpad = 20
+    p.ax[0].zaxis.labelpad = 20
+    p.PartScreen(8,7)
+    p.show()
