@@ -15,6 +15,7 @@ n = 20
 nTest = 100
 
 xTFC = False # Set to True to use X-TFC rather than TFC
+usePlotly = True # Set to True to use plotly rather than matplotlib
 
 # Real analytical solution:
 real = lambda x,y: 1./np.pi**2*np.sin(np.pi*x)*np.sin(np.pi*y)
@@ -75,13 +76,29 @@ print("Max Error: "+str(np.max(err)))
 print("Mean Error: "+str(np.mean(err)))
 
 # Plot the analytical solution
-p = MakePlot(r'$x$',r'$y$',zlabs=r'$u(x,y)$')
-p.ax[0].plot_surface(xTest[0].reshape((nTest,nTest)),xTest[1].reshape((nTest,nTest)),real(*xTest).reshape((nTest,nTest)),cmap=cm.gist_rainbow)
+if usePlotly:
+    from tfc.utils.PlotlyMakePlot import MakePlot
 
-p.ax[0].tick_params(axis='z', which='major', pad=10)
-p.ax[0].xaxis.labelpad = 20
-p.ax[0].yaxis.labelpad = 20
-p.ax[0].zaxis.labelpad = 20
+    p = MakePlot(r'x',r'y',zlabs=r'u(x,y)')
+    p.Surface(x=xTest[0].reshape((nTest,nTest)),
+              y=xTest[1].reshape((nTest,nTest)),
+              z=real(*xTest).reshape((nTest,nTest)),
+              colorscale='twilight',
+              showscale=False)
+    p.view(azimuth=-135,elevation=20)
+    p.fig['layout']['scene']['aspectmode']='cube'
+    p.show()
 
-p.FullScreen()
-p.show()
+else:
+    from tfc.utils import MakePlot
+
+    p = MakePlot(r'$x$',r'$y$',zlabs=r'$u(x,y)$')
+    p.ax[0].plot_surface(xTest[0].reshape((nTest,nTest)),xTest[1].reshape((nTest,nTest)),real(*xTest).reshape((nTest,nTest)),cmap=cm.gist_rainbow)
+
+    p.ax[0].tick_params(axis='z', which='major', pad=10)
+    p.ax[0].xaxis.labelpad = 20
+    p.ax[0].yaxis.labelpad = 20
+    p.ax[0].zaxis.labelpad = 20
+
+    p.FullScreen()
+    p.show()

@@ -15,6 +15,7 @@ n = 30
 nTest = 100
 
 xTFC = False # Set to True to use X-TFC rather than TFC
+usePlotly = True # Set to true to use plotly rather than matplotlib
 
 # Real analytical solution:
 real = lambda r,th: r**2/8.+np.pi*np.cos(th)/r + r**2/4.*np.sin(2.*th)+r**3/16.*np.sin(3.*th)
@@ -87,39 +88,63 @@ print("Mean Error: "+str(np.mean(err)))
 X = xTest[0]*np.cos(xTest[1])
 Y = xTest[0]*np.sin(xTest[1])
 
-xlabs = [[r'$x$',r'$x$'],['',r'$x$']]
-ylabs = [[r'',r'$y$'],[r'$y$',r'$y$']]
-zlabs = [[r'$u(x,y)$',r''],[r'$u(x,y)$',r'$u(x,y)$']]
+# Create plots
+if usePlotly:
+    from tfc.utils.PlotlyMakePlot import MakePlot
 
-azim = [-90,-90,0,-135]
-elev = [0,90,0,45]
+    p = MakePlot(r'x',r'y',zlabs=r'u(x,y)')
+    p.Surface(x=X.reshape((nTest,nTest)),
+              y=Y.reshape((nTest,nTest)),
+              z=real(*xTest).reshape((nTest,nTest)),
+              colorscale='twilight',
+              showscale=False)
+    p.view(azimuth=45,elevation=45)
+    p.fig['layout']['scene']['aspectmode']='cube'
+    p.show()
 
-p = MakePlot(xlabs,ylabs,zlabs=zlabs)
-for k in range(4):
-    p.ax[k].plot_surface(X.reshape((nTest,nTest)),Y.reshape((nTest,nTest)),real(*xTest).reshape((nTest,nTest)),cmap=cm.nipy_spectral)
-    p.ax[k].xaxis.labelpad = 15
-    p.ax[k].yaxis.labelpad = 15
-    p.ax[k].zaxis.labelpad = 10
-    p.ax[k].view_init(azim=azim[k],elev=elev[k])
-    if not k == 4:
-        p.ax[k].set_proj_type('ortho')
+    p1 = MakePlot('x','y',zlabs='error')
+    p1.Surface(x=xTest[0].reshape((nTest,nTest)),
+              y=xTest[1].reshape((nTest,nTest)),
+              z=err.reshape((nTest,nTest)),
+              colorscale='twilight',
+              showscale=False)
+    p1.show()
 
-p.ax[1].tick_params(axis='both', which='major', pad=8)
-p.ax[1].xaxis.labelpad = 10
-p.ax[1].yaxis.labelpad = 10
+else:
+    from tfc.utils import MakePlot
 
-p.ax[0].set_yticklabels([])
-p.ax[1].set_zticklabels([])
-p.ax[2].set_xticklabels([])
-p.fig.subplots_adjust(wspace=0.05, hspace=0.05)
-p.PartScreen(10,9)
-p.show()
+    xlabs = [[r'$x$',r'$x$'],['',r'$x$']]
+    ylabs = [[r'',r'$y$'],[r'$y$',r'$y$']]
+    zlabs = [[r'$u(x,y)$',r''],[r'$u(x,y)$',r'$u(x,y)$']]
 
-# Plot the error in polar coordinates
-p1 = MakePlot(r'$r$',r'$\theta$',zlabs=r'error')
-p1.ax[0].plot_surface(xTest[0].reshape((nTest,nTest)),xTest[1].reshape((nTest,nTest)),err.reshape((nTest,nTest)),cmap=cm.gist_rainbow)
-p1.ax[0].xaxis.labelpad = 20
-p1.ax[0].yaxis.labelpad = 20
-p1.ax[0].zaxis.labelpad = 20
-p1.FullScreen()
-p1.show()
+    azim = [-90,-90,0,-135]
+    elev = [0,90,0,45]
+
+    p = MakePlot(xlabs,ylabs,zlabs=zlabs)
+    for k in range(4):
+        p.ax[k].plot_surface(X.reshape((nTest,nTest)),Y.reshape((nTest,nTest)),real(*xTest).reshape((nTest,nTest)),cmap=cm.nipy_spectral)
+        p.ax[k].xaxis.labelpad = 15
+        p.ax[k].yaxis.labelpad = 15
+        p.ax[k].zaxis.labelpad = 10
+        p.ax[k].view_init(azim=azim[k],elev=elev[k])
+        if not k == 4:
+            p.ax[k].set_proj_type('ortho')
+
+    p.ax[1].tick_params(axis='both', which='major', pad=8)
+    p.ax[1].xaxis.labelpad = 10
+    p.ax[1].yaxis.labelpad = 10
+
+    p.ax[0].set_yticklabels([])
+    p.ax[1].set_zticklabels([])
+    p.ax[2].set_xticklabels([])
+    p.fig.subplots_adjust(wspace=0.05, hspace=0.05)
+    p.PartScreen(10,9)
+    p.show()
+
+    p1 = MakePlot(r'$r$',r'$\theta$',zlabs=r'error')
+    p1.ax[0].plot_surface(xTest[0].reshape((nTest,nTest)),xTest[1].reshape((nTest,nTest)),err.reshape((nTest,nTest)),cmap=cm.gist_rainbow)
+    p1.ax[0].xaxis.labelpad = 20
+    p1.ax[0].yaxis.labelpad = 20
+    p1.ax[0].zaxis.labelpad = 20
+    p1.FullScreen()
+    p1.show()
