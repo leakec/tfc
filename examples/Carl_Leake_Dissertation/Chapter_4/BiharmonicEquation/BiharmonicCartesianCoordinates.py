@@ -2,7 +2,6 @@ import tqdm
 
 import numpy as onp
 import jax.numpy as np
-from matplotlib import cm
 
 from tfc import mtfc
 from tfc.utils import LS, egrad, MakePlot
@@ -77,6 +76,7 @@ print("Mean Error: "+str(np.mean(err)))
 
 # Plot the analytical solution
 if usePlotly:
+    from matplotlib import cm
     from tfc.utils.PlotlyMakePlot import MakePlot
 
     p = MakePlot(r'x',r'y',zlabs=r'u(x,y)')

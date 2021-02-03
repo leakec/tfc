@@ -1,7 +1,6 @@
 import numpy as onp
 import jax.numpy as np
 from jax import jacfwd, jit
-from matplotlib import cm
 
 from tfc import mtfc
 from tfc.utils import LS, egrad
@@ -74,6 +73,7 @@ X,Y = np.meshgrid(np.linspace(0.,1.,100),np.linspace(0.,1.,100))
 
 if usePlotly:
     from tfc.utils.PlotlyMakePlot import MakePlot
+
     p = MakePlot(r'x',r'y',zlabs=r'u(x,y,0.5)')
     p.Surface(x=X,
               y=Y,
@@ -85,7 +85,9 @@ if usePlotly:
     p.show()
 
 else:
+    from matplotlib import cm
     from tfc.utils import MakePlot
+
     p = MakePlot(r'$x$',r'$y$',zlabs=r'$u(x,y,0.5)$')
     p.ax[0].plot_surface(X,Y,real(X,Y,0.5*np.ones_like(X)),cmap=cm.gist_rainbow,antialiased=False,rcount=n,ccount=n)
     p.ax[0].xaxis.labelpad = 20

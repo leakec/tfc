@@ -1,7 +1,6 @@
 import numpy as onp
 import jax.numpy as np
 from jax import jacfwd, jit
-from matplotlib import cm
 
 from tfc import mtfc
 from tfc.utils import LS, egrad
@@ -84,6 +83,7 @@ if usePlotly:
     p1.show()
 
 else:
+    from matplotlib import cm
     from tfc.utils import MakePlot
 
     p = MakePlot(r'$x$',r'$t$',zlabs=r'$u(x,t)$')

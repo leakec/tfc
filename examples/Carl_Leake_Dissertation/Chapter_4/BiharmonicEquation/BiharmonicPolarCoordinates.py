@@ -2,7 +2,6 @@ import tqdm
 
 import numpy as onp
 import jax.numpy as np
-from matplotlib import cm
 
 from tfc import mtfc
 from tfc.utils import LS, egrad, MakePlot
@@ -111,6 +110,7 @@ if usePlotly:
     p1.show()
 
 else:
+    from matplotlib import cm
     from tfc.utils import MakePlot
 
     xlabs = [[r'$x$',r'$x$'],['',r'$x$']]
