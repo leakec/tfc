@@ -116,39 +116,50 @@ class MakePlot:
                 for col in range(xlabs.shape[1]):
                     if self._is3d:
                         if row == 0 and col == 0:
-                            self.fig["layout"]["scene"]["xaxis"]["title"] = xlabs[row, col]
-                            self.fig["layout"]["scene"]["yaxis"]["title"] = ylabs[row, col]
-                            self.fig["layout"]["scene"]["zaxis"]["title"] = zlabs[row, col]
+                            self.fig["layout"]["scene"]["xaxis"].update(
+                                title=xlabs[row, col], exponentformt="e"
+                            )
+                            self.fig["layout"]["scene"]["yaxis"].update(
+                                title=ylabs[row, col], exponentformt="e"
+                            )
+                            self.fig["layout"]["scene"]["zaxis"].update(
+                                title=zlabs[row, col], exponentformt="e"
+                            )
                         else:
-                            self.fig["layout"]["scene" + str(row + col + 1)]["xaxis"][
-                                "title"
-                            ] = xlabs[row, col]
-                            self.fig["layout"]["scene" + str(row + col + 1)]["yaxis"][
-                                "title"
-                            ] = ylabs[row, col]
-                            self.fig["layout"]["scene" + str(row + col + 1)]["zaxis"][
-                                "title"
-                            ] = zlabs[row, col]
+                            self.fig["layout"]["scene" + str(row + col + 1)]["xaxis"].uppdate(
+                                title=xlabs[row, col], exponentformat="e"
+                            )
+                            self.fig["layout"]["scene" + str(row + col + 1)]["yaxis"].uppdate(
+                                title=ylabs[row, col], exponentformat="e"
+                            )
+                            self.fig["layout"]["scene" + str(row + col + 1)]["zaxis"].uppdate(
+                                title=zlabs[row, col], exponentformat="e"
+                            )
+
                     else:
                         if row == 0 and col == 0:
-                            self.fig["layout"]["xaxis"]["title"] = xlabs[row, col]
-                            self.fig["layout"]["yaxis"]["title"] = ylabs[row, col]
+                            self.fig["layout"]["xaxis"].update(
+                                title=xlabs[row, col], exponentformat="e"
+                            )
+                            self.fig["layout"]["yaxis"].update(
+                                title=ylabs[row, col], exponentformat="e"
+                            )
                         else:
-                            self.fig["layout"]["xaxis" + str(row + col + 1)]["title"] = xlabs[
-                                row, col
-                            ]
-                            self.fig["layout"]["yaxis" + str(row + col + 1)]["title"] = ylabs[
-                                row, col
-                            ]
+                            self.fig["layout"]["xaxis" + str(row + col + 1)].update(
+                                title=xlabs[row, col], exponentformat="e"
+                            )
+                            self.fig["layout"]["yaxis" + str(row + col + 1)].update(
+                                title=ylabs[row, col], exponentformat="e"
+                            )
 
         else:
             if self._is3d:
-                self.fig.update_layout(scene=dict(xaxis=dict(title=xlabs[0, 0])))
-                self.fig.update_layout(scene=dict(yaxis=dict(title=ylabs[0, 0])))
-                self.fig.update_layout(scene=dict(zaxis=dict(title=zlabs[0, 0])))
+                self.fig.update_layout(scene=dict(xaxis=dict(title=xlabs[0, 0],exponentformat="e")))
+                self.fig.update_layout(scene=dict(yaxis=dict(title=ylabs[0, 0],exponentformat="e")))
+                self.fig.update_layout(scene=dict(zaxis=dict(title=zlabs[0, 0],exponentformat="e")))
             else:
-                self.fig.update_xaxes(title=xlabs[0, 0])
-                self.fig.update_yaxes(title=ylabs[0, 0])
+                self.fig.update_xaxes(title=xlabs[0, 0],exponentformat="e")
+                self.fig.update_yaxes(title=ylabs[0, 0],exponentformat="e")
 
         # Update grid and background colors
         if self._is3d:
@@ -350,7 +361,7 @@ class MakePlot:
         """
         self.fig.show(**kwargs)
 
-    def save(self, fileName, tight=True, fileType="pdf", **kwargs):
+    def save(self, fileName, tight=True, fileType="png", **kwargs):
         """
         Saves the figure using the type specified. If HTML is specified, the figure will
         be saved as a dynamic html file. All other file types are static.
@@ -361,10 +372,10 @@ class MakePlot:
             Name of the save file minus the file type (e.g., MyFigure not MyFigure.pdf).
 
         tight : boolean, optional
-            If the fileType is pdf and this value is true, then pdfCropMargins is used to eliminate whitespace.
-            (Default value = True)
-        fileType : {"pdf","jpg","png","html"}, optional
-            Type of file to save the figure as. (Default value = "pdf")
+            If the fileType is pdf or png and this value is true, then a tool is used to eliminate whitespace.
+            pdfCropMargins is used for PDFs and PIL is used for png's. (Default value = True)
+        fileType : {"pdf","jpg","png","svg","eps","html"}, optional
+            Type of file to save the figure as. (Default value = "png")
         **kwargs : dict, optional
             Keyword arguments passed onto fig.write_image or fig.write_html, depending on fileType.
         """
@@ -466,3 +477,47 @@ class MakePlot:
             )
         else:
             self.fig["layout"]["scene"]["camera"].eye = dict(x=dark[0], y=dark[1], z=dark[2])
+
+    def FullScreen(self):
+        """ Make the plot full screen. """
+        import tkinter as tk
+
+        root = tk.Tk()
+        root.withdraw()
+        width = root.winfo_screenwidth()
+        height = root.winfo_screenheight()
+
+        self.fig.update_layout(width=width, height=height)
+
+    def PartScreen(self, width, height, units="in"):
+        """
+        Make the plot size equal to width x height.
+
+        Parameters
+        ----------
+        width : float
+            Width of the plot
+        height : float
+            Height of the plot
+
+        units : {"in","mm","px"}, optional
+            Units width and height are given in. (Default value = inches)
+        """
+        if units != "px":
+            import tkinter as tk
+
+            root = tk.Tk()
+            root.withdraw()
+
+            if units == "in":
+                widthConvert = root.winfo_screenwidth() / (root.winfo_screenmmwidth() / 25.4)
+                heightConvert = root.winfo_screenheight() / (root.winfo_screenmmheight() / 25.4)
+            else:
+                widthConvert = root.winfo_screenwidth() / root.winfo_screenmmwidth()
+                heightConvert = root.winfo_screenheight() / root.winfo_screenmmheight()
+
+            self.fig.update_layout(
+                width=int(width * widthConvert), height=int(height * heightConvert)
+            )
+        else:
+            self.fig.update_layout(width=width, height=height)
