@@ -76,7 +76,6 @@ if usePlotly:
               showscale=False)
     p.view(azimuth=-135,elevation=20)
     p.fig['layout']['scene']['aspectmode']='cube'
-    p.PartScreen(9,8)
     p.show()
 
     p1 = MakePlot('x','y',zlabs='error')

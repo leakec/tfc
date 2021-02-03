@@ -82,7 +82,6 @@ if usePlotly:
               showscale=False)
     p.view(azimuth=45,elevation=40)
     p.fig['layout']['scene']['aspectmode']='cube'
-    p.PartScreen(9,8)
     p.show()
 
 else:
