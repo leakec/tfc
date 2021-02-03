@@ -4,12 +4,13 @@ numpy
 jax
 jaxlib
 matplotlib
+plotly
 colorama
 graphviz
 yattag
 
 # Optional
-# mayavi # Used by MayaviMakePlot
-# plotly # Used by PlotlyMakePlot
-# pdfCropMargins # Used to crop pdfs in PlotlyMakePlot
 # kaleido # Used to save plotly plots
+# pdfCropMargins # Used to crop pdfs in PlotlyMakePlot
+# Pillow # Used to crop png's in PlotlyMakePlot
+# mayavi # Used by MayaviMakePlot
