@@ -1,9 +1,8 @@
 import numpy as np
-from matplotlib import cm
-from tfc.utils import MakePlot
 
 # Constants 
 n = 100
+usePlotly = True # Change to false to use matplotlib instead
 
 # Create the domain
 dark = np.meshgrid(np.linspace(-2.,2.,n),np.linspace(-2.,2.,n))
@@ -26,21 +25,51 @@ v = lambda x,y: v1(x,y)+5.-v1(x,np.zeros_like(y))-u(x,np.zeros_like(y))
 # Plot results
 U = u(x,y).reshape((n,n))
 V = v(x,y).reshape((n,n))
-p = [MakePlot(r"$x$",r"$y$",zlabs=r"$u(x,y,g^u(x,y))$"),MakePlot(r"$x$",r"$y$",zlabs=r"$v(x,y,g^v(x,y),g^u(x,y))$")]
-p[0].ax[0].plot_surface(*dark,U,cmap=cm.gist_rainbow,antialiased=False,rcount=n,ccount=n)
-p[0].ax[0].plot(np.zeros_like(x),y,np.cos(np.pi*y),'k',linewidth=4.,zorder=3)
-p[1].ax[0].plot_surface(*dark,V,cmap=cm.gist_rainbow,antialiased=False,rcount=n,ccount=n)
-p[1].ax[0].plot(np.zeros_like(x),y,5.-np.cos(np.pi*y),'k',linewidth=4.,zorder=3)
-p[1].ax[0].tick_params(axis='z', which='major', pad=8)
-for k in range(2):
-    p[k].ax[0].xaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
-    p[k].ax[0].yaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
-    p[k].ax[0].zaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
-    p[k].ax[0].xaxis.labelpad = 20
-    p[k].ax[0].yaxis.labelpad = 20
-    p[k].ax[0].zaxis.labelpad = 15
-    p[k].ax[0].view_init(30.,-135.)
-    p[k].ax[0].zaxis.set_rotate_label(False)
-    p[k].ax[0].zaxis.label.set_rotation(95)
-    p[k].PartScreen(8,7)
-    p[k].show()
+
+if usePlotly:
+    from tfc.utils.PlotlyMakePlot import MakePlot
+
+    p = [MakePlot(r"x",r"y",zlabs=r"u(x,y,g<sup>u</sup>(x,y))"),MakePlot(r"x",r"y",zlabs=r"v(x,y,g<sup>v</sup>(x,y),g<sup>u</sup>(x,y))")]
+    p[0].Surface(x=dark[0], y=dark[1], z=U,
+              colorscale='twilight',
+              showscale=False)
+    p[0].Scatter3d(x=np.zeros_like(x),
+                 y=y,
+                 z=np.cos(np.pi*y),
+                 mode='lines',
+                 line=dict(color='black',width=10))
+    p[1].Surface(x=dark[0], y=dark[1], z=V,
+              colorscale='twilight',
+              showscale=False)
+    p[1].Scatter3d(x=np.zeros_like(x),
+                 y=y,
+                 z=5.-np.cos(np.pi*y),
+                 mode='lines',
+                 line=dict(color='black',width=10))
+    for k in range(len(p)):
+        p[k].view(azimuth=45,elevation=25)
+        p[k].fig['layout']['scene']['aspectmode']='cube'
+        p[k].show()
+
+else:
+    from matplotlib import cm
+    from tfc.utils import MakePlot
+
+    p = [MakePlot(r"$x$",r"$y$",zlabs=r"$u(x,y,g^u(x,y))$"),MakePlot(r"$x$",r"$y$",zlabs=r"$v(x,y,g^v(x,y),g^u(x,y))$")]
+    p[0].ax[0].plot_surface(*dark,U,cmap=cm.gist_rainbow,antialiased=False,rcount=n,ccount=n)
+    p[0].ax[0].plot(np.zeros_like(x),y,np.cos(np.pi*y),'k',linewidth=4.,zorder=3)
+    p[1].ax[0].plot_surface(*dark,V,cmap=cm.gist_rainbow,antialiased=False,rcount=n,ccount=n)
+    p[1].ax[0].plot(np.zeros_like(x),y,5.-np.cos(np.pi*y),'k',linewidth=4.,zorder=3)
+    p[1].ax[0].tick_params(axis='z', which='major', pad=8)
+    for k in range(2):
+        p[k].ax[0].xaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
+        p[k].ax[0].yaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
+        p[k].ax[0].zaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
+        p[k].ax[0].xaxis.labelpad = 20
+        p[k].ax[0].yaxis.labelpad = 20
+        p[k].ax[0].zaxis.labelpad = 15
+        p[k].ax[0].view_init(30.,-135.)
+        p[k].ax[0].zaxis.set_rotate_label(False)
+        p[k].ax[0].zaxis.label.set_rotation(95)
+        p[k].PartScreen(8,7)
+        p[k].show()
