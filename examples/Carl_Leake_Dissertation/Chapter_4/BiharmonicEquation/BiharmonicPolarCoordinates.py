@@ -95,7 +95,6 @@ if usePlotly:
     p.Surface(x=X.reshape((nTest,nTest)),
               y=Y.reshape((nTest,nTest)),
               z=real(*xTest).reshape((nTest,nTest)),
-              colorscale='twilight',
               showscale=False)
     p.view(azimuth=45,elevation=45)
     p.fig['layout']['scene']['aspectmode']='cube'
@@ -105,7 +104,6 @@ if usePlotly:
     p1.Surface(x=xTest[0].reshape((nTest,nTest)),
               y=xTest[1].reshape((nTest,nTest)),
               z=err.reshape((nTest,nTest)),
-              colorscale='twilight',
               showscale=False)
     p1.show()
 

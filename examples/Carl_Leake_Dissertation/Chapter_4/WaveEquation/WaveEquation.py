@@ -5,6 +5,9 @@ from jax import jacfwd, jit
 from tfc import mtfc
 from tfc.utils import LS, egrad
 
+import jax.profiler
+server = jax.profiler.start_server(9999)
+
 # Constants and switches:
 n = 30
 x0 = np.array([0.,0.])
@@ -71,15 +74,13 @@ if usePlotly:
     p.Surface(x=x[0].reshape((n,n)),
               y=x[1].reshape((n,n)),
               z=real(*x).reshape((n,n)),
-              colorscale='twilight',
               showscale=False)
     p.view(azimuth=-135,elevation=20)
     p.fig['layout']['scene']['aspectmode']='cube'
     p.show()
 
     p1 = MakePlot('x','y',zlabs='error')
-    p1.Surface(x=dark[0],y=dark[1],z=err.reshape((nTest,nTest)),
-              colorscale='twilight')
+    p1.Surface(x=dark[0],y=dark[1],z=err.reshape((nTest,nTest)))
     p1.show()
 
 else:

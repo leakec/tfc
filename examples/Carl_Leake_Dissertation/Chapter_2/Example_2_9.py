@@ -31,7 +31,6 @@ if usePlotly:
 
     p = [MakePlot(r"x",r"y",zlabs=r"u(x,y,g<sup>u</sup>(x,y))"),MakePlot(r"x",r"y",zlabs=r"v(x,y,g<sup>v</sup>(x,y),g<sup>u</sup>(x,y))")]
     p[0].Surface(x=dark[0], y=dark[1], z=U,
-              colorscale='twilight',
               showscale=False)
     p[0].Scatter3d(x=np.zeros_like(x),
                  y=y,
@@ -39,7 +38,6 @@ if usePlotly:
                  mode='lines',
                  line=dict(color='black',width=10))
     p[1].Surface(x=dark[0], y=dark[1], z=V,
-              colorscale='twilight',
               showscale=False)
     p[1].Scatter3d(x=np.zeros_like(x),
                  y=y,

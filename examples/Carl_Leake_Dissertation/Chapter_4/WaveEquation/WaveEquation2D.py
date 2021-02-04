@@ -78,7 +78,6 @@ if usePlotly:
     p.Surface(x=X,
               y=Y,
               z=real(X,Y,0.5*np.ones_like(X)),
-              colorscale='twilight',
               showscale=False)
     p.view(azimuth=45,elevation=40)
     p.fig['layout']['scene']['aspectmode']='cube'

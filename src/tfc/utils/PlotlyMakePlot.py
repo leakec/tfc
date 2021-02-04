@@ -24,9 +24,37 @@ class MakePlot:
         The titles for the plots. (Default value = None)
     """
 
+    _template = {
+        "data": {
+            "surface": [
+                {
+                    "colorbar": {"outlinewidth": 0, "ticks": ""},
+                    "colorscale": [
+                        [0.0, "black"],
+                        [0.2, "rebeccapurple"],
+                        [0.3, "blueviolet"],
+                        [0.7, "#4682B4"],
+                        [1.0, "aquamarine"],
+                    ],
+                    "lighting": {
+                        "ambient": 0.6,
+                        "specular": 0.05,
+                        "diffuse": 0.4,
+                        "fresnel": 3.0,
+                    },
+                    "type": "surface",
+                }
+            ],
+        },
+        "layout": {
+            "margin": {"t": 50, "b": 50, "r": 50, "l": 50},
+            "autosize": True,
+            "font": {"size": 16},
+            "paper_bgcolor": "rgba(0,0,0,0)",
+        },
+    }
     _backgroundColor = "rgba(0,0,0,0)"
     _gridColor = "rgb(176, 176, 176)"
-    _fontSize = 16
 
     def __init__(self, xlabs, ylabs, titles=None, zlabs=None):
 
@@ -100,11 +128,16 @@ class MakePlot:
                     * xlabs.shape[1],
                 ] * xlabs.shape[0]
                 self.fig = make_subplots(
-                    rows=xlabs.shape[0], cols=xlabs.shape[1], specs=specs, subplot_titles=titles
+                    rows=xlabs.shape[0],
+                    cols=xlabs.shape[1],
+                    specs=specs,
+                    subplot_titles=titles,
                 )
             else:
                 self.fig = make_subplots(
-                    rows=xlabs.shape[0], cols=xlabs.shape[1], subplot_titles=titles
+                    rows=xlabs.shape[0],
+                    cols=xlabs.shape[1],
+                    subplot_titles=titles,
                 )
             self._hasSubplots = True
         else:
@@ -154,12 +187,18 @@ class MakePlot:
 
         else:
             if self._is3d:
-                self.fig.update_layout(scene=dict(xaxis=dict(title=xlabs[0, 0],exponentformat="e")))
-                self.fig.update_layout(scene=dict(yaxis=dict(title=ylabs[0, 0],exponentformat="e")))
-                self.fig.update_layout(scene=dict(zaxis=dict(title=zlabs[0, 0],exponentformat="e")))
+                self.fig.update_layout(
+                    scene=dict(xaxis=dict(title=xlabs[0, 0], exponentformat="e"))
+                )
+                self.fig.update_layout(
+                    scene=dict(yaxis=dict(title=ylabs[0, 0], exponentformat="e"))
+                )
+                self.fig.update_layout(
+                    scene=dict(zaxis=dict(title=zlabs[0, 0], exponentformat="e"))
+                )
             else:
-                self.fig.update_xaxes(title=xlabs[0, 0],exponentformat="e")
-                self.fig.update_yaxes(title=ylabs[0, 0],exponentformat="e")
+                self.fig.update_xaxes(title=xlabs[0, 0], exponentformat="e")
+                self.fig.update_yaxes(title=ylabs[0, 0], exponentformat="e")
 
         # Update grid and background colors
         if self._is3d:
@@ -204,10 +243,7 @@ class MakePlot:
 
         # Update layout
         self.fig.update_layout(
-            margin=dict(t=50, b=50, r=50, l=50),
-            autosize=True,
-            font=dict(size=MakePlot._fontSize),
-            paper_bgcolor=self._backgroundColor,
+            template=self._template,
         )
 
     def Surface(self, row=None, col=None, **kwargs):

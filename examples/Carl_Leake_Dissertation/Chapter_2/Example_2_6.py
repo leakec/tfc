@@ -34,7 +34,6 @@ if usePlotly:
 
     p = MakePlot(r'x',r'y',zlabs=r'u(x,y,g(x,y))')
     p.Surface(x=dark[0], y=dark[1], z=U.reshape((n,n)),
-              colorscale='icefire',
               showscale=False)
     for k,el in enumerate(ind2):
         if not k%5:
