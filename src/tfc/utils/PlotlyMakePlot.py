@@ -142,6 +142,8 @@ class MakePlot:
             self._hasSubplots = True
         else:
             self.fig = go.Figure()
+            if titles is not None:
+                self.fig["layout"]["title"] = titles[0]
             self._hasSubplots = False
 
         if self._hasSubplots:
@@ -218,27 +220,28 @@ class MakePlot:
                             "backgroundcolor"
                         ] = self._backgroundColor
                     else:
-                        self.fig["layout"]["scene" + str(row + col + 1)]["xaxis"][
-                            "gridcolor"
-                        ] = self._gridColor
-                        self.fig["layout"]["scene" + str(row + col + 1)]["yaxis"][
-                            "gridcolor"
-                        ] = self._gridColor
-                        self.fig["layout"]["scene" + str(row + col + 1)]["zaxis"][
-                            "gridcolor"
-                        ] = self._gridColor
-                        self.fig["layout"]["scene" + str(row + col + 1)]["xaxis"][
-                            "backgroundcolor"
-                        ] = self._backgroundColor
-                        self.fig["layout"]["scene" + str(row + col + 1)]["yaxis"][
-                            "backgroundcolor"
-                        ] = self._backgroundColor
-                        self.fig["layout"]["scene" + str(row + col + 1)]["zaxis"][
-                            "backgroundcolor"
-                        ] = self._backgroundColor
+                        self.fig["layout"]["scene" + str(row + col + 1)]["xaxis"].update(
+                            gridcolor=self._gridColor,
+                            zerolinecolor=self._gridColor,
+                            backgroundcolor=self._backgroundColor,
+                        )
+                        self.fig["layout"]["scene" + str(row + col + 1)]["yaxis"].update(
+                            gridcolor=self._gridColor,
+                            zerolinecolor=self._gridColor,
+                            backgroundcolor=self._backgroundColor,
+                        )
+                        self.fig["layout"]["scene" + str(row + col + 1)]["zaxis"].update(
+                            gridcolor=self._gridColor,
+                            zerolinecolor=self._gridColor,
+                            backgroundcolor=self._backgroundColor,
+                        )
         else:
-            self.fig.update_xaxes(gridcolor=self._gridColor, linecolor="black")
-            self.fig.update_yaxes(gridcolor=self._gridColor, linecolor="black")
+            self.fig.update_xaxes(
+                gridcolor=self._gridColor, linecolor="black", zerolinecolor=self._gridColor
+            )
+            self.fig.update_yaxes(
+                gridcolor=self._gridColor, linecolor="black", zerolinecolor=self._gridColor
+            )
             self.fig.update_layout(plot_bgcolor=self._backgroundColor)
 
         # Update layout
