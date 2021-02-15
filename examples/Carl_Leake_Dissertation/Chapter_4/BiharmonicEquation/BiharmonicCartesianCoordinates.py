@@ -61,16 +61,16 @@ L = lambda xi: u4x(xi,*x)+u4y(xi,*x)+2.*u2x2y(xi,*x)-4.*np.pi**2*np.sin(np.pi*x[
 
 # Solve the problem
 xi = np.zeros(H(*x).shape[1])
-#if xTFC:
-#    xi,time = LS(xi,L,method='lstsq',timer=True)
-#else:
-#    xi,time = LS(xi,L,timer=True)
+if xTFC:
+    xi,time = LS(xi,L,method='lstsq',timer=True)
+else:
+    xi,time = LS(xi,L,timer=True)
 
 # Calculate error at the test points:
 dark = np.meshgrid(np.linspace(0,1,nTest),np.linspace(0,1,nTest))
 xTest = tuple([j.flatten() for j in dark])
 err = np.abs(u(xi,*xTest)-real(*xTest))
-#print("Time: "+str(time))
+print("Time: "+str(time))
 print("Max Error: "+str(np.max(err)))
 print("Mean Error: "+str(np.mean(err)))
 
@@ -86,7 +86,6 @@ if usePlotly:
               showscale=False)
     p.view(azimuth=-135,elevation=20)
     p.fig['layout']['scene']['aspectmode']='cube'
-    p.PartScreen(9,8)
     p.show()
 
 else:
