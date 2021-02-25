@@ -1,16 +1,15 @@
-cmaketools>=0.1.6
-setuptools>=50.3.2
 numpy
 jax
 jaxlib
 matplotlib
 plotly
+kaleido
+PyQt5
+Pillow
 colorama
 graphviz
 yattag
 
 # Optional
-# kaleido # Used to save plotly plots
 # pdfCropMargins # Used to crop pdfs in PlotlyMakePlot
-# Pillow # Used to crop png's in PlotlyMakePlot
 # mayavi # Used by MayaviMakePlot

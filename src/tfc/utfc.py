@@ -156,7 +156,7 @@ class utfc:
             self.z = np.cos(np.pi * (n - I) / float(n))
             self.x = (self.z - z0) / self.c + self.x0
         else:
-            self.z = np.linspace(z0, zf, num=self.N)
+            self.z = np.linspace(z0, zf, self.N)
             self.x = (self.z - z0) / self.c + self.x0
 
         self._SetupJax()
