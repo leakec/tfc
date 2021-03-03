@@ -350,12 +350,15 @@ class utfc:
 
         # Abstract evaluation
         def H_abstract_eval(x, full=False):
-            dim0 = x.shape[0]
             if full:
                 dim1 = self.basisClass.m
             else:
                 dim1 = self.basisClass.m - self.basisClass.numC
-            return abstract_arrays.ShapedArray((dim0, dim1), x.dtype)
+            if len(x.shape) == 0:
+                dims = (dim1,)
+            else:
+                dims = (x.shape[0],dim1)
+            return abstract_arrays.ShapedArray(dims, x.dtype)
 
         H_p.def_abstract_eval(H_abstract_eval)
         dH_p.def_abstract_eval(H_abstract_eval)
