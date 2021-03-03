@@ -934,12 +934,15 @@ class mtfc:
         Hx4y5_p.def_impl(Hx4y5_impl)
 
         def H_abstract_eval(*x, full=False):
-            dim0 = x[0].shape[0]
             if full:
                 dim1 = self.basisClass.numBasisFuncFull
             else:
                 dim1 = self.basisClass.numBasisFunc
-            return abstract_arrays.ShapedArray((dim0, dim1), x[0].dtype)
+            if len(x[0].shape) == 0:
+                dims = (dim1,)
+            else:
+                dims = (x[0].shape[0],dim1)
+            return abstract_arrays.ShapedArray(dims, x[0].dtype)
 
         H_p.def_abstract_eval(H_abstract_eval)
         Hx_p.def_abstract_eval(H_abstract_eval)
