@@ -560,3 +560,54 @@ class MakePlot:
             )
         else:
             self.fig.update_layout(width=width, height=height)
+
+    def NormalizeColorScale(self, types=[], data=None, cmax=None, cmin=None):
+        """
+        Normalizes the color scale for the plots whose type is in the types list.
+
+        If cmax and/or cmin are given, then the data variable is not used, and all
+        plots whose type is in the types list are assigned that cmax/cmin value.
+
+        If cmax and cmin are not specified, then they are set by taking the max and min
+        of the data that matches the data variable in all plots whose type is in the
+        typpes list.
+
+        Parameters
+        ----------
+        types: list of str
+            Plot types to set cmax and cmin for.
+
+        data: str, optional
+            Data type to use to calculate cmax and cmin if not already specified.
+            (Default value = None)
+        cmax: float, optional
+            cmax value to use when setting the colorscale
+        cmin: float, optional
+            cmin value to use when setting the colorscale
+        """
+
+        dark = self.fig.data
+        if cmax is None and cmin is None:
+            cmax = -np.inf
+            cmin = np.inf
+            for k in dark:
+                if k.__class__.__name__ in types:
+                    if data in k:
+                        kmax = k[data].max()
+                        kmin = k[data].min()
+
+                    if kmax > cmax:
+                        cmax = kmax
+                    if kmin < cmin:
+                        cmin = kmin
+
+        colorScaleUpdate = {}
+        if not cmax is None:
+            colorScaleUpdate.update({"cmax": cmax})
+        if not cmin is None:
+            colorScaleUpdate.update({"cmin": cmin})
+
+        for k in dark:
+            if k.__class__.__name__ in types:
+                if data in k:
+                    k.update(colorScaleUpdate)
