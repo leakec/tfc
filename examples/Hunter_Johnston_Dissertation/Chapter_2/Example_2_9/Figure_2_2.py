@@ -22,7 +22,7 @@ y3 = 4.*np.random.rand() - 2.
 
 ## DEFINE UPPER/LOWER BOUNDS: ******************************************************************
 mBnd = 7
-bnd = utfc(N,0.,mBnd,basis = basis, x0 = x0, xf = xf)
+bnd = utfc(N,0,mBnd,basis = basis, x0 = x0, xf = xf)
 x = bnd.x
 
 fu = lambda xi: np.dot(bnd.H(x),xi) + 5.
