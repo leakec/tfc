@@ -68,7 +68,7 @@ class Dot:
     ----------
     outFile : str
         Name of the filename under which the dot file should be saved.
-    
+
     name: str
         What the dot file should be called by Digrapph.
 
