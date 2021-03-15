@@ -1109,7 +1109,7 @@ class ComponentConstraintGraph:
         self.goodTargets = []
         for j in range(len(self.targets)):
             flag = True
-            adj = onp.zeros((self.nNodes, self.nNodes), dtype=np.int32)
+            adj = onp.zeros((self.nNodes, self.nNodes))
             for k in range(self.nNodes):
                 kNode = N[k]
                 sources = []
@@ -1117,11 +1117,11 @@ class ComponentConstraintGraph:
                 for g in range(self.nEdges):
                     if E[g]["node0"] == kNode:
                         if self.targets[j][g]:
-                            adj[N.index(E[g]["node1"]), N.index(E[g]["node0"])] = 1
+                            adj[N.index(E[g]["node1"]), N.index(E[g]["node0"])] = 1.0
                     elif E[g]["node1"] == kNode:
                         if not self.targets[j][g]:
-                            adj[N.index(E[g]["node0"]), N.index(E[g]["node1"])] = 1
-            if np.all(np.linalg.matrix_power(adj, self.nNodes) == 0):
+                            adj[N.index(E[g]["node0"]), N.index(E[g]["node1"])] = 1.0
+            if np.all(np.linalg.eigvals(adj) == 0.0):
                 self.goodTargets.append(j)
 
         # Save nodes and edges for use later
@@ -1157,12 +1157,21 @@ class ComponentConstraintGraph:
         #: Create the main dot file
         mainDot = Dot(os.path.join(outputDir, "dotFiles", "main"), "main")
         mainDot.dot.node_attr.update(shape="box")
-        for k in range(n):
-            mainDot.dot.node(
-                "tree" + str(k),
-                "Tree " + str(k),
-                href=os.path.join("htmlFiles", "tree" + str(k) + ".html"),
-            )
+        mainDot.dot.edge_attr.update(style="invis")
+        treeCnt = 0
+        for j in range(int(np.ceil(n / 5))):
+            if j != 0:
+                mainDot.dot.edge("tree" + str((j - 1) * 5), "tree" + str(j * 5))
+            with mainDot.dot.subgraph(name="subgraph" + str(j)) as c:
+                c.attr(rank="same")
+                for k in range(min(5, n - j * 5)):
+                    c.node(
+                        "tree" + str(treeCnt),
+                        "Tree " + str(treeCnt),
+                        href=os.path.join("htmlFiles", "tree" + str(treeCnt) + ".html"),
+                    )
+                    treeCnt += 1
+
         mainDot.Render()
 
         #: Create the main file HTML
