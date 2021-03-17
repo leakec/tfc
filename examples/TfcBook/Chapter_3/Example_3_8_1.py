@@ -18,7 +18,7 @@ N = 100 # number of discretization points
 m = 60  # number of basis function terms
 basis = 'CP' # basis function type
 a = 0   # specific problem type, a >=0 (analytical solution known for a = 0, 1, and 5)
-xf = [0., 10.] # problem domain range [x0, xf], where x0 > 0
+xspan = [0., 10.] # problem domain range [x0, xf], where x0 > 0
 
 ## problem initial conditions: *********************************************************************
 y0  = 1.  # y(x0)  = 1
