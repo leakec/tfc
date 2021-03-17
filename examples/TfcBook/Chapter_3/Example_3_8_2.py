@@ -2,9 +2,9 @@
 # Updated: 17 Mar 2021
 ####################################################################################################
 # Differential Equation
-#   y'' + 2/x y' + y^k = 0      where   k > 0 and x > 0
+#   y'' + yy' = exp(-2x) sin(x) [cos(x) -sin(x)] - 2exp(-x)cos(x)
 #
-#   subject to: y(0) = 1, y'(0) = 0
+#   subject to: y(0) = 0, y(pi) = 0
 ####################################################################################################
 from tfc import utfc
 from tfc.utils import egrad, NLLS, LS, MakePlot
@@ -17,12 +17,11 @@ import numpy as onp
 N = 100 # number of discretization points
 m = 60  # number of basis function terms
 basis = 'CP' # basis function type
-a = 0   # specific problem type, a >=0 (analytical solution known for a = 0, 1, and 5)
-xf = [0., 10.] # problem domain range [x0, xf], where x0 > 0
 
-## problem initial conditions: *********************************************************************
-y0  = 1.  # y(x0)  = 1
-y0p = 0.  # y'(x0) = 0
+## problem boundary conditions: ********************************************************************
+xspan = [0., np.pi]
+y0  = 0. # y(0)  = 0
+yf  = 0. # y(pi) = 0
 nC  = 2   # number of constraints
 
 ## construct univariate tfc class: *****************************************************************
@@ -30,44 +29,32 @@ tfc = utfc(N, nC, int(m), basis = basis, x0=xspan[0], xf=xspan[1])
 x = tfc.x
 
 H = tfc.H
-dH = tfc.dH
-H0 = H(x[0])
-H0p = dH(x[0])
+H0 = H(tfc.x[0])
+Hf = H(tfc.x[-1])
 
 ## define tfc constrained expression and derivatives: **********************************************
 # switching function
-phi1 = lambda x: np.ones_like(x)
-phi2 = lambda x: x
+phi1 = lambda x: (np.pi - x)/np.pi
+phi2 = lambda x: x/np.pi
+
+# forcing term
+f = lambda x: np.exp(-2.*x) * np.sin(x) * (np.cos(x) - np.sin(x)) - 2.*np.exp(-x)*np.cos(x)
 
 # tfc constrained expression
-y = lambda x,xi: np.dot(H(x),xi) + phi1(x)*(y0  - np.dot(H0,xi)) + phi2(x)*(y0p - np.dot(H0p,xi))
+y = lambda x,xi: np.dot(H(x),xi) + phi1(x)*(y0 - np.dot(H0,xi)) + phi2(x)*(yf - np.dot(Hf,xi))
 yp = egrad(y)
 ypp = egrad(yp)
 
 ## define the loss function: ***********************************************************************
-L = lambda xi: x*ypp(x,xi) + 2.*yp(x,xi) + x*y(x,xi)**a
+L = lambda xi: ypp(x,xi) + y(x,xi)*yp(x,xi) - f(x)
 
 ## solve the problem via nonlinear least-squares ***************************************************
 xi = np.zeros(H(x).shape[1])
 
-# if a==0 or a == 1, the problem is linear
-if a == 0 or a == 1:
-    xi,time = LS(xi,L,timer=True)
-    iter = 1
+xi,iter,time = NLLS(xi,L,timer=True)
 
-else:
-    xi,iter,time = NLLS(xi,L,timer=True)
-
-## compute the error (if a = 0, 1, or 5): **********************************************************
-if a == 0:
-    ytrue = 1. - 1./6. * x**2
-elif a == 1:
-    ytrue = onp.ones_like(x)
-    ytrue[1:] = np.sin(x[1:]) / x[1:]
-elif a == 5:
-    ytrue = (1. + x**2/3)**(-1/2)
-else:
-    ytrue = np.empty_like(x)
+## compute the error: ******************************************************************************
+ytrue = np.exp(-x) * np.sin(x)
 
 err = np.abs(y(x,xi) - ytrue)
 
@@ -91,11 +78,10 @@ p2.ax[0].set_yscale('log')
 p2.PartScreen(7.,6.)
 p2.show()
 
-# figure 3: error (if a = 0, 1, or 5)
-if a == 0 or a == 1 or a == 5:
-    p3 = MakePlot(r'$x$',r'$|y_{true} - y(x)|$')
-    p3.ax[0].plot(x,err,'*')
-    p3.ax[0].grid(True)
-    p3.ax[0].set_yscale('log')
-    p3.PartScreen(7.,6.)
-    p3.show()
+# figure 3: error
+p3 = MakePlot(r'$x$',r'$|y_{true} - y(x)|$')
+p3.ax[0].plot(x,err,'*')
+p3.ax[0].grid(True)
+p3.ax[0].set_yscale('log')
+p3.PartScreen(7.,6.)
+p3.show()
