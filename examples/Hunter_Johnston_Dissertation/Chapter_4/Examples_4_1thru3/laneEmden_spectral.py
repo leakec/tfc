@@ -1,4 +1,4 @@
-# This is a function that solves the general Lane-Emden equation using TFC
+# This is a function that solves the general Lane-Emden equation using spectral method 
 # Hunter Johnston - Texas A&M University
 # Updated: 10 Mar 2021
 ##################################################################
@@ -8,14 +8,14 @@
 #   subject to: y(0) = 1, y'(0) = 0
 ##################################################################
 from tfc import utfc
-from tfc.utils import TFCDict, egrad, NLLS
+from tfc.utils import egrad, NLLS
 import jax.numpy as np
 from jax import jit
 
 import numpy as onp
 import tqdm
 ##################################################################
-def laneEmden_tfc(N, m, type, xspan, basis, iterMax, tol):
+def laneEmden_spectral(N, m, type, xspan, basis, iterMax, tol):
     ## Unpack Paramters: *********************************************************
     x0 = xspan[0]
     xf = xspan[1]
@@ -23,7 +23,7 @@ def laneEmden_tfc(N, m, type, xspan, basis, iterMax, tol):
     ## Initial Conditions: *******************************************************
     y0  = 1.
     y0p = 0.
-    nC  = 2 # number of constraints
+    nC  = 0 # number of constraints
 
     ## Determine call tfc class needs to be 1 for ELMs
     if basis == 'CP' or basis == 'LeP':
@@ -65,36 +65,30 @@ def laneEmden_tfc(N, m, type, xspan, basis, iterMax, tol):
 
     ## GET CHEBYSHEV VALUES: *********************************************
 
-    tfc = utfc(N,nC,int(m),basis = basis, x0=x0, xf=xf)
+    tfc = utfc(N,nC,int(m),basis = basis,x0=x0,xf=xf)
     x = tfc.x
-
     H = tfc.H
-    dH = tfc.dH
-    H0 = H(x[0])
-    H0p = dH(x[0])
 
     ## DEFINE THE ASSUMED SOLUTION: *************************************
-    phi1 = lambda x: np.ones_like(x)
-    phi2 = lambda x: x
-
-    y = lambda x,xi: np.dot(H(x),xi) \
-                    + phi1(x)*(y0  - np.dot(H0,xi)) \
-                    + phi2(x)*(y0p - np.dot(H0p,xi))
+    y = lambda x,xi: np.dot(H(x),xi)
     yp = egrad(y)
     ypp = egrad(yp)
 
     ## DEFINE LOSS AND JACOB ********************************************
-    L = jit(lambda xi: x*ypp(x,xi) + 2.*yp(x,xi) + x*y(x,xi)**type)
+    L0  = lambda x,xi: y(x,xi)[0] - y0
+    Ld0 = lambda x,xi: yp(x,xi)[0] - y0p
+    Lde = lambda x,xi: x*ypp(x,xi) + 2.*yp(x,xi) + x*y(x,xi)**type
+
+    L = lambda xi: np.hstack((L0(x,xi),Ld0(x,xi),Lde(x,xi)))
+    # J = jit(lambda x,xi: jacfwd(L,1)(x,xi))
 
     ## SOLVE THE SYSTEM *************************************************
-
-    # Solve the problem
-    xi = np.zeros(H(x).shape[1])
+    xi   = np.zeros(H(x).shape[1])
 
     xi,_,time = NLLS(xi,L,timer=True,maxIter = maxIter)
 
     ## COMPUTE ERROR AND RESIDUAL ***************************************
     err = np.linalg.norm(y(x,xi) - ytrue(x))
     res = np.linalg.norm(L(xi))
-    
+
     return err, res, time
