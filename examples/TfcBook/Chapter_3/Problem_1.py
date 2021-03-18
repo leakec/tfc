@@ -8,6 +8,7 @@
 ####################################################################################################
 from tfc import utfc
 from tfc.utils import LsClass, egrad, MakePlot
+from jax import jit
 import jax.numpy as np
 
 import numpy as onp
@@ -16,14 +17,14 @@ import tqdm
 
 ## user defined parameters: ************************************************************************
 N = 100 # number of discretization points per TFC step
-m = 60  # number of basis function terms
+m = 40  # number of basis function terms
 basis = 'CP' # basis function type
 
-tspan = [0., 100.] # time range of problem
-Nstep = 50 # number of TFC steps
+tspan = [0., 500.] # time range of problem
+Nstep = int(tspan[1]/2) # number of TFC steps
 
-y0  = 1.  # y(x0)  = y0
-y0d = 0.  # y'(x0) = y'0
+y0  = 1.  # y(t0)  = y0
+y0d = 0.  # y'(t0) = y'0
 
 w = 2.*np.pi
 
@@ -56,14 +57,14 @@ phi2 = lambda t: t
 # tfc constrained expression
 y = lambda t,xi,IC: np.dot(H(t),xi) + phi1(t)*(IC['y0']  - np.dot(H0,xi)) \
                                     + phi2(t)*(IC['y0d'] - np.dot(H0p,xi))
-# !!! notice here that the initial conditions are passed as a dictionary within xi (i.e. IC['y0'])
-#     this will be important so that the nonlinear least-squares does not need to be re-JITed   
+# !!! notice here that the initial conditions are passed as a dictionary (i.e. IC['y0'])
+#     this will be important so that the least-squares does not need to be re-JITed   
 
 yd = egrad(y)
 ydd = egrad(yd)
 
 ## define the loss function: ***********************************************************************
-L = lambda xi,IC: ydd(t,xi,IC) + w**2*y(t,xi,IC)
+L = jit(lambda xi,IC: ydd(t,xi,IC) + w**2*y(t,xi,IC))
 
 ## construct the least-squares class: **************************************************************
 xi0 = np.zeros(H(t).shape[1])
@@ -73,32 +74,36 @@ IC = {'y0': np.array([y0]), 'y0d': np.array([y0d])}
 ls = LsClass(xi0,L,timer=True)
 
 ## initialize dictionary to record solution: *******************************************************
-sol = { 't'   : onp.zeros((N,Nstep)), 'y'  : onp.zeros((N,Nstep)), \
-        'yd'  : onp.zeros((N,Nstep)), 'ydd': onp.zeros((N,Nstep)), \
-        'res' : onp.zeros((N,Nstep)), 'err': onp.zeros((N,Nstep)), \
+sol = { 't'   : onp.zeros((Nstep,N)), 'y'  : onp.zeros((Nstep,N)), \
+        'yd'  : onp.zeros((Nstep,N)), 'ydd': onp.zeros((Nstep,N)), \
+        'res' : onp.zeros((Nstep,N)), 'err': onp.zeros((Nstep,N)), \
         'time': onp.zeros(Nstep)}
 
-sol['t'][:,0] = t[:-1]
+sol['t'][0,:] = t[:-1]
+tFinal = t[-1]
 ## 'propagation' loop: *****************************************************************************
 for i in tqdm.trange(Nstep):
     xi, sol['time'][i] = ls.run(xi0,IC)
 
     # print solution to dictionary
     if i > 0:
-        sol['t'][:,i]    = sol['t'][-1,i] + t[:-1]
+        sol['t'][i,:]    = tFinal + t[:-1]
+        tFinal += t[-1]
 
-    sol['y'][:,i]    = y(t,xi,IC)[:-1]
-    sol['yd'][:,i]   = yd(t,xi,IC)[:-1]
-    sol['ydd'][:,i]  = ydd(t,xi,IC)[:-1]
-    sol['res'][:,i]  = np.abs(L(xi,IC))[:-1]
+    # save solution to python dictionary 
+    sol['y'][i,:]    = y(t,xi,IC)[:-1]
+    # sol['yd'][i,:]   = yd(t,xi,IC)[:-1]
+    # sol['ydd'][i,:]  = ydd(t,xi,IC)[:-1]
+    sol['res'][i,:]  = np.abs(L(xi,IC))[:-1]
+    # !!! disclaimer, saving data to the dictionary drastically increases script run time
 
     # update initial condtions
     IC['y0']  = y(t,xi,IC)[-1]
     IC['y0d'] = yd(t,xi,IC)[-1]
 
 ## compute the error: ******************************************************************************
-Phi = np.arctan(-y0d/w/y0) - w*tspan[0]
-A   = y0/np.cos(w*tspan[0] + Phi)
+A = np.sqrt(y0**2 + (y0d/w)**2)
+Phi = np.arctan(-y0d/w/y0)
 ytrue = A*np.cos(w*sol['t']+Phi)
 
 sol['err'] = np.abs(sol['y'] - ytrue)
