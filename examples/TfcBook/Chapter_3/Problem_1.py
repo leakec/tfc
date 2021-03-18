@@ -11,6 +11,7 @@ from tfc.utils import LsClass, egrad, MakePlot
 import jax.numpy as np
 
 import numpy as onp
+import tqdm
 ####################################################################################################
 
 ## user defined parameters: ************************************************************************
@@ -19,10 +20,12 @@ m = 60  # number of basis function terms
 basis = 'CP' # basis function type
 
 tspan = [0., 100.] # time range of problem
-Nstep = 10 # number of TFC steps
+Nstep = 50 # number of TFC steps
 
 y0  = 1.  # y(x0)  = y0
 y0d = 0.  # y'(x0) = y'0
+
+w = 2.*np.pi
 
 ## problem initial conditions: *********************************************************************
 nC  = 2   # number of constraints
@@ -35,7 +38,7 @@ tstep = (tspan[1]-tspan[0])/Nstep
 
 
 ## construct univariate tfc class: *****************************************************************
-tfc = utfc(Nstep+1, nC, int(m), basis = basis, x0=0, xf=tstep)
+tfc = utfc(N+1, nC, int(m+1), basis = basis, x0=0, xf=tstep)
 t = tfc.x
 # !!! notice I am using N+1 for the number of points. this is because I will be using the last point
 #     of a segment 'n' for the initial conditons of the 'n+1' segment
@@ -47,13 +50,12 @@ H0p = dH(t[0])
 
 ## define tfc constrained expression and derivatives: **********************************************
 # switching function
-phi1 = lambda x: np.ones_like(t)
-phi2 = lambda x: t
+phi1 = lambda t: np.ones_like(t)
+phi2 = lambda t: t
 
 # tfc constrained expression
-y = lambda t,xi,IC: np.dot(H(t),xi['xi']) \
-                        + phi1(t)*(IC['y0']  - np.dot(H0,xi['xi'])) \
-                        + phi2(t)*(IC['y0d'] - np.dot(H0p,xi['xi']))
+y = lambda t,xi,IC: np.dot(H(t),xi) + phi1(t)*(IC['y0']  - np.dot(H0,xi)) \
+                                    + phi2(t)*(IC['y0d'] - np.dot(H0p,xi))
 # !!! notice here that the initial conditions are passed as a dictionary within xi (i.e. IC['y0'])
 #     this will be important so that the nonlinear least-squares does not need to be re-JITed   
 
@@ -61,41 +63,41 @@ yd = egrad(y)
 ydd = egrad(yd)
 
 ## define the loss function: ***********************************************************************
-L = lambda xi,IC: ydd(x,xi,IC) + w**2*y(x,xi,IC)
+L = lambda xi,IC: ydd(t,xi,IC) + w**2*y(t,xi,IC)
 
 ## construct the least-squares class: **************************************************************
-xi0 = np.zeros(H(x).shape[1])
+xi0 = np.zeros(H(t).shape[1])
 IC = {'y0': y0, 'y0d': y0d}
 
 
-ls = LsClass(xi,L,timer=True)
+ls = LsClass(xi0,L,timer=True)
 
 ## initialize dictionary to record solution: *******************************************************
-sol = { 't'   : np.zeros(N,Nstep), 'y'  : np.zeros(N,Nstep), \
-        'yd'  : np.zeros(N,Nstep), 'ydd': np.zeros(N,Nstep), \
-        'res' : np.zeros(N,Nstep), 'err': np.zeros(N,Nstep), \
-        'time': np.zeros(Nstep)}
+sol = { 't'   : onp.zeros((N,Nstep)), 'y'  : onp.zeros((N,Nstep)), \
+        'yd'  : onp.zeros((N,Nstep)), 'ydd': onp.zeros((N,Nstep)), \
+        'res' : onp.zeros((N,Nstep)), 'err': onp.zeros((N,Nstep)), \
+        'time': onp.zeros(Nstep)}
 
-sol['t'][0] = t[:-1]
+sol['t'][:,0] = t[:-1]
 ## 'propagation' loop: *****************************************************************************
-for i in range(Nstep):
+for i in tqdm.trange(Nstep):
     xi, sol['time'][i] = ls.run(xi0,IC)
 
     # print solution to dictionary
     if i > 0:
-        sol['t'][:-1,i]    = sol['t'][-1,i] + t
+        sol['t'][:,i]    = sol['t'][-1,i] + t[:-1]
 
-    sol['y'][:,i]    = y(xi,IC)[:-1]
-    sol['yd'][:,i]   = yd(xi,IC)[:-1]
-    sol['ydd'][:,i]  = ydd(xi,IC)[:-1]
+    sol['y'][:,i]    = y(t,xi,IC)[:-1]
+    sol['yd'][:,i]   = yd(t,xi,IC)[:-1]
+    sol['ydd'][:,i]  = ydd(t,xi,IC)[:-1]
     sol['res'][:,i]  = np.abs(L(xi,IC))[:-1]
 
     # update initial condtions
-    IC['y0']  = y(xi,IC)[-1]
-    IC['y0d'] = yd(xi,IC)[-1]
+    IC['y0']  = y(t,xi,IC)[-1]
+    IC['y0d'] = yd(t,xi,IC)[-1]
 
 ## compute the error: ******************************************************************************
-Phi = np.atan(-y0d/w/y0) - w*tspan[0]
+Phi = np.arctan(-y0d/w/y0) - w*tspan[0]
 A   = y0/np.cos(w*tspan[0] + Phi)
 ytrue = A*np.cos(w*sol['t']+Phi)
 
