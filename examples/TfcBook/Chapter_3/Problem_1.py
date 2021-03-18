@@ -67,7 +67,7 @@ L = lambda xi,IC: ydd(t,xi,IC) + w**2*y(t,xi,IC)
 
 ## construct the least-squares class: **************************************************************
 xi0 = np.zeros(H(t).shape[1])
-IC = {'y0': y0, 'y0d': y0d}
+IC = {'y0': np.array([y0]), 'y0d': np.array([y0d])}
 
 
 ls = LsClass(xi0,L,timer=True)
