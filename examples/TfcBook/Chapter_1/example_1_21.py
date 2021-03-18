@@ -39,5 +39,7 @@ for k in range(nMC):
 
 p.ax[0].plot(np.ones(9),np.linspace(-4.,4.,9)*np.pi,'k',linestyle='none',markersize=10,marker='.')
 p.ax[0].set_ylim([-15,15])
+p.ax[0].set_xlim([0.,2.])
+p.ax[0].grid(True)
 p.PartScreen(8,7)
 p.show()
