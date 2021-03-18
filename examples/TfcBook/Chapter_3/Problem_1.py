@@ -92,8 +92,8 @@ for i in tqdm.trange(Nstep):
 
     # save solution to python dictionary 
     sol['y'][i,:]    = y(t,xi,IC)[:-1]
-    sol['yd'][i,:]   = yd(t,xi,IC)[:-1]
-    sol['ydd'][i,:]  = ydd(t,xi,IC)[:-1]
+    # sol['yd'][i,:]   = yd(t,xi,IC)[:-1]
+    # sol['ydd'][i,:]  = ydd(t,xi,IC)[:-1]
     sol['res'][i,:]  = np.abs(L(xi,IC))[:-1]
     # !!! disclaimer, saving data to the dictionary drastically increases script run time
 
