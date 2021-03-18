@@ -38,9 +38,8 @@ for k in range(nMC):
     val = U[ind]
     p.ax[0].plot(x,U)
 
-    if np.round(val**3-6.*val**2+11.*val,14) != 6.:
-        raise ValueError("Error on constraint is too large!")
-
 p.ax[0].plot(np.zeros(3),K,'k',linestyle='none',markersize=10,marker='.')
+p.ax[0].set_xlim([-2.,2.])
+p.ax[0].grid(True)
 p.PartScreen(8,7)
 p.show()
