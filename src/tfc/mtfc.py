@@ -25,7 +25,7 @@ class mtfc:
 
     Parameters
     ----------
-    N : list or array-like
+    n : list or array-like
         Number of points to use per-dimension when discretizing the domain. List or array must be same lenght as number of dimensions.
 
     nC : int or list or array-like
