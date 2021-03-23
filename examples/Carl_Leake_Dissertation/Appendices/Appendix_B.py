@@ -82,9 +82,9 @@ for k in range(numFuncs):
     #p1.ax[0].plot(x,antiu(x,xi),'--',color=color) # Uncomment to see original free function as a dashed line
 p1.ax[0].plot(x,ub(x),'k',linewidth=3,linestyle='--')
 p1.ax[0].plot(x,lb(x),'k',linewidth=3,linestyle='--')
-p1.ax[0].plot(0.,0.,'k',linestyle=None,markersize=10,marker='.')
-p1.ax[0].plot(4.,-0.2,'k',linestyle=None,markersize=10,marker='.')
-p1.ax[0].plot(8.,-0.1,'k',linestyle=None,markersize=10,marker='.')
+p1.ax[0].plot(0.,0.,'k',linestyle=None,markersize=14,marker='.')
+p1.ax[0].plot(4.,-0.2,'k',linestyle=None,markersize=14,marker='.')
+p1.ax[0].plot(8.,-0.1,'k',linestyle=None,markersize=14,marker='.')
 p1.ax[0].set_ylim([-1.,0.5])
 p1.PartScreen(8,7)
 p1.show()
