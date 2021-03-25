@@ -10,7 +10,7 @@ from tfc.utils import egrad
 def test_nCP():
     from pOP import nCP as pnCP
     dim = 2
-    nC = -1.*np.ones((dim,1),dtype=np.int32)
+    nC = -1*np.ones((dim,1),dtype=np.int32)
     d = np.zeros(dim,dtype=np.int32)
     c = np.ones(dim)
     d2 = np.array([2,3],dtype=np.int32)
@@ -42,7 +42,7 @@ def test_nCP():
 def test_nLeP():
     from pOP import nLeP as pnLeP
     dim = 2
-    nC = -1.*np.ones((dim,1),dtype=np.int32)
+    nC = -1*np.ones((dim,1),dtype=np.int32)
     d = np.zeros(dim,dtype=np.int32)
     d2 = np.array([2,3],dtype=np.int32)
     nC2Py = np.array([4,7],dtype=np.int32)
@@ -73,7 +73,7 @@ def test_nLeP():
 def test_nFS():
     from pOP import nFS as pnFS
     dim = 2
-    nC = -1.*np.ones((dim,1),dtype=np.int32)
+    nC = -1*np.ones((dim,1),dtype=np.int32)
     d = np.zeros(dim,dtype=np.int32)
     c = np.ones(dim)
     d2 = np.array([2,3],dtype=np.int32)
