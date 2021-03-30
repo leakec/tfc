@@ -45,7 +45,7 @@ intgn2 = lambda t: -1./2.*np.cos(t)**2*np.sqrt(2.)
 
 u1 = lambda xi,*x: g(xi,*x)+\
                    n1mag*(Ainv(*x)[0]-1.)*(0.5-dgn1(xi,*A(np.zeros_like(x[0]),Ainv(*x)[1])))+\
-                   1./n2mag*(-2.-intgn2(5.)-intgn2(4.))
+                   1./n2mag*(-2.-intgn2(5.)+intgn2(4.))
 uslow = lambda xi,*x: u1(xi,*x)+\
                   (1./2.-Ainv(*x)[1])*(u1(xi,*A(Ainv(*x)[0],np.ones_like(x[1])))-u1(xi,*A(Ainv(*x)[0],np.zeros_like(x[1]))))
 u = jit(uslow)
@@ -72,6 +72,16 @@ p.Scatter3d(x=c3x[0]+1.,
           mode="lines",
           line=dict(color="red",width=5)
           )
+
+c2x = (np.linspace(2.,3.,100),np.linspace(3.,4.,100))
+c2u = u(xi,*c2x)
+for k in range(c2x[0].shape[0]):
+    if not k%5:
+        p.Scatter3d(x=np.array([c2x[0][k],c2x[0][k]+n1[0]/15.]),
+                    y=np.array([c2x[1][k],c2x[1][k]+n1[1]/15.]),
+                    z=np.array([c2u[k],c2u[k]+0.5/15.]),
+                    mode='lines',
+                    line=dict(color='green',width=5))
 
 # Add constrained expression
 Z = u(xi,*x)
