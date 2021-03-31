@@ -1,20 +1,13 @@
 import jax.numpy as np
-from jax import jacfwd, jit
+from jax import jit
 
-from tfc import mtfc
 from tfc.utils import egrad
 from tfc.utils.PlotlyMakePlot import MakePlot
 
-# Constants:
-n = [50,50] # Number of points
-nC = [2,2] # Number of constraints
-m = 10 # Number of basis functions
-x0 = [0.,0.] # Staring points in X
-xf = [1.,1.] # Ending points in X
-
-# Create the TFC class (using here to create the grid):
-myTfc = mtfc(n,nC,m,x0=x0,xf=xf)
-X = myTfc.x
+# Create X:
+n = [50,50]
+dark = np.meshgrid(np.linspace(0.,1.,50),np.linspace(0.,1.,50))
+X = [k.flatten() for k in dark]
 
 # Create the affine transformation and its inverse:
 p0 = np.array([2.,3.]).reshape((2,1))
