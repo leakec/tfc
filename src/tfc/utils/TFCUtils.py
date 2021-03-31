@@ -108,7 +108,7 @@ def onesRobust(val):
         Pytree with the same structure as val with all elements equal to one.
 
     """
-    return onp.ones(val.shape)
+    return onp.ones(val.shape,dtype=val.dtype)
 
 
 @partial(partial, tree_multimap)
@@ -124,7 +124,7 @@ def zerosRobust(val):
     zeros_like_val : pytree
         Pytree with the same structure as val with all elements equal to zero.
     """
-    return onp.zeros(val.shape)
+    return onp.zeros(val.shape,dtype=val.dtype)
 
 
 def egradRobust(g, j=0):
