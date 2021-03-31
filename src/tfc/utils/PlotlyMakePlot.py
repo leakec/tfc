@@ -45,6 +45,25 @@ class MakePlot:
                     "type": "surface",
                 }
             ],
+            "volume": [
+                {
+                    "colorbar": {"outlinewidth": 0, "ticks": ""},
+                    "colorscale": [
+                        [0.0, "black"],
+                        [0.2, "rebeccapurple"],
+                        [0.3, "blueviolet"],
+                        [0.7, "#4682B4"],
+                        [1.0, "aquamarine"],
+                    ],
+                    "lighting": {
+                        "ambient": 0.6,
+                        "specular": 0.05,
+                        "diffuse": 0.4,
+                        "fresnel": 3.0,
+                    },
+                    "type": "volume",
+                }
+            ],
         },
         "layout": {
             "margin": {"t": 50, "b": 50, "r": 50, "l": 50},
@@ -152,22 +171,22 @@ class MakePlot:
                     if self._is3d:
                         if row == 0 and col == 0:
                             self.fig["layout"]["scene"]["xaxis"].update(
-                                title=xlabs[row, col], exponentformt="e"
-                            )
-                            self.fig["layout"]["scene"]["yaxis"].update(
-                                title=ylabs[row, col], exponentformt="e"
-                            )
-                            self.fig["layout"]["scene"]["zaxis"].update(
-                                title=zlabs[row, col], exponentformt="e"
-                            )
-                        else:
-                            self.fig["layout"]["scene" + str(row + col + 1)]["xaxis"].uppdate(
                                 title=xlabs[row, col], exponentformat="e"
                             )
-                            self.fig["layout"]["scene" + str(row + col + 1)]["yaxis"].uppdate(
+                            self.fig["layout"]["scene"]["yaxis"].update(
                                 title=ylabs[row, col], exponentformat="e"
                             )
-                            self.fig["layout"]["scene" + str(row + col + 1)]["zaxis"].uppdate(
+                            self.fig["layout"]["scene"]["zaxis"].update(
+                                title=zlabs[row, col], exponentformat="e"
+                            )
+                        else:
+                            self.fig["layout"]["scene" + str(row + col + 1)]["xaxis"].update(
+                                title=xlabs[row, col], exponentformat="e"
+                            )
+                            self.fig["layout"]["scene" + str(row + col + 1)]["yaxis"].update(
+                                title=ylabs[row, col], exponentformat="e"
+                            )
+                            self.fig["layout"]["scene" + str(row + col + 1)]["zaxis"].update(
                                 title=zlabs[row, col], exponentformat="e"
                             )
 
@@ -388,6 +407,26 @@ class MakePlot:
         violin : plotly.graphic_objects.Violin
         """
         return self.fig.add_trace(go.Violin(**kwargs), row=row, col=col)
+
+    def Volume(self, row=None, col=None, **kwargs):
+        """
+        Creates a plotly volume on the subplot specified by row and col or on
+        the main figure if not using subplots.
+
+        Parameters
+        ----------
+        row : int
+             subplot row (Default value = None)
+        col : int
+             subplot column (Default value = None)
+        **kwargs : dict, optional
+            keyword arguments passed on to plotly.graphic_objects.Volume
+
+        Returns
+        -------
+        volume : plotly.graphic_objects.Volume
+        """
+        return self.fig.add_trace(go.Volume(**kwargs), row=row, col=col)
 
     def show(self, **kwargs):
         """

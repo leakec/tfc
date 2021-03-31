@@ -290,3 +290,17 @@ class MakePlot:
         """
         kwargs = MakePlot._ProcessKwargs(**kwargs)
         return mlab.mesh(*args, figure=self.fig, **kwargs)
+
+    def contour3d(self, *args, **kwargs):
+        """Call mlab's contour3d on the class's figure.
+
+        Parameters
+        ----------
+        *args : iterable
+            args passed on to contour3d
+
+        **kwargs : dict
+            kwargs passed on to mesh after being processed by _ProcessKwargs.
+        """
+        kwargs = MakePlot._ProcessKwargs(**kwargs)
+        return mlab.contour3d(*args, figure=self.fig, **kwargs)
