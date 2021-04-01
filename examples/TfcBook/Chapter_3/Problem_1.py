@@ -29,7 +29,13 @@ y0p = 0.  # y'(x0) = y'0
 w = 2.*np.pi
 
 ## problem initial conditions: *********************************************************************
-nC  = 2   # number of constraints
+if basis == 'CP' or 'LeP':
+    nC  = 2   
+elif basis == 'FS':
+    nC  = 1
+else:
+    nC  = 0
+# number of constraints
 
 # length of time for one TFC step
 xstep = (xspan[1]-xspan[0])/Nstep 
