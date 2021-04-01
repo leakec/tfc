@@ -20,11 +20,11 @@ N = 100 # number of discretization points per TFC step
 m = 40  # number of basis function terms
 basis = 'CP' # basis function type
 
-tspan = [0., 500.] # time range of problem
-Nstep = int(tspan[1]/2) # number of TFC steps
+xspan = [0., 2.] # time range of problem
+Nstep = int(xspan[1]/2) # number of TFC steps
 
-y0  = 1.  # y(t0)  = y0
-y0d = 0.  # y'(t0) = y'0
+y0  = 1.  # y(x0)  = y0
+y0p = 0.  # y'(x0) = y'0
 
 w = 2.*np.pi
 
@@ -32,94 +32,96 @@ w = 2.*np.pi
 nC  = 2   # number of constraints
 
 # length of time for one TFC step
-tstep = (tspan[1]-tspan[0])/Nstep 
-# !!! since this differential equation is not a explicit function of time 't', I can get away with
-#     contructing the tfc class such that t = [0, tstep] an imposing a constant step so that the
-#     mapping parameter c = (zf-z0)/(tf-t0) is also constant
+xstep = (xspan[1]-xspan[0])/Nstep 
+# !!! since this differential equation is not a explicit function of position 'x', I can get 
+#     away with contructing the tfc class such that x = [0, xstep] an imposing a constant step so
+#     that the mapping parameter c = (zf-z0)/(xf-x0) is also constant
 
 
 ## construct univariate tfc class: *****************************************************************
-tfc = utfc(N+1, nC, int(m+1), basis = basis, x0=0, xf=tstep)
-t = tfc.x
+tfc = utfc(N+1, nC, int(m+1), basis = basis, x0=0, xf=xstep)
+x = tfc.x
 # !!! notice I am using N+1 for the number of points. this is because I will be using the last point
 #     of a segment 'n' for the initial conditons of the 'n+1' segment
 
 H = tfc.H
 dH = tfc.dH
-H0 = H(t[0])
-H0p = dH(t[0])
+H0 = H(x[0])
+H0p = dH(x[0])
 
 ## define tfc constrained expression and derivatives: **********************************************
 # switching function
-phi1 = lambda t: np.ones_like(t)
-phi2 = lambda t: t
+phi1 = lambda x: np.ones_like(x)
+phi2 = lambda x: x
 
 # tfc constrained expression
-y = lambda t,xi,IC: np.dot(H(t),xi) + phi1(t)*(IC['y0']  - np.dot(H0,xi)) \
-                                    + phi2(t)*(IC['y0d'] - np.dot(H0p,xi))
+y = lambda x,xi,IC: np.dot(H(x),xi) + phi1(x)*(IC['y0']  - np.dot(H0,xi)) \
+                                    + phi2(x)*(IC['y0p'] - np.dot(H0p,xi))
 # !!! notice here that the initial conditions are passed as a dictionary (i.e. IC['y0'])
 #     this will be important so that the least-squares does not need to be re-JITed   
 
-yd = egrad(y)
-ydd = egrad(yd)
+yp = egrad(y)
+ypp = egrad(yp)
 
 ## define the loss function: ***********************************************************************
-L = jit(lambda xi,IC: ydd(t,xi,IC) + w**2*y(t,xi,IC))
+L = jit(lambda xi,IC: ypp(x,xi,IC) + w**2*y(x,xi,IC))
 
 ## construct the least-squares class: **************************************************************
-xi0 = np.zeros(H(t).shape[1])
-IC = {'y0': np.array([y0]), 'y0d': np.array([y0d])}
+xi0 = np.zeros(H(x).shape[1])
+IC = {'y0': np.array([y0]), 'y0p': np.array([y0p])}
 
 
 ls = LsClass(xi0,L,timer=True)
 
 ## initialize dictionary to record solution: *******************************************************
-sol = { 't'   : onp.zeros((Nstep,N)), 'y'  : onp.zeros((Nstep,N)), \
-        'yd'  : onp.zeros((Nstep,N)), 'ydd': onp.zeros((Nstep,N)), \
-        'res' : onp.zeros((Nstep,N)), 'err': onp.zeros((Nstep,N)), \
-        'time': onp.zeros(Nstep)}
+xSol    = onp.zeros((Nstep,N))
+ySol    = onp.zeros_like(xSol)  
+res     = onp.zeros_like(xSol)
+err     = onp.zeros_like(xSol)
+time    = onp.zeros(Nstep)
 
-sol['t'][0,:] = t[:-1]
-tFinal = t[-1]
+xSol[0,:] = x[:-1]
+xFinal = x[-1]
 ## 'propagation' loop: *****************************************************************************
 for i in tqdm.trange(Nstep):
-    xi, sol['time'][i] = ls.run(xi0,IC)
+    xi, time[i] = ls.run(xi0,IC)
 
     # print solution to dictionary
     if i > 0:
-        sol['t'][i,:]    = tFinal + t[:-1]
-        tFinal += t[-1]
+        xSol[i,:]    = xFinal + x[:-1]
+        xFinal += x[-1]
 
     # save solution to python dictionary 
-    sol['y'][i,:]    = y(t,xi,IC)[:-1]
-    # sol['yd'][i,:]   = yd(t,xi,IC)[:-1]
-    # sol['ydd'][i,:]  = ydd(t,xi,IC)[:-1]
-    sol['res'][i,:]  = np.abs(L(xi,IC))[:-1]
-    # !!! disclaimer, saving data to the dictionary drastically increases script run time
+    ySol[i,:]   = y(x,xi,IC)[:-1]
+    res[i,:]    = np.abs(L(xi,IC))[:-1]
 
     # update initial condtions
-    IC['y0']  = y(t,xi,IC)[-1]
-    IC['y0d'] = yd(t,xi,IC)[-1]
+    IC['y0']  = y(x,xi,IC)[-1]
+    IC['y0p'] = yp(x,xi,IC)[-1]
 
 ## compute the error: ******************************************************************************
-A = np.sqrt(y0**2 + (y0d/w)**2)
-Phi = np.arctan(-y0d/w/y0)
-ytrue = A*np.cos(w*sol['t']+Phi)
+A = np.sqrt(y0**2 + (y0p/w)**2)
+Phi = np.arctan(-y0p/w/y0)
+yTrue = A*np.cos(w*xSol+Phi)
 
-sol['err'] = np.abs(sol['y'] - ytrue)
+err = np.abs(ySol-yTrue)
+
+## print status of run: ****************************************************************************
+print('TFC least-squares time[s]: ' +'\t'+ str((time.sum())))
+print('Max residual:' +'\t'*3+ str(res.max()))
+print('Max error:' +'\t'*3+ str(err.max()))
 
 ## plotting: ***************************************************************************************
-
 # figure 1: solution
 p1 = MakePlot(r'$x$',r'$y(t)$')
-p1.ax[0].plot(sol['t'].flatten(),sol['y'].flatten())
+p1.ax[0].plot(xSol.flatten(),ySol.flatten())
 p1.ax[0].grid(True)
 p1.PartScreen(7.,6.)
 p1.show()
 
 # figure 2: residual
 p2 = MakePlot(r'$t$',r'$|L(\xi)|$')
-p2.ax[0].plot(sol['t'].flatten(),sol['res'].flatten(),'*')
+p2.ax[0].plot(xSol.flatten(),res.flatten(),'*')
 p2.ax[0].grid(True)
 p2.ax[0].set_yscale('log')
 p2.PartScreen(7.,6.)
@@ -127,7 +129,7 @@ p2.show()
 
 # figure 3: error
 p3 = MakePlot(r'$t$',r'$|y_{true} - y(t)|$')
-p3.ax[0].plot(sol['t'].flatten(),sol['err'].flatten(),'*')
+p3.ax[0].plot(xSol.flatten(),err.flatten(),'*')
 p3.ax[0].grid(True)
 p3.ax[0].set_yscale('log')
 p3.PartScreen(7.,6.)
