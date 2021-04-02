@@ -515,7 +515,9 @@ register_pytree_node(
 )
 
 
-def LS(zXi, res, *args, J=None, method="pinv", timer=False, timerType="process_time"):
+def LS(
+    zXi, res, *args, J=None, method="pinv", timer=False, timerType="process_time", holomorphic=False
+):
     """
     JITed least squares.
     This function takes in an initial guess of zeros, zXi, and a residual function, res, and
@@ -548,6 +550,9 @@ def LS(zXi, res, *args, J=None, method="pinv", timer=False, timerType="process_t
     timerType : str, optional
          Any timer from the time module. (Default value = "process_time")
 
+    holomorphic : bool, optional
+         Indicates whether residual function is promised to be holomorphic. (Default value = False)
+
     Returns
     -------
     xi : pytree or array-like
@@ -567,7 +572,7 @@ def LS(zXi, res, *args, J=None, method="pinv", timer=False, timerType="process_t
             if isinstance(zXi, TFCDictRobust):
 
                 def J(xi, *args):
-                    jacob = jacfwd(res, 0)(xi, *args)
+                    jacob = jacfwd(res, 0, holomorphic=holomorphic)(xi, *args)
                     return np.hstack(
                         [
                             jacob[k].reshape(jacob[k].shape[0], onp.prod(onp.array(xi[k].shape)))
@@ -578,11 +583,11 @@ def LS(zXi, res, *args, J=None, method="pinv", timer=False, timerType="process_t
             else:
 
                 def J(xi, *args):
-                    jacob = jacfwd(res, 0)(xi, *args)
+                    jacob = jacfwd(res, 0, holomorphic=holomorphic)(xi, *args)
                     return np.hstack([jacob[k] for k in xi.keys()])
 
         else:
-            J = lambda xi, *args: jacfwd(res, 0)(xi, *args)
+            J = lambda xi, *args: jacfwd(res, 0, holomorphic=holomorphic)(xi, *args)
 
     if method == "pinv":
         ls = jit(lambda xi, *args: np.dot(np.linalg.pinv(J(xi, *args)), -res(xi, *args)))
@@ -617,11 +622,21 @@ class LsClass:
     See LS for more details.
     """
 
-    def __init__(self, zXi, res, J=None, method="pinv", timer=False, timerType="process_time"):
+    def __init__(
+        self,
+        zXi,
+        res,
+        J=None,
+        method="pinv",
+        timer=False,
+        timerType="process_time",
+        holomorphic=False,
+    ):
         """Initialization function. Creates the JIT-ed least-squares function."""
 
         self.timerType = timerType
         self.timer = timer
+        self.holomorphic = holomorphic
 
         if isinstance(zXi, TFCDict) or isinstance(zXi, TFCDictRobust):
             dictFlag = True
@@ -633,7 +648,7 @@ class LsClass:
                 if isinstance(zXi, TFCDictRobust):
 
                     def J(xi, *args):
-                        jacob = jacfwd(res, 0)(xi, *args)
+                        jacob = jacfwd(res, 0, holomorphic=self.holomorphic)(xi, *args)
                         return np.hstack(
                             [
                                 jacob[k].reshape(
@@ -646,11 +661,11 @@ class LsClass:
                 else:
 
                     def J(xi, *args):
-                        jacob = jacfwd(res, 0)(xi, *args)
+                        jacob = jacfwd(res, 0, holomorphic=self.holomorphic)(xi, *args)
                         return np.hstack([jacob[k] for k in xi.keys()])
 
             else:
-                J = lambda xi, *args: jacfwd(res, 0)(xi, *args)
+                J = lambda xi, *args: jacfwd(res, 0, holomorphic=self.holomorphic)(xi, *args)
 
         if method == "pinv":
             self._ls = jit(lambda xi, *args: np.dot(np.linalg.pinv(J(xi, *args)), -res(xi, *args)))
