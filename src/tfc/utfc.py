@@ -12,6 +12,7 @@ from jax.lib import xla_client
 
 from .utils.TFCUtils import TFCPrint
 
+
 class utfc:
     """
     This is the univariate TFC class. It acts as a container that creates and stores:
@@ -357,7 +358,7 @@ class utfc:
             if len(x.shape) == 0:
                 dims = (dim1,)
             else:
-                dims = (x.shape[0],dim1)
+                dims = (x.shape[0], dim1)
             return abstract_arrays.ShapedArray(dims, x.dtype)
 
         H_p.def_abstract_eval(H_abstract_eval)
@@ -840,6 +841,7 @@ class HybridUtfc:
     tfcClasses : list of utfc classes
         This list of utfc classes make up the basis functions used in the HybridUtfc class.
     """
+
     def __init__(self, tfcClasses):
         """
         This function computes the basis function matrix for the points specified by x.

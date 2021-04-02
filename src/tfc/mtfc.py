@@ -941,7 +941,7 @@ class mtfc:
             if len(x[0].shape) == 0:
                 dims = (dim1,)
             else:
-                dims = (x[0].shape[0],dim1)
+                dims = (x[0].shape[0], dim1)
             return abstract_arrays.ShapedArray(dims, x[0].dtype)
 
         H_p.def_abstract_eval(H_abstract_eval)
