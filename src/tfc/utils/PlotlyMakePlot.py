@@ -64,6 +64,18 @@ class MakePlot:
                     "type": "volume",
                 }
             ],
+            "contour": [
+                {
+                    "colorbar": {"outlinewidth": 0, "ticks": ""},
+                    "colorscale": [
+                        [0.0, "black"],
+                        [0.2, "rebeccapurple"],
+                        [0.3, "blueviolet"],
+                        [0.7, "#4682B4"],
+                        [1.0, "aquamarine"],
+                    ],
+                }
+            ],
         },
         "layout": {
             "margin": {"t": 50, "b": 50, "r": 50, "l": 50},
