@@ -24,7 +24,7 @@ class MakePlot:
         The z-axes labels of for the plots. Setting this forces subplots to be 3D. (Default value = None)
     """
 
-    def __init__(self, xlabs, ylabs, twinYlabs=None, titles=None, zlabs=None):
+    def __init__(self, xlabs, ylabs, twinYlabs=None, titles=None, zlabs=None, style=None):
         """This function initializes subplots based on the inputs provided.
 
         Parameters
@@ -36,6 +36,10 @@ class MakePlot:
         zlabs: list or array-like, optional
             The z-axes labels of for the plots. Setting this forces subplots to be 3D. (Default value = None)
         """
+
+        # Apply a style if specified
+        if style:
+            plt.style.use(style)
 
         # Set the fontsizes and family
         smallSize = 16
