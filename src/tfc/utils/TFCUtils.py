@@ -108,7 +108,7 @@ def onesRobust(val):
         Pytree with the same structure as val with all elements equal to one.
 
     """
-    return onp.ones(val.shape,dtype=val.dtype)
+    return onp.ones(val.shape, dtype=val.dtype)
 
 
 @partial(partial, tree_multimap)
@@ -124,7 +124,7 @@ def zerosRobust(val):
     zeros_like_val : pytree
         Pytree with the same structure as val with all elements equal to zero.
     """
-    return onp.zeros(val.shape,dtype=val.dtype)
+    return onp.zeros(val.shape, dtype=val.dtype)
 
 
 def egradRobust(g, j=0):
@@ -721,6 +721,7 @@ def NLLS(
     timer=False,
     printOut=False,
     timerType="process_time",
+    holomorphic=False,
 ):
     """
     JIT-ed non-linear least squares.
@@ -772,8 +773,11 @@ def NLLS(
          NOT CURRENTLY IMPLEMETNED; it will be implemented if JAX allows printing from within JITed functions. The printout will be
          max(abs(res)) at each iteration. Controls whether the NLLS prints out information each interaton or not. (Default value = False)
 
-    timerType : str
+    timerType : str, optional
          Any timer from the time module. (Default value = "process_time")
+
+    holomorphic : bool, optional
+         Indicates whether residual function is promised to be holomorphic. (Default value = False)
 
     Returns
     -------
@@ -817,7 +821,7 @@ def NLLS(
             if isinstance(xiInit, TFCDictRobust):
 
                 def J(xi, *args):
-                    jacob = jacfwd(res, 0)(xi, *args)
+                    jacob = jacfwd(res, 0, holomorphic=holomorphic)(xi, *args)
                     return np.hstack(
                         [
                             jacob[k].reshape(jacob[k].shape[0], onp.prod(onp.array(xi[k].shape)))
@@ -828,11 +832,11 @@ def NLLS(
             else:
 
                 def J(xi, *args):
-                    jacob = jacfwd(res, 0)(xi, *args)
+                    jacob = jacfwd(res, 0, holomorphic=holomorphic)(xi, *args)
                     return np.hstack([jacob[k] for k in xi.keys()])
 
         else:
-            J = lambda xi, *args: jacfwd(res, 0)(xi, *args)
+            J = lambda xi, *args: jacfwd(res, 0, holomorphic=holomorphic)(xi, *args)
 
     if method == "pinv":
         LS = lambda xi, *args: np.dot(np.linalg.pinv(J(xi, *args)), res(xi, *args))
@@ -910,12 +914,14 @@ class NllsClass:
         timer=False,
         printOut=False,
         timerType="process_time",
+        holomorphic=False,
     ):
         """ Initialization function. Creates the JIT-ed nonlinear least-squares function. """
 
         self.timerType = timerType
         self.timer = timer
         self._maxIter = maxIter
+        self.holomorphic = holomorphic
 
         if timer and printOut:
             TFCPrint.Warning(
@@ -947,7 +953,7 @@ class NllsClass:
                 if isinstance(xiInit, TFCDictRobust):
 
                     def J(xi, *args):
-                        jacob = jacfwd(res, 0)(xi, *args)
+                        jacob = jacfwd(res, 0, holomorphic=self.holomorphic)(xi, *args)
                         return np.hstack(
                             [
                                 jacob[k].reshape(
@@ -960,11 +966,11 @@ class NllsClass:
                 else:
 
                     def J(xi, *args):
-                        jacob = jacfwd(res, 0)(xi, *args)
+                        jacob = jacfwd(res, 0, holomorphic=self.holomorphic)(xi, *args)
                         return np.hstack([jacob[k] for k in xi.keys()])
 
             else:
-                J = lambda xi, *args: jacfwd(res, 0)(xi, *args)
+                J = lambda xi, *args: jacfwd(res, 0, holomorphic=self.holomorphic)(xi, *args)
 
         if method == "pinv":
             LS = lambda xi, *args: np.dot(np.linalg.pinv(J(xi, *args)), res(xi, *args))
