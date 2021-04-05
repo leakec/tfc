@@ -1,13 +1,11 @@
 # This is a function that solves the linear-nonlinear differential
 # equation sequence with TFC
-# Hunter Johnston - Texas A&M University
-# Updated: 15 Mar 2021
 ##################################################################
 # Differential Equation
-#   y'' + yy'^a = exp(pi/2) - exp(pi/2 - x)
+#   y'' + yy'^a = exp(π/2) - exp(π/2 - x)
 #
-#   subject to: y(0)  = 9/10 + 1/10 exp(pi/2) (5 - 2 exp(pi/2))
-#               y(pi) = exp(-pi/2)
+#   subject to: y(0)  = 9/10 + 1/10 exp(π/2) [5 - 2 exp(π/2)]
+#               y(π) = exp(-π/2)
 ###################################################################
 from tfc import utfc
 from tfc.utils import MakePlot, TFCDict, egrad, NLLS
@@ -165,7 +163,7 @@ p1.fig.subplots_adjust(wspace=0.75)
 
 p1.PartScreen(10.,6.)
 p1.show()
-# p1.save('../figures/linearNonlinear_function')
+# p1.save('linearNonlinear_function')
 
 #Plot 2
 p2 = MakePlot(r'$x$',r'$|\mathbb{L}(\mathbf{\xi})|$')
@@ -177,7 +175,7 @@ p2.ax[0].set_yscale('log')
 
 p2.PartScreen(7.,6.)
 p2.show()
-# p2.save('../figures/linearNonlinear_error')
+# p2.save('linearNonlinear_error')
 
 #Plot 3
 p3 = MakePlot(r'$x$',r'$y(x)$')
@@ -188,4 +186,4 @@ p3.ax[0].legend(framealpha=0.5)
 
 p3.PartScreen(7.,6.)
 p3.show()
-# p3.save('../figures/linearNonlinear_init')
+# p3.save('linearNonlinear_init')
