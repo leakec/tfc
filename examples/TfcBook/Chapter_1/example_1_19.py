@@ -5,6 +5,7 @@ from jax import jit
 from tfc import utfc
 from tfc.utils import MakePlot, step
 
+
 # Constants:
 N = 101
 m = 8
@@ -21,22 +22,23 @@ H = myTfc.H
 m = H(x).shape[1]
 
 # Create the constrained expression:
+K = np.array([1.,2.,3.])
 g = lambda x,xi: np.dot(H(x),xi)
-uslow = lambda x,n,xi: g(x,xi)+(-1.)**step(n)*np.sqrt(3)-g(np.array([0.]),xi)
+uslow = lambda x,n,xi: g(x,xi)+K[np.int64(n%3)]-g(np.array([0.]),xi)
 u = jit(uslow)
 
-# Create the plot:
+# Run the monte carlo test
 p = MakePlot(r'$x$',r'$y(x,n,g(x))$')
 
 for k in range(nMC):
     xi = onp.random.randn(m)
-    n = onp.random.randn()
+    n = onp.random.rand()*10.-5.
 
     U = u(x,n,xi)
     val = U[ind]
     p.ax[0].plot(x,U)
 
-p.ax[0].plot(np.zeros(2),np.array([np.sqrt(3.),-np.sqrt(3.)]),'k',linestyle='none',markersize=10,marker='.')
+p.ax[0].plot(np.zeros(3),K,'k',linestyle='none',markersize=10,marker='.')
 p.ax[0].set_xlim([-2.,2.])
 p.ax[0].grid(True)
 p.PartScreen(8,7)
