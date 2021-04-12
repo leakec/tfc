@@ -1,13 +1,20 @@
-# This script solves Problem #1 of Section 3's exercises in the TFC book
-# Updated: 18 Mar 2021
+# This script solves Problem #2 of Section 3's exercises in the TFC book
 ####################################################################################################
 # Differential Equation
-#   yₓₓ + w^2 y = 0      where   w is the period
+#   yₓₓ + δ yₓ + α y + β y^3 = γ cos(ω x)
+#
+#   where:
+#
+#   alfa - α    = -1 
+#   beta - β    =  1
+#   delt - δ    =  0.3
+#   omeg - ω    =  1.2
+#   gamm - γ    =  0.4  usually γ in [0.2, 0.65]
 #
 #   subject to: y(0) = 1, yₓ(0) = 0
 ####################################################################################################
 from tfc import utfc
-from tfc.utils import LsClass, egrad, MakePlot
+from tfc.utils import NllsClass, egrad, MakePlot
 from jax import jit
 import jax.numpy as np
 
@@ -16,17 +23,23 @@ import tqdm
 ####################################################################################################
 
 ## user defined parameters: ************************************************************************
-N = 100 # number of discretization points per TFC step
-m = 40  # number of basis function terms
-basis = 'CP' # basis function type
+N       = 100   # number of discretization points per TFC step
+m       = 40    # number of basis function terms
+basis   = 'CP'  # basis function type
+tfcTol  = 1e-15 # tolerance of nonlinear least-squares step
 
-xspan = [0., 2.] # time range of problem
-Nstep = int(xspan[1]/2) # number of TFC steps
+xspan = [0., 1000.] # time range of problem
+Nstep = int(xspan[1]/3) # number of TFC steps
 
 y0  = 1.  # y(x0)  = 1
 y0p = 0.  # yₓ(x0) = 0
 
-w = 2.*np.pi
+# problem constants
+alpha = -1 
+beta  =  1
+delta =  0.3
+omega =  1.2
+gamma =  0.4  #usually γ in [0.2, 0.65]
 
 ## problem initial conditions: *********************************************************************
 if basis == 'CP' or 'LeP':
@@ -70,28 +83,28 @@ yp = egrad(y)
 ypp = egrad(yp)
 
 ## define the loss function: ***********************************************************************
-#   yₓₓ + w^2 y = 0
-L = jit(lambda xi,IC: ypp(x,xi,IC) + w**2*y(x,xi,IC))
+#   yₓₓ + δ yₓ + α y + β y^3 - γ cos(ω x) = 0
+L = jit(lambda xi,IC: ypp(x,xi,IC) + delta*yp(x,xi,IC) + alpha*y(x,xi,IC) + beta*y(x,xi,IC)**3 \
+                                   - gamma*np.cos(omega*x))
 
 ## construct the least-squares class: **************************************************************
 xi0 = np.zeros(H(x).shape[1])
 IC = {'y0': np.array([y0]), 'y0p': np.array([y0p])}
 
 
-ls = LsClass(xi0,L,timer=True)
+nlls = NllsClass(xi0,L,timer=True,tol=tfcTol)
 
 ## initialize dictionary to record solution: *******************************************************
 xSol    = onp.zeros((Nstep,N))
 ySol    = onp.zeros_like(xSol)  
 res     = onp.zeros_like(xSol)
-err     = onp.zeros_like(xSol)
 time    = onp.zeros(Nstep)
 
 xSol[0,:] = x[:-1]
 xFinal = x[-1]
 ## 'propagation' loop: *****************************************************************************
 for i in tqdm.trange(Nstep):
-    xi, time[i] = ls.run(xi0,IC)
+    xi, it, time[i] = nlls.run(xi0,IC)
 
     # print solution to dictionary
     if i > 0:
@@ -106,17 +119,9 @@ for i in tqdm.trange(Nstep):
     IC['y0']  = y(x,xi,IC)[-1]
     IC['y0p'] = yp(x,xi,IC)[-1]
 
-## compute the error: ******************************************************************************
-A = np.sqrt(y0**2 + (y0p/w)**2)
-Phi = np.arctan(-y0p/w/y0)
-yTrue = A*np.cos(w*xSol+Phi)
-
-err = np.abs(ySol-yTrue)
-
 ## print status of run: ****************************************************************************
 print('TFC least-squares time[s]: ' +'\t'+ str((time.sum())))
 print('Max residual:' +'\t'*3+ str(res.max()))
-print('Max error:' +'\t'*3+ str(err.max()))
 
 ## plotting: ***************************************************************************************
 # figure 1: solution
@@ -133,11 +138,3 @@ p2.ax[0].grid(True)
 p2.ax[0].set_yscale('log')
 p2.PartScreen(7.,6.)
 p2.show()
-
-# figure 3: error
-p3 = MakePlot(r'$t$',r'$|y_{true} - y(t)|$')
-p3.ax[0].plot(xSol.flatten(),err.flatten(),'*')
-p3.ax[0].grid(True)
-p3.ax[0].set_yscale('log')
-p3.PartScreen(7.,6.)
-p3.show()
