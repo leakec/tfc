@@ -26,7 +26,7 @@ def runLaneEmden(N, m, basis, k, xf):
     y0p = 0.  # y'(x0) = 0
     nC  = 2   # number of constraints
 
-    ## construct univariate tfc class: *****************************************************************
+    ## construct univariate tfc class: *************************************************************
     tfc = utfc(N, nC, int(m), basis = basis, x0=xspan[0], xf=xspan[1])
     x = tfc.x
 
@@ -35,7 +35,7 @@ def runLaneEmden(N, m, basis, k, xf):
     H0 = H(x[0])
     H0p = dH(x[0])
 
-    ## define tfc constrained expression and derivatives: **********************************************
+    ## define tfc constrained expression and derivatives: ******************************************
     # switching function
     phi1 = lambda x: np.ones_like(x)
     phi2 = lambda x: x
@@ -45,10 +45,10 @@ def runLaneEmden(N, m, basis, k, xf):
     yp = egrad(y)
     ypp = egrad(yp)
 
-    ## define the loss function: ***********************************************************************
+    ## define the loss function: *******************************************************************
     L = lambda xi: x*ypp(x,xi) + 2.*yp(x,xi) + x*y(x,xi)**k
 
-    ## solve the problem via nonlinear least-squares ***************************************************
+    ## solve the problem via nonlinear least-squares ***********************************************
     xi = np.zeros(H(x).shape[1])
 
     # if k==0 or k==1, the problem is linear
@@ -59,7 +59,7 @@ def runLaneEmden(N, m, basis, k, xf):
     else:
         xi,iter,time = NLLS(xi,L,timer=True)
 
-    ## compute the error (if k = 0, 1, or 5): **********************************************************
+    ## compute the error (if k = 0, 1, or 5): ******************************************************
     if k == 0:
         ytrue = 1. - 1./6. * x**2
     elif k == 1:
@@ -72,7 +72,7 @@ def runLaneEmden(N, m, basis, k, xf):
 
     err = np.abs(y(x,xi) - ytrue)
 
-    ## compute the residual of the loss vector: ********************************************************
+    ## compute the residual of the loss vector: ****************************************************
     res = np.abs(L(xi))
     
     return x, y(x,xi), err, res
