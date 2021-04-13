@@ -23,12 +23,12 @@ from jax import vmap, jacfwd, jit, lax
 
 ## constants: **************************************************************************************
 mu = 0.01215
-C  = 3.04856909
+C  = 3.05 #3.04856909
 
 ## initial guess values: ***************************************************************************
 r_init = [0.79, 0.]     # [7.91965585e-01 3.73375471e-11] 
 v_init = [0.,   0.42]   # [3.57685915e-11 4.02225959e-01]
-T_init = 2.7            # 2.7034019846274746
+T_init = 21.4   #355515     # 2.7034019846274746 (could be this 21.4355515)
 
 
 ## user defined parameters: ************************************************************************
@@ -107,12 +107,18 @@ Ls = lambda z, xi: -a(z,xi) + Psi1(z,xi) \
 L = jit(lambda xi: np.hstack([Ls(z,xi).flatten(), Jc(z,xi)-C]))
 
 ## INITIALIZE VARIABLES *************************************************************************************
-xis   = onp.zeros((H(z).shape[1],2)) # need better initialization
+xis   = onp.zeros((H(z).shape[1],2))
+# xix = [-3.67149673e-03,  9.95150918e-12,  2.25415945e-02, -6.11884450e-12, -6.95243016e-03, ...]
+# xiy = [1.95385260e-12,   1.38851015e-02, -1.02029880e-11, -1.56382363e-02,  2.80396751e-12, ...]
+
+xis[0:2,0] = [-3.e-03,   9.e-12]
+xis[0:2,1] = [ 2.e-12,   1.e-02]
+
 X     = onp.ones(1) * r_init[0]
 Y     = onp.ones(1) * r_init[1]
 dX    = onp.ones(1) * v_init[0]
 dY    = onp.ones(1) * v_init[0]
-b     = onp.ones(1) * T_init
+b     = onp.ones(1) * np.sqrt(2./T_init)
 
 xi = TFCDictRobust({'xis':xis,'X':X,'Y':Y,'dX':dX,'dY':dY,'b':b})
 
@@ -120,25 +126,24 @@ xi = TFCDictRobust({'xis':xis,'X':X,'Y':Y,'dX':dX,'dY':dY,'b':b})
 xi, iter, time = NLLS(xi,L,timer=True)
 
 ## plot: *******************************************************************************************
-
 ## compute location of L1 and L2 equilibrium points
 L1 = 1. - (mu/3.)**(1./3.)
 L2 = 1. + (mu/3.)**(1./3.)
-
 
 p1 = MakePlot('x','y')
 p1.ax[0].plot(L1,0.,'ko', markersize=2)
 p1.ax[0].plot(L2,0.,'ko', markersize=2)
 p1.ax[0].plot(1.-mu,0.,'ko', markersize=6)
 
-p4.ax[0].plot(tfc['sol'][:,0,i],tfc['sol'][:,1,i],'b')
+p1.ax[0].plot(r(z,xi)[:,0], r(z,xi)[:,1])
 
 p1.ax[0].set_xlabel(r'$x$',labelpad=10)
 p1.ax[0].set_ylabel(r'$y$',labelpad=10)
 
 p1.ax[0].axis('equal')
-p1.ax[0].set(ylim=(-.75, .75))
-p4.ax[0].grid(True)
+p1.ax[0].set(ylim=(0.8, 1.2))
+p1.ax[0].set(ylim=(-.3, .3))
+p1.ax[0].grid(True)
 
-p4.PartScreen(4.,6.)
-p4.show()
+p1.PartScreen(7.,6.)
+p1.show()
