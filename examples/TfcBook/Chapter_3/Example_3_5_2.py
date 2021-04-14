@@ -1,5 +1,4 @@
 # This script solves the Lane-Emden equation (Section 3.8.1) in the TFC book
-# Updated: 17 Mar 2021
 ####################################################################################################
 # Differential Equation
 #   y'' + yy' = exp(-2x) sin(x) [cos(x) -sin(x)] - 2exp(-x)cos(x)
@@ -14,15 +13,15 @@ import numpy as onp
 ####################################################################################################
 
 ## user defined parameters: ************************************************************************
-N = 100 # number of discretization points
-m = 60  # number of basis function terms
-basis = 'CP' # basis function type
+N = 100         # number of discretization points
+m = 60          # number of basis function terms
+basis = 'CP'    # basis function type
 
 ## problem boundary conditions: ********************************************************************
 xspan = [0., np.pi]
-y0  = 0. # y(0)  = 0
-yf  = 0. # y(pi) = 0
-nC  = 2   # number of constraints
+y0  = 0.    # y(0)  = 0
+yf  = 0.    # y(pi) = 0
+nC  = 2     # number of constraints
 
 ## construct univariate tfc class: *****************************************************************
 tfc = utfc(N, nC, int(m), basis = basis, x0=xspan[0], xf=xspan[1])
@@ -33,7 +32,7 @@ H0 = H(tfc.x[0])
 Hf = H(tfc.x[-1])
 
 ## define tfc constrained expression and derivatives: **********************************************
-# switching function
+# switching functions
 phi1 = lambda x: (np.pi - x)/np.pi
 phi2 = lambda x: x/np.pi
 
