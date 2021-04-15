@@ -33,7 +33,7 @@ T_init = 21.4
 N       = 140   # number of discretization points
 m       = 130   # number of basis function terms
 basis   = 'CP'  # basis function type
-# !!! Here we can see that I large number of basis terms is used. This is needed for this specific
+# !!! Here we can see that a large number of basis terms is used. This is needed for this specific
 #     problem to obtain the desirable accuracy
 
 ## construct univariate tfc class: *****************************************************************
