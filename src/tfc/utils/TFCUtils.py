@@ -222,7 +222,7 @@ class TFCDict(OrderedDict):
 
     def toArray(self):
         """Send dictionary to a flat JAX array."""
-        return np.hstack([self[self._keys[k]] for k in range(self._nKeys)])
+        return np.hstack([k for k in self.values()])
 
     def toDict(self, arr):
         """Send a flat JAX array to a TFCDict with the same keys.
@@ -388,7 +388,7 @@ class TFCDictRobust(OrderedDict):
 
     def toArray(self):
         """Send dictionary to a flat JAX array."""
-        return np.hstack([self[self._keys[k]].flatten() for k in range(self._nKeys)])
+        return np.hstack([k.flatten() for k in self.values()])
 
     def toDict(self, arr):
         """Send a flat JAX array to a TFCDictRobust with the same keys.
