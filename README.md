@@ -6,7 +6,7 @@
 This repository is currently under development. 
 
 ## Installation:
-The following instructions can be used to install a source distribution via pip or build TFC directly from source. Currently, we support building tfc navitely on Linux or macOS, but Windows users can still use TFC via the Windows Subsystem for Linux.
+The following instructions can be used to install a source distribution via pip or build TFC directly from source. Currently, we support building TFC navitely on Linux or macOS, but Windows users can still use TFC via the Windows Subsystem for Linux.
 
 ### pip installation:
 ```bash
