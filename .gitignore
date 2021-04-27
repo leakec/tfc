@@ -5,3 +5,6 @@ __pycache__
 *.jpg
 *.pdf
 .DS_Store
+*.egg-info
+src/tfc/utils/BF/BF.py
+src/tfc/utils/BF/BF_wrap.cpp
