@@ -7,6 +7,7 @@ from setuptools.command.build_py import build_py as _build_py
 this_directory = path.abspath(path.dirname(__file__))
 with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
+long_description = long_description.replace('<img src="https://github.com/leakec/tfc/blob/main/docs/Univariate_TFC_Animation.gif" width="600" height="467">',"![Univariate constrained expression gif](https://github.com/leakec/tfc/blob/main/docs/Univariate_TFC_Animation.gif)",1)
 
 # Get numpy directory
 try:
@@ -35,7 +36,7 @@ class build_py(_build_py):
 # Setup
 setup(
     name="tfc",
-    version="0.0.10",
+    version="0.0.11",
     author="Carl Leake and Hunter Johnston",
     author_email="leakec57@gmail.com",
     description="Theory of Functional Connections (TFC): A functional interpolation framework with applications in differential equations.",

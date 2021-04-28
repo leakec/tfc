@@ -10,7 +10,7 @@ The following instructions can be used to install a source distribution via pip 
 
 ### pip installation:
 ```bash
-pip install --upgrade pip cmaketools setuptools wheel numpy
+pip install --upgrade pip setuptools wheel numpy
 pip install --upgrade tfc
 ```
 Note that you may need to first install the system package dependencies listed below if they are not already installed.
@@ -23,7 +23,6 @@ Note that you may need to first install the system package dependencies listed b
 Dependencies:
 * System Packages:
   * swig
-  * cmake
   * graphviz
 * Python Packages:
   * matplotlib
