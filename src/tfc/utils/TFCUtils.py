@@ -15,6 +15,7 @@ from jax import jvp, jit, lax, jacfwd
 from jax.util import safe_zip
 from jax.tree_util import register_pytree_node, tree_multimap
 from jax.interpreters.partial_eval import JaxprTracer
+from jax.experimental.host_callback import id_tap
 
 
 class TFCPrint:
@@ -723,6 +724,16 @@ class LsClass:
             return zXi
 
 
+def nlls_printout(arg, transforms, *, end="\n", **kwargs):
+    print("Iteration: {0}\tmax(abs(res)): {1}".format(*arg), end=end)
+    return
+
+
+def nlls_id_print(it, x, end="\n"):
+    printer = partial(nlls_printout, end=end)
+    return id_tap(printer, (it, x))
+
+
 def NLLS(
     xiInit,
     res,
@@ -735,6 +746,7 @@ def NLLS(
     method="pinv",
     timer=False,
     printOut=False,
+    printOutEnd="\n",
     timerType="process_time",
     holomorphic=False,
 ):
@@ -785,8 +797,10 @@ def NLLS(
          As one iteration of the non-linear least squares is run first to avoid timining the JAX trace.
 
     printOut : bool, optional
-         NOT CURRENTLY IMPLEMETNED; it will be implemented if JAX allows printing from within JITed functions. The printout will be
-         max(abs(res)) at each iteration. Controls whether the NLLS prints out information each interaton or not. (Default value = False)
+         Controls whether the NLLS prints out information each interaton or not. The printout consists of the iteration and max(abs(res)) at each iteration. (Default value = False)
+
+    printOutEnd : str, optional
+         Value of keyword argument end passed to the print statement used in printOut. (Default value = "\n")
 
     timerType : str, optional
          Any timer from the time module. (Default value = "process_time")
@@ -809,10 +823,6 @@ def NLLS(
     if timer and printOut:
         TFCPrint.Warning(
             "Warning, you have both the timer and printer on in the nonlinear least-squares.\nThe time will be longer than optimal due to the printout."
-        )
-    if printOut:
-        TFCPrint.Warning(
-            "Warning, printing is not yet supported. You're going to get a garbage printout."
         )
 
     if isinstance(xiInit, TFCDict) or isinstance(xiInit, TFCDictRobust):
@@ -866,13 +876,10 @@ def NLLS(
             def body(val):
                 val["dxi"] = LS(val["xi"], *val["args"])
                 val["xi"] -= val["dxi"]
-                val["it"] += 1
-                print(
-                    "Iteration "
-                    + str(val["it"])
-                    + ":\tMax Residual: "
-                    + str(np.max(np.abs(res(val["xi"]))))
+                nlls_id_print(
+                    val["it"], np.max(np.abs(res(val["xi"], *val["args"]))), end=printOutEnd
                 )
+                val["it"] += 1
                 return val
 
         else:
@@ -928,6 +935,7 @@ class NllsClass:
         method="pinv",
         timer=False,
         printOut=False,
+        printOutEnd="\n",
         timerType="process_time",
         holomorphic=False,
     ):
@@ -941,10 +949,6 @@ class NllsClass:
         if timer and printOut:
             TFCPrint.Warning(
                 "Warning, you have both the timer and printer on in the nonlinear least-squares.\nThe time will be longer than optimal due to the printout."
-            )
-        if printOut:
-            TFCPrint.Warning(
-                "Warning, printing is not yet supported. You're going to get a garbage printout."
             )
 
         if isinstance(xiInit, TFCDict) or isinstance(xiInit, TFCDictRobust):
@@ -1000,13 +1004,10 @@ class NllsClass:
                 def body(val):
                     val["dxi"] = LS(val["xi"], *val["args"])
                     val["xi"] -= val["dxi"]
-                    val["it"] += 1
-                    print(
-                        "Iteration "
-                        + str(val["it"])
-                        + ":\tMax Residual: "
-                        + str(np.max(np.abs(res(val["xi"]))))
+                    nlls_id_print(
+                        val["it"], np.max(np.abs(res(val["xi"], *val["args"]))), end=printOutEnd
                     )
+                    val["it"] += 1
                     return val
 
             else:
