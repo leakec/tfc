@@ -36,6 +36,14 @@ tfc.utils.MayaviMakePlot module
    :undoc-members:
    :show-inheritance:
 
+tfc.utils.PlotlyMakePlot module
+-------------------------------
+
+.. automodule:: tfc.utils.PlotlyMakePlot
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 tfc.utils.TFCUtils module
 -------------------------
 

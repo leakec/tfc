@@ -800,7 +800,7 @@ def NLLS(
          Controls whether the NLLS prints out information each interaton or not. The printout consists of the iteration and max(abs(res)) at each iteration. (Default value = False)
 
     printOutEnd : str, optional
-         Value of keyword argument end passed to the print statement used in printOut. (Default value = "\n")
+         Value of keyword argument end passed to the print statement used in printOut. (Default value = "\\\\n")
 
     timerType : str, optional
          Any timer from the time module. (Default value = "process_time")
