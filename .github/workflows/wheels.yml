@@ -22,7 +22,8 @@ jobs:
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse
         env:
-          CIBW_BEFORE_ALL: yum install -y swig
+          CIBW_BEFORE_ALL_LINUX: yum install -y swig
+          CIBW_BEFORE_ALL_MACOS: brew install swig
           CIBW_BEFORE_BUILD: pip install setuptools wheel numpy
           CIBW_ARCHS_LINUX: x86_64
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
