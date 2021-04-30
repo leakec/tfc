@@ -1,7 +1,11 @@
 name: Build
 
-on: [release,workflow_dispatch]
-
+on:
+  release:
+    types: [publised]
+    
+  workflow_dispatch:
+  
 jobs:
   build_source_wheel:
     name: Build source wheel
