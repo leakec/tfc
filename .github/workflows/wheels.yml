@@ -73,25 +73,24 @@ jobs:
     needs: [build_source_wheel, build_binary_wheels]
     steps: 
 
-      - name: Download wheels
-          uses: actions/download-artifact@v2
-          with:
-            name: source_wheel
-            path: ./dist
+      - uses: actions/download-artifact@v2
+        with:
+          name: source_wheel
+          path: ./dist
 
-          uses: actions/download-artifact@v2
-          with:
-            name: ubuntu-latest_binary_wheels
-            path: ./dist
+      - uses: actions/download-artifact@v2
+        with:
+          name: ubuntu-latest_binary_wheels
+          path: ./dist
 
-          uses: actions/download-artifact@v2
-          with:
-            name: macOS-latest_binary_wheels
-            path: ./dist
+      - uses: actions/download-artifact@v2
+        with:
+          name: macOS-latest_binary_wheels
+          path: ./dist
 
       - name: Publish package to PyPI test
         uses: pypa/gh-action-pypi-publish@master
-          with:
-            user: __token__
-            password: ${{ secrets.PYPI_TEST_API_TOKEN }}
-            repositor_url: https://test.pypi.org/legacy/
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_TEST_API_TOKEN }}
+          repositor_url: https://test.pypi.org/legacy/
