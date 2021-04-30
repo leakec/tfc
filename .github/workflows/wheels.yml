@@ -3,33 +3,84 @@ name: Build
 on: [release,workflow_dispatch]
 
 jobs:
-  build_wheels:
-    name: Build wheels on ${{ matrix.os }}
+  build_source_wheel:
+    name: Build source wheel
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install libraries
+        run: "sudo apt-get update && sudo apt-get install -y swig gcc g++"
+
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+
+      - name: Checkout dependencies
+        run: python -m pip install wheel setuptools numpy
+
+      - name: Create source distribution
+        run: python setup.py sdist
+
+      - name: Checkout test dependencies
+        run: python -m pip install pytest
+
+      - name: Install source distribution
+        run: pip install ./dist/tfc*.tar.gz
+
+      - name: Test source distribution
+        run: pytest tests
+
+      - name: Upload source distribution
+        uses: actions/upload-artifact@v2
+        with: 
+          name: source_wheel
+          path: ./dist/tfc*.tar.gz
+
+  build_binary_wheels:
+    name: Build binary wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [macOS-latest,ubuntu-latest]
-
+  
     steps:
       - uses: actions/checkout@v2
-
-      # Used to host cibuildwheel
       - uses: actions/setup-python@v2
-
+  
       - name: Install cibuildwheel
         run: python -m pip install cibuildwheel==1.10.0
-
+  
       - name: Build wheels
-        run: python -m cibuildwheel --output-dir wheelhouse
+        run: python -m cibuildwheel --output-dir dist
         env:
           CIBW_BEFORE_ALL_LINUX: yum install -y swig
           CIBW_BEFORE_ALL_MACOS: brew install swig
           CIBW_BEFORE_BUILD: pip install setuptools wheel numpy
-          CIBW_ARCHS_LINUX: x86_64
-          CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
-          CIBW_ARCHS_MACOS: x86_64
           CIBW_SKIP: pp*
+          CIBW_ARCHS_LINUX: x86_64
+          CIBW_ARCHS_MACOS: x86_64
+          CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
+          CIBW_TEST_REQUIRES: pytest
+          CIBW_TEST_COMMAND: pytest {package}/tests
+  
+      - name: Upload binary wheels
+        uses: actions/upload-artifact@v2
+        with:
+          name: binary_wheels
+          path: ./dist/*.whl
 
-      #- uses: actions/upload-artifact@v2
+  upload_wheels:
+    name: Upload wheels to PyPI
+    steps: 
+
+      uses: actions/download-artifact@v2
+      with:
+        name: source_wheel
+        path: ./dist
+
+      uses: actions/download-artifact@v2
+      with:
+        name: binary_wheels
+        path: ./dists
+
+      #uses: pypa/gh-action-pypi-publish@master
       #  with:
-      #    path: ./wheelhouse/*.whl
+      #    password: ${{ secrets.PYPI_API_TOKEN }}
