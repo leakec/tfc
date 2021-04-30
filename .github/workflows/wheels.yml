@@ -64,24 +64,34 @@ jobs:
       - name: Upload binary wheels
         uses: actions/upload-artifact@v2
         with:
-          name: binary_wheels
+          name: ${{ matrix.os }}_binary_wheels
           path: ./dist/*.whl
 
   upload_wheels:
     name: Upload wheels to PyPI
     runs-on: ubuntu-latest
+    needs: [build_source_wheel, build_binary_wheels]
     steps: 
 
-      - uses: actions/download-artifact@v2
-        with:
-          name: source_wheel
-          path: ./dist
+      - name: Download wheels
+          uses: actions/download-artifact@v2
+          with:
+            name: source_wheel
+            path: ./dist
 
-      - uses: actions/download-artifact@v2
-        with:
-          name: binary_wheels
-          path: ./dists
+          uses: actions/download-artifact@v2
+          with:
+            name: ubuntu-latest_binary_wheels
+            path: ./dist
 
-      #uses: pypa/gh-action-pypi-publish@master
-      #  with:
-      #    password: ${{ secrets.PYPI_API_TOKEN }}
+          uses: actions/download-artifact@v2
+          with:
+            name: macOS-latest_binary_wheels
+            path: ./dist
+
+      - name: Publish package to PyPI test
+        uses: pypa/gh-action-pypi-publish@master
+          with:
+            user: __token__
+            password: ${{ secrets.PYPI_TEST_API_TOKEN }}
+            repositor_url: https://test.pypi.org/legacy/
