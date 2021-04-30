@@ -1,5 +1,12 @@
+
 # Theory of Functional Connections (TFC)
 **A functional interpolation method with applications in solving differential equations.**
+
+![PyPI version](https://img.shields.io/pypi/v/tfc)
+
+[**Install guide**](#installation)
+| [**Reference docs**](https://tfc-documentation.readthedocs.io/en/latest/)
+| [**Mathematical documentation**](#mathematical-documentation)
 
 <img src="https://github.com/leakec/tfc/blob/main/docs/Univariate_TFC_Animation.gif" width="600" height="467">
 
@@ -13,9 +20,9 @@ pip install --upgrade tfc
 ```
 The above will install a binary TFC wheel. The developers have found that installing a source distribution leads to code that is slightly faster on some machines, as the code is compiled using potentially newer versions of compilers and swig. If you would like the source distribution, then you can use the following:
 ```bash
-pip3 install tfc --no-binary tfc
+pip install tfc --no-binary tfc
 ```
-Note that you may need to first install the system package dependencies listed in the "Building from source" section if they are not already installed.
+Note that you may need to first install the system package dependencies listed in the [**Building from source**](#building-from-source) section if they are not already installed.
 
 ## Reference Documentation:
 For tutorials on how to use this package as well as information about the tfc API, see the [reference documentation](https://tfc-documentation.readthedocs.io/en/latest/).
