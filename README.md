@@ -3,65 +3,23 @@
 
 <img src="https://github.com/leakec/tfc/blob/main/docs/Univariate_TFC_Animation.gif" width="600" height="467">
 
-This repository is currently under development. 
-
 ## Installation:
 The following instructions can be used to install a source distribution via pip or build TFC directly from source. Currently, we support building TFC navitely on Linux or macOS, but Windows users can still use TFC via the Windows Subsystem for Linux.
 
-### pip installation:
+To install via pip run:
 ```bash
 pip install --upgrade pip setuptools wheel numpy
 pip install --upgrade tfc
 ```
-Note that you may need to first install the system package dependencies listed below if they are not already installed.
-
-### Build from source:
-1. Create a dist directory in the main directory.
-2. Run python setup.py bdist\_wheel from the main directory.
-3. Navigate to dist, and run pip3 install "wheel" where "wheel" is the name of the wheel created in the previous step.
-
-Dependencies:
-* System Packages:
-  * swig
-  * graphviz
-* Python Packages:
-  * matplotlib
-  * jax
-  * jaxlib
-  * colorama
-  * graphviz
-  * yattag
-
-## Testing instructions:
-After following the build instructions:
-1. Navigate to the tests directory.
-2. Run py.test or python -m pytest
-These serve as simple unit tests that test basic functionality of the code. These include tests for individual TFC functions, as well as full ODE and PDE tests.
+The above will install a binary TFC wheel. The developers have found that installing a source distribution leads to code that is slightly faster on some machines, as the code is compiled using potentially newer versions of compilers and swig. If you would like the source distribution, then you can use the following:
+```bash
+pip3 install tfc --no-binary tfc
+```
+Note that you may need to first install the system package dependencies listed in the "Building from source" section if they are not already installed.
 
 ## Reference Documentation:
 For tutorials on how to use this package as well as information about the tfc API, see the [reference documentation](https://tfc-documentation.readthedocs.io/en/latest/).
 
-### Building Reference Documentation from Source:
-If for some reason you want to build the reference documentation from source, you can do so using these two steps:
-1. Change into the docs directory.
-2. Run:
-```bash
-sphinx-build . _build/html
-```
-The code documentation will appear under \_build/html and the main file is index.html. This file can also be accessed using the SphinxDocumentation.html symbolic link in the docs directory.
-
-Dependencies:
-* System Packages:
-  * graphviz
-  * doxygen
-  * python3-sphinx
-* Python Packages:
-  * sphinx
-  * sphinx\_rtd\_theme
-  * nbsphinx
-  * breathe
-  * exhale
-  
 ## Mathematical Documentation:
 Any users interested in the theory behind this method should start with this [journal article](https://www.mdpi.com/2227-7390/8/8/1303); note that the article is open access, so you should be able to download it for free. The curious user can continue their study of the theory by visiting the [TFC article repository](https://www.researchgate.net/project/Theory-of-Functional-Connections) on ResearchGate for a complete list of TFC publications with free downloadable PDFs.
 
@@ -90,3 +48,49 @@ The authors of this repsitory and the associated theory have gone to lengths to 
     pages={1303}
 }
 ```
+
+## For developers:
+
+### Building from source:
+1. Create a dist directory in the main directory.
+2. Run python setup.py bdist\_wheel from the main directory.
+3. Navigate to dist, and run pip3 install "wheel" where "wheel" is the name of the wheel created in the previous step.
+
+Dependencies:
+* System Packages:
+  * swig
+  * graphviz
+* Python Packages:
+  * matplotlib
+  * jax
+  * jaxlib
+  * colorama
+  * graphviz
+  * yattag
+
+### Testing instructions:
+1. Navigate to the tests directory.
+2. Run py.test or python -m pytest.
+These serve as simple unit tests that test basic functionality of the code. These include tests for individual TFC functions, as well as full ODE and PDE tests.
+
+### Building Reference Documentation from Source:
+If for some reason you want to build the reference documentation from source, you can do so using these two steps:
+1. Change into the docs directory.
+2. Run:
+```bash
+sphinx-build . _build/html
+```
+The code documentation will appear under \_build/html and the main file is index.html. This file can also be accessed using the SphinxDocumentation.html symbolic link in the docs directory.
+
+Dependencies:
+* System Packages:
+  * graphviz
+  * doxygen
+  * python3-sphinx
+* Python Packages:
+  * sphinx
+  * sphinx\_rtd\_theme
+  * nbsphinx
+  * breathe
+  * exhale
+  
