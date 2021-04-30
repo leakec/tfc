@@ -5,7 +5,7 @@
 ![PyPI version](https://img.shields.io/pypi/v/tfc)
 
 [**Install guide**](#installation)
-| [**Reference docs**](https://tfc-documentation.readthedocs.io/en/latest/)
+| [**Reference documentation**](https://tfc-documentation.readthedocs.io/en/latest/)
 | [**Mathematical documentation**](#mathematical-documentation)
 
 <img src="https://github.com/leakec/tfc/blob/main/docs/Univariate_TFC_Animation.gif" width="600" height="467">
