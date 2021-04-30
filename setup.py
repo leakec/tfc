@@ -36,7 +36,7 @@ class build_py(_build_py):
 # Setup
 setup(
     name="tfc",
-    version="0.0.11",
+    version="0.1.0",
     author="Carl Leake and Hunter Johnston",
     author_email="leakec57@gmail.com",
     description="Theory of Functional Connections (TFC): A functional interpolation framework with applications in differential equations.",
