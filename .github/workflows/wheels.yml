@@ -69,17 +69,18 @@ jobs:
 
   upload_wheels:
     name: Upload wheels to PyPI
+    runs-on: ubuntu-latest
     steps: 
 
-      uses: actions/download-artifact@v2
-      with:
-        name: source_wheel
-        path: ./dist
+      - uses: actions/download-artifact@v2
+        with:
+          name: source_wheel
+          path: ./dist
 
-      uses: actions/download-artifact@v2
-      with:
-        name: binary_wheels
-        path: ./dists
+      - uses: actions/download-artifact@v2
+        with:
+          name: binary_wheels
+          path: ./dists
 
       #uses: pypa/gh-action-pypi-publish@master
       #  with:
