@@ -164,7 +164,8 @@ for k in range(atmData.shape[0]-1,-1,-1):
 
 # Print results and show plot
 print("Average time: "+str(np.mean(time)))
-p.ax[0].legend(ncol=2)
+p.ax[0].legend()
 p.ax[0].axis('equal')
+p.ax[0].set_xlim([-6.,14.])
 p.FullScreen()
 p.show()
