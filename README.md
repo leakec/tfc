@@ -2,9 +2,10 @@
 # Theory of Functional Connections (TFC)
 **A functional interpolation method with applications in solving differential equations.**
 
+![Continuous integration](https://github.com/leakec/tfc/actions/workflows/ci.yml/badge.svg)
 ![PyPI version](https://img.shields.io/pypi/v/tfc)
 
-[**Install guide**](#installation)
+[**Installation guide**](#installation)
 | [**Reference documentation**](https://tfc-documentation.readthedocs.io/en/latest/)
 | [**Mathematical documentation**](#mathematical-documentation)
 
