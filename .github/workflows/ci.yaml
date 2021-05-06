@@ -17,8 +17,7 @@ jobs:
       - name: lint
         uses: psf/black@stable
         with:
-          options: "--check"
-          src: "./src/tfc"
+          args: "--check ./src/tfc"
 
       - run: "sudo apt-get update && sudo apt-get install -y swig gcc g++"
       - run: python -m pip install wheel setuptools numpy pytest
