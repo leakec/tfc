@@ -4,7 +4,7 @@ from matplotlib import colors as mcolors
 
 
 class MakePlot:
-    """MakePlot class for Mayavi. """
+    """MakePlot class for Mayavi."""
 
     @staticmethod
     def _str_to_rgb(color):

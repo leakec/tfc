@@ -939,7 +939,7 @@ class NllsClass:
         timerType="process_time",
         holomorphic=False,
     ):
-        """ Initialization function. Creates the JIT-ed nonlinear least-squares function. """
+        """Initialization function. Creates the JIT-ed nonlinear least-squares function."""
 
         self.timerType = timerType
         self.timer = timer
