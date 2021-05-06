@@ -3,6 +3,8 @@ name: Continuous Integration
 on:
   push:
     paths: src/tfc/** tests/**
+  
+  workflow_dispatch:
 
 jobs:
   lint and test:
