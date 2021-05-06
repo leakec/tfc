@@ -2,7 +2,7 @@ name: Continuous Integration
 
 on:
   push:
-    paths: src/tfc/* tests/*
+    paths: src/tfc/** tests/**
 
 jobs:
   lint and test:
