@@ -100,7 +100,7 @@ class utfc:
         if self.basis == "CP":
             from .utils.BF import CP
 
-            self.basisClass = CP(self.x0, self.xf, self.nC, self.deg + 1)
+            self.basisClass = CP(self.x0, self.xf, self.nC, self.deg +1)
             z0 = -1.0
             zf = 1.0
         elif self.basis == "LeP":
