@@ -4,7 +4,7 @@ from matplotlib import colors as mcolors
 
 
 class MakePlot:
-    """MakePlot class for Mayavi. """
+    """MakePlot class for Mayavi."""
 
     @staticmethod
     def _str_to_rgb(color):
@@ -137,7 +137,7 @@ class MakePlot:
         """
         mlab.figure(self.fig, size=(width, height))
 
-    def animate(self, animFunc, outDir="MyMovie", fileName="images", save=True):
+    def animate(self, animFunc, outDir="MyMovie", fileName="images", save=True, delay=10):
         """
 
         Parameters
@@ -153,6 +153,14 @@ class MakePlot:
 
         save : bool, optional
              Controls whether the function saves the frames of the animation or not. (Default value = True)
+
+        delay: int in [10,100000], optional
+             Controls the delay used by mlab.animate. (Default value = 10)
+
+        Returns
+        -------
+        animator : mayavi.tools.animator.Animator
+            Returns an animator object only if save = False. Otherwise, there is no return value.
         """
         if save:
             import os
@@ -173,7 +181,7 @@ class MakePlot:
                 )
             )
         else:
-            mlab.animate(func=animFunc, delay=10, ui=True, support_movie=False)()
+            return mlab.animate(func=animFunc, delay=delay)()
 
     def save(self, fileName, fileType="pdf"):
         """This function saves the figure.

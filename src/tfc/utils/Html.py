@@ -75,7 +75,7 @@ class Dot:
     """
 
     def __init__(self, outFile, name):
-        """ This function initizes the class and creates the digraph. """
+        """This function initizes the class and creates the digraph."""
         self._outFile = outFile
         self._name = name
         self.dot = Digraph(name=self._name)

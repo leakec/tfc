@@ -569,7 +569,7 @@ class MakePlot:
             self.fig["layout"]["scene"]["camera"].eye = dict(x=dark[0], y=dark[1], z=dark[2])
 
     def FullScreen(self):
-        """ Make the plot full screen. """
+        """Make the plot full screen."""
         import tkinter as tk
 
         root = tk.Tk()
