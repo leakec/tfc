@@ -143,7 +143,7 @@ p1.PartScreen(8.,7.)
 p1.show()
 
 # 3d trajectoryAc
-p2 = MakePlot(r'Range ($x$)',r'Crosstrack ($y$)', zlabs=r'Altitude ($z$)')
+p2 = MakePlot(r'Range [km]',r'Crosstrack [km]', zlabs=r'Altitude [km]')
 p2.ax[0].plot(R[:,0]/1000.,R[:,1]/1000.,R[:,2]/1000., 'k')
 p2.ax[0].quiver(R[0::2,0]/1000.,R[0::2,1]/1000.,R[0::2,2]/1000., \
                 Ac[0::2,0], Ac[0::2,1], Ac[0::2,2], \
