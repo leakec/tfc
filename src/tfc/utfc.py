@@ -1,4 +1,5 @@
 from jax.config import config
+
 config.update("jax_enable_x64", True)
 
 import numpy as onp
@@ -8,6 +9,7 @@ from jax.interpreters import ad, batching, xla
 from jax.lib import xla_client
 
 from .utils.TFCUtils import TFCPrint
+
 
 class utfc:
     """
