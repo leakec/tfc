@@ -161,8 +161,8 @@ p1.ax[0].set_xlabel(r'$x$',labelpad=10)
 p1.ax[0].set_ylabel(r'$y$',labelpad=10)
 
 p1.ax[0].axis('equal')
-p1.ax[0].set(ylim=(0.8, 1.2))
-p1.ax[0].set(ylim=(-.3, .3))
+p1.ax[0].set_ylim(-.25, .25)
+
 p1.ax[0].grid(True)
 
 p1.PartScreen(7.,6.)

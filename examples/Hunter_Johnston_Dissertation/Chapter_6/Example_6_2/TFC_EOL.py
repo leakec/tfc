@@ -8,7 +8,7 @@ from jax import vmap, jacfwd, jit, lax
 import tqdm
 import pickle
 
-from scipy.optimize import fsolve
+from scipy.integrate import simps
 from time import process_time as timer
 
 ## TEST PARAMETERS: ***************************************************
@@ -63,7 +63,7 @@ phi4 = lambda a: np.expand_dims(\
 r = lambda z, xi, IC: np.dot(Hs(z),xi['xis']) \
                     + phi1(z)*(IC['R0']             - np.dot(Hs0, xi['xis'])) \
                     + phi2(z)*(                     - np.dot(Hsf, xi['xis'])) \
-                    + phi3(z)*(IC['V0']/IC['c']     - np.dot(pHs0,xi['xis'])) \
+                    + phi3(z)*(IC['V0']/xi['b']**2  - np.dot(pHs0,xi['xis'])) \
                     + phi4(z)*(                     - np.dot(pHsf,xi['xis']))
 
 v = egrad(r)
@@ -74,40 +74,28 @@ lam = lambda z, xi: np.dot(Hc(z),xi['xic'])
 
 
 ## FORM LOSS AND JACOBIAN ***********************************************************************************
-Ls  = lambda xi,IC: IC['c']**2 * a(z,xi,IC) - IC['ag'] + lam(z,xi)
+Ls  = lambda xi,IC: xi['b']**4 * a(z,xi,IC) - IC['ag'] + lam(z,xi)
 Htf = lambda xi,IC: np.dot(lam(z,xi)[-1,:],(-1./2.*lam(z,xi)[-1,:] + IC['ag']))
-L = jit(lambda xi,IC: Ls(xi,IC).flatten())
+L = jit(lambda xi,IC: np.hstack([Ls(xi,IC).flatten(), Htf(xi,IC)] ))
 
 ## INITIALIZE VARIABLES *************************************************************************************
-xi = TFCDictRobust({'xis':onp.zeros((Hs(z).shape[1],3)),\
-                    'xic':onp.zeros((Hc(z).shape[1],3))})
+xis   = onp.zeros((Hs(z).shape[1],3))
+xic   = onp.zeros((Hc(z).shape[1],3))
+b     = np.sqrt(2)*onp.ones(1)
 
-IC = {'R0': np.zeros((3,)), \
-      'V0': np.zeros((3,)), \
-      'ag': np.zeros((3,)), \
-      'c':np.sqrt(2)*onp.ones(1)}
+
+xi = TFCDictRobust({'xis':xis,\
+                    'xic':xic,\
+                    'b':b})
+
+IC = {'R0': np.zeros((3,)), 'V0': np.zeros((3,)), 'ag': np.zeros((3,))}
+
 
 ## NONLINEAR LEAST-SQUARES CLASS *****************************************************************************
-nlls = NllsClass(xi,L,tol=tol,maxIter=2,timer=True)
+nlls = NllsClass(xi,L,tol=tol,maxIter=maxIter,timer=True)
 
 data = pickle.load(open('data/EOL_IC.pickle','rb'))
 sol = {'loss': onp.zeros((data['R0'].shape[0])), 'it': onp.zeros((data['R0'].shape[0])), 'time': onp.zeros((data['R0'].shape[0]))}
-
-## INNERLOOP *************************************************************************************************
-def InnerLoop(tf, xi, IC):
-    global TIME, ITER
-    IC['c'] = 2./tf
-
-    xi,_,time = nlls.run(xi,IC)
-    TIME += time
-    ITER += 1
-
-    loss1 = np.abs(Htf(xi,IC))
-    loss2 = np.max(np.abs(L(xi,IC)))
-    loss = np.max( np.hstack((loss1, loss2)) )
-    return loss
-
-
 ## RUN TEST *************************************************************************************************
 for i in tqdm.trange(data['R0'].shape[0]):
     R0 = data['R0'][i,:]
@@ -118,27 +106,18 @@ for i in tqdm.trange(data['R0'].shape[0]):
     tscale = pscale/np.max(np.abs(V0))
 
     xi = TFCDictRobust({'xis':onp.zeros((Hs(z).shape[1],3)),\
-                        'xic':onp.array([0.5 * (V0 - R0), -0.5*(V0 + R0)])})
+                        'xic':onp.array([0.5 * (V0 - R0), -0.5*(V0 + R0)]),\
+                        'b':np.sqrt(10.)*onp.ones(1)})
 
     IC['R0']    = R0 / pscale
     IC['V0']    = V0 * tscale/pscale
     IC['ag']    = np.array([0., 0., -1.62]) * tscale**2/pscale
 
-    tf_0 = 1.
-    global TIME, IT
-    TIME = 0.
-    ITER = 0
-    tf = fsolve(InnerLoop, tf_0, args=(xi, IC), xtol=1e-14, epsfcn=tol)
-
-    ## solve with known tf
-    IC['c'] = 2./tf
     xi,it,time = nlls.run(xi,IC)
 
-    import pdb; pdb.set_trace()
-
     sol['loss'][i] = np.max(np.abs(L(xi,IC)))
-    sol['it'][i]   = ITER
-    sol['time'][i] = TIME
+    sol['it'][i]   = it
+    sol['time'][i] = time
 
 ## END: **************************************************************
 # with open('data/EOL_TFC.pickle', 'wb') as handle:
