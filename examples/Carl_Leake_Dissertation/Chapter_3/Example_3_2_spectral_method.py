@@ -59,7 +59,7 @@ for j,n in enumerate(tqdm(nVec)):
                        H(x[0][xfind],x[1][xfind]),
                        H(x[0][y0ind],x[1][y0ind]),
                        H(x[0][yfind],x[1][yfind])])
-        B = np.hstack([L(zXi,*x),
+        B = np.hstack([-L(zXi,*x),
                        x[1][x0ind]**3,
                        (1.+x[1][xfind]**3)*np.exp(-1.),
                        x[0][y0ind]*np.exp(-x[0][y0ind]),
