@@ -25,6 +25,7 @@ BF = Extension(
     include_dirs=["src/tfc/utils/BF", numpy_include],
     swig_opts=["-c++"],
     extra_compile_args=cxxFlags,
+    extra_link_args=cxxFlags,
 )
 
 # Custom build options to include swig Python files
