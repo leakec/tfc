@@ -1,5 +1,8 @@
-# This script solves Problem #1 of Chapter 1's exercises in the TFC book
+# This script solves Problem #6 of Chapter 1's exercises in the TFC book
 ####################################################################################################
+# Create a constrained expression which begins at (-1,-1) and ends at (1,1).
+# The constrained expression should also a void a box whose corners are 
+# given by (-0.5,-0.5) and (0.5,0.5).
 ####################################################################################################
 from tfc import utfc
 from tfc.utils import MakePlot, step
@@ -73,7 +76,7 @@ p1 = MakePlot(r'$x(t)$',r'$y(t)$')
 for i in range(Nlines):
         p1.ax[0].plot(x(x_xi[:,i],y_xi[:,i]), y(x_xi[:,i],y_xi[:,i]))
 
-p1.ax[0].add_patch(Rectangle((xbound[0],ybound[0]), xbound[1]-xbound[0], ybound[1]-ybound[0], fc='black',ec="black"))
+p1.ax[0].add_patch(Rectangle((xbound[0],ybound[0]), xbound[1]-xbound[0], ybound[1]-ybound[0], fc='white',ec="white"))
 
 p1.ax[0].plot(initial[0], initial[1], 'ko', markersize = 10)
 p1.ax[0].plot(final[0], final[1], 'ko', markersize = 10)
