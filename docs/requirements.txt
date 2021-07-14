@@ -13,4 +13,3 @@ colorama
 graphviz
 yattag
 plotly 
-mayavi
