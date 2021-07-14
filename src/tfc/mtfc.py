@@ -151,9 +151,9 @@ class mtfc:
             if isinstance(nC, int):
                 self.nC = onp.arange(nC, dtype=onp.int32)
             elif isinstance(nC, np.ndarray):
-                self.nC = nC
+                self.nC = nC.astype(onp.int32)
             elif isinstance(nC, list):
-                self.nC = np.array(nC)
+                self.nC = np.array(nC, dtype=np.int32)
             if self.nC.shape[0] > self.deg:
                 TFCPrint.Error("Number of basis functions is less than number of constraints!")
             if np.any(self.nC < 0):
