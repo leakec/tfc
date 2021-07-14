@@ -2,10 +2,10 @@ Welcome to the documentation for TFC!
 =====================================
 
 .. toctree::
-..    :maxdepth: 1
-..    :caption: TFC Tutorials
-..    
-..    notebooks/UnivariateTFC
+    :maxdepth: 1
+    :caption: TFC Tutorials
+    
+    notebooks/UnivariateTFC
 ..    notebooks/ODE
 ..    notebooks/MultivariateTFC
 ..    notebooks/PDE
