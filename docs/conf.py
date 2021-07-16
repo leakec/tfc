@@ -81,3 +81,6 @@ else:
 
 # Choose Pygments style
 pygments_style = None
+
+# Mock import for mayavi so it does not have to be installed as a dependency in ReadTheDocs
+autodoc_mock_imports = ['mayavi']
