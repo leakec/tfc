@@ -1,7 +1,10 @@
 import numpy as onp
 import scipy as sp
+from time import process_time
+
 import jax.numpy as np
-from jax import jacfwd, jacrev
+from jax import jacfwd, jacrev, jit
+from jax.lax import fori_loop
 
 from tfc.utils import TFCDict, Latex
 
@@ -20,25 +23,29 @@ A = np.array([[1.,2.,-1.],[1.,0.,1.]])
 b = np.array([[1.],[1.]])
 N = sp.linalg.null_space(A)
 
-# Create table to store results
-tab = onp.zeros([9,6])
-tab[0,:] = np.hstack([0,X0.toArray(),f(X0),np.linalg.norm(np.dot(A,X0.toArray())-b)])
-
-# Iterate to find the solution
-s = 0
+# Iterate to find the solution (use a jax for loop)
 X = X0
-for k in range(8):
-    s += np.linalg.multi_dot([np.linalg.inv(np.linalg.multi_dot([N.T,H(X),N])),N.T,J(X)])
-    X = X0 - np.dot(N,s)
-    tab[k+1,:] = np.hstack([k+1,X.toArray(),f(X),np.linalg.norm(np.dot(A,X.toArray())-b)])
+val = {'s':np.array([0.]), 'X0':X0, 'X':X, 'N':N}
 
-# Create table in latex
-colHeader = [r'Iteration $k$',r'$x$',r'$y$',r'$z$',r'$f(\B{x}_k)$',r'L_2(A\B{x}}_k-\B{b})']
-table = Latex.table.SimpleTable(tab,form='%.4e',colHeader=colHeader)
+def body(k,val):
+    val['s'] += np.linalg.multi_dot([np.linalg.inv(np.linalg.multi_dot([val['N'].T,H(val['X']),val['N']])),val['N'].T,J(val['X'])])
+    val['X'] = val['X0'] - np.dot(val['N'],val['s'])
+    return val
+
+test = jit(lambda val: fori_loop(0,8,body,val))
+test(val) # Call once to force compile
+
+# Solve the problem and time the solution
+tic = process_time()
+val = test(val)
+val['X']['x'].block_until_ready()
+toc = process_time()
 
 # Display the results
-print("Results, raw numpy:")
-print(tab)
-
-print("\nResults, latex:")
-print(table)
+X = val['X']
+print("Final results:")
+print("Solution time: {0}".format(toc-tic))
+print("Function value (f): {0}".format(f(X)))
+print("x: {0}".format(X['x']))
+print("y: {0}".format(X['y']))
+print("z: {0}".format(X['z']))
