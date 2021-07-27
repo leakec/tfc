@@ -121,6 +121,7 @@ for k in range(nFunc):
 for j in range(4):
     p.ax[j].scatter(t[0],qi[j],color='k',s=30,zorder=21)
     p.ax[j].scatter(t[-1],qf[j],color='k',s=30,zorder=21)
+    p.ax[j].grid(True)
 
 p.fig.subplots_adjust(wspace=0.2)
 p.FullScreen()
