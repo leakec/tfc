@@ -311,31 +311,31 @@ class utfc:
 
         # Implicit translation
         def H_impl(x, full=False):
-            return self.basisClass.H(x.flatten(), 0, full)
+            return self.basisClass.H(x, 0, full)
 
         def dH_impl(x, full=False):
-            return self.basisClass.H(x.flatten(), 1, full)
+            return self.basisClass.H(x, 1, full)
 
         def d2H_impl(x, full=False):
-            return self.basisClass.H(x.flatten(), 2, full)
+            return self.basisClass.H(x, 2, full)
 
         def d3H_impl(x, full=False):
-            return self.basisClass.H(x.flatten(), 3, full)
+            return self.basisClass.H(x, 3, full)
 
         def d4H_impl(x, full=False):
-            return self.basisClass.H(x.flatten(), 4, full)
+            return self.basisClass.H(x, 4, full)
 
         def d5H_impl(x, full=False):
-            return self.basisClass.H(x.flatten(), 5, full)
+            return self.basisClass.H(x, 5, full)
 
         def d6H_impl(x, full=False):
-            return self.basisClass.H(x.flatten(), 6, full)
+            return self.basisClass.H(x, 6, full)
 
         def d7H_impl(x, full=False):
-            return self.basisClass.H(x.flatten(), 7, full)
+            return self.basisClass.H(x, 7, full)
 
         def d8H_impl(x, full=False):
-            return self.basisClass.H(x.flatten(), 8, full)
+            return self.basisClass.H(x, 8, full)
 
         H_p.def_impl(H_impl)
         dH_p.def_impl(dH_impl)
@@ -645,9 +645,9 @@ class utfc:
                     flag = onp.any(dx != 0)
                 if flag:
                     if len(dx.shape) == 1:
-                        out_tans = dHjax(x.flatten(), full=full) * np.expand_dims(dx, 1)
+                        out_tans = dHjax(x, full=full) * onp.expand_dims(dx, 1)
                     else:
-                        out_tans = dHjax(x.flatten(), full=full) * dx
+                        out_tans = dHjax(x, full=full) * dx
             else:
                 dim0 = x.shape[0]
                 if full:
@@ -655,7 +655,7 @@ class utfc:
                 else:
                     dim1 = self.basisClass.m - self.basisClass.numC
                 out_tans = np.zeros((dim0, dim1))
-            return (Hjax(x.flatten(), full=full), out_tans)
+            return (Hjax(x, full=full), out_tans)
 
         def dH_jvp(arg_vals, arg_tans, full=False):
             x = arg_vals[0]
@@ -667,9 +667,9 @@ class utfc:
                     flag = onp.any(dx != 0)
                 if flag:
                     if len(dx.shape) == 1:
-                        out_tans = d2Hjax(x.flatten(), full=full) * np.expand_dims(dx, 1)
+                        out_tans = d2Hjax(x, full=full) * np.expand_dims(dx, 1)
                     else:
-                        out_tans = d2Hjax(x.flatten(), full=full) * dx
+                        out_tans = d2Hjax(x, full=full) * dx
             else:
                 dim0 = x.shape[0]
                 if full:
@@ -677,7 +677,7 @@ class utfc:
                 else:
                     dim1 = self.basisClass.m - self.basisClass.numC
                 out_tans = np.zeros((dim0, dim1))
-            return (dHjax(x.flatten(), full=full), out_tans)
+            return (dHjax(x, full=full), out_tans)
 
         def d2H_jvp(arg_vals, arg_tans, full=False):
             x = arg_vals[0]
@@ -689,9 +689,9 @@ class utfc:
                     flag = onp.any(dx != 0)
                 if flag:
                     if len(dx.shape) == 1:
-                        out_tans = d3Hjax(x.flatten(), full=full) * np.expand_dims(dx, 1)
+                        out_tans = d3Hjax(x, full=full) * np.expand_dims(dx, 1)
                     else:
-                        out_tans = d3Hjax(x.flatten(), full=full) * dx
+                        out_tans = d3Hjax(x, full=full) * dx
             else:
                 dim0 = x.shape[0]
                 if full:
@@ -699,7 +699,7 @@ class utfc:
                 else:
                     dim1 = self.basisClass.m - self.basisClass.numC
                 out_tans = np.zeros((dim0, dim1))
-            return (d2Hjax(x.flatten(), full=full), out_tans)
+            return (d2Hjax(x, full=full), out_tans)
 
         def d3H_jvp(arg_vals, arg_tans, full=False):
             x = arg_vals[0]
@@ -711,9 +711,9 @@ class utfc:
                     flag = onp.any(dx != 0)
                 if flag:
                     if len(dx.shape) == 1:
-                        out_tans = d4Hjax(x.flatten(), full=full) * np.expand_dims(dx, 1)
+                        out_tans = d4Hjax(x, full=full) * np.expand_dims(dx, 1)
                     else:
-                        out_tans = d4Hjax(x.flatten(), full=full) * dx
+                        out_tans = d4Hjax(x, full=full) * dx
             else:
                 dim0 = x.shape[0]
                 if full:
@@ -721,7 +721,7 @@ class utfc:
                 else:
                     dim1 = self.basisClass.m - self.basisClass.numC
                 out_tans = np.zeros((dim0, dim1))
-            return (d3Hjax(x.flatten(), full=full), out_tans)
+            return (d3Hjax(x, full=full), out_tans)
 
         def d4H_jvp(arg_vals, arg_tans, full=False):
             x = arg_vals[0]
@@ -733,9 +733,9 @@ class utfc:
                     flag = onp.any(dx != 0)
                 if flag:
                     if len(dx.shape) == 1:
-                        out_tans = d5Hjax(x.flatten(), full=full) * np.expand_dims(dx, 1)
+                        out_tans = d5Hjax(x, full=full) * np.expand_dims(dx, 1)
                     else:
-                        out_tans = d5Hjax(x.flatten(), full=full) * dx
+                        out_tans = d5Hjax(x, full=full) * dx
             else:
                 dim0 = x.shape[0]
                 if full:
@@ -743,7 +743,7 @@ class utfc:
                 else:
                     dim1 = self.basisClass.m - self.basisClass.numC
                 out_tans = np.zeros((dim0, dim1))
-            return (d4Hjax(x.flatten(), full=full), out_tans)
+            return (d4Hjax(x, full=full), out_tans)
 
         def d5H_jvp(arg_vals, arg_tans, full=False):
             x = arg_vals[0]
@@ -755,9 +755,9 @@ class utfc:
                     flag = onp.any(dx != 0)
                 if flag:
                     if len(dx.shape) == 1:
-                        out_tans = d6Hjax(x.flatten(), full=full) * np.expand_dims(dx, 1)
+                        out_tans = d6Hjax(x, full=full) * np.expand_dims(dx, 1)
                     else:
-                        out_tans = d6Hjax(x.flatten(), full=full) * dx
+                        out_tans = d6Hjax(x, full=full) * dx
             else:
                 dim0 = x.shape[0]
                 if full:
@@ -765,7 +765,7 @@ class utfc:
                 else:
                     dim1 = self.basisClass.m - self.basisClass.numC
                 out_tans = np.zeros((dim0, dim1))
-            return (d5Hjax(x.flatten(), full=full), out_tans)
+            return (d5Hjax(x, full=full), out_tans)
 
         def d6H_jvp(arg_vals, arg_tans, full=False):
             x = arg_vals[0]
@@ -777,9 +777,9 @@ class utfc:
                     flag = onp.any(dx != 0)
                 if flag:
                     if len(dx.shape) == 1:
-                        out_tans = d7Hjax(x.flatten(), full=full) * np.expand_dims(dx, 1)
+                        out_tans = d7Hjax(x, full=full) * np.expand_dims(dx, 1)
                     else:
-                        out_tans = d7Hjax(x.flatten(), full=full) * dx
+                        out_tans = d7Hjax(x, full=full) * dx
             else:
                 dim0 = x.shape[0]
                 if full:
@@ -787,7 +787,7 @@ class utfc:
                 else:
                     dim1 = self.basisClass.m - self.basisClass.numC
                 out_tans = np.zeros((dim0, dim1))
-            return (d6Hjax(x.flatten(), full=full), out_tans)
+            return (d6Hjax(x, full=full), out_tans)
 
         def d7H_jvp(arg_vals, arg_tans, full=False):
             x = arg_vals[0]
@@ -799,9 +799,9 @@ class utfc:
                     flag = onp.any(dx != 0)
                 if flag:
                     if len(dx.shape) == 1:
-                        out_tans = d8Hjax(x.flatten(), full=full) * np.expand_dims(dx, 1)
+                        out_tans = d8Hjax(x, full=full) * np.expand_dims(dx, 1)
                     else:
-                        out_tans = d8Hjax(x.flatten(), full=full) * dx
+                        out_tans = d8Hjax(x, full=full) * dx
             else:
                 dim0 = x.shape[0]
                 if full:
@@ -809,7 +809,7 @@ class utfc:
                 else:
                     dim1 = self.basisClass.m - self.basisClass.numC
                 out_tans = np.zeros((dim0, dim1))
-            return (d7Hjax(x.flatten(), full=full), out_tans)
+            return (d7Hjax(x, full=full), out_tans)
 
         ad.primitive_jvps[H_p] = H_jvp
         ad.primitive_jvps[dH_p] = dH_jvp
