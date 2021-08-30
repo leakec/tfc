@@ -16,7 +16,7 @@ g = lambda x,y: x**2*np.cos(y)+np.sin(2.*x)
 # Create the constrained expression
 u1 = lambda x,y: g(x,y)\
                  +(3.-2.*x)/3.*(y**2*np.sin(np.pi*y)-g(np.zeros_like(x),y))\
-                 +x/3.*(np.cos(np.pi*y)-g(2.*np.ones_like(x),y)-g(np.ones_like(x),y))
+                 +x/3.*(y*np.sin(np.pi*y)-g(2.*np.ones_like(x),y)-g(np.ones_like(x),y))
 du1dy = egrad(u1,1)
 u = lambda x,y: u1(x,y)\
                 -(y-y**2)*du1dy(x,np.zeros_like(y))\
