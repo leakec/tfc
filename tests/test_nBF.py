@@ -100,7 +100,7 @@ def test_nFS():
     Fp2 = pnFS(z,9,d2,nC2Py)
 
     assert(np.linalg.norm(Fc1-Fp1,ord='fro') < 1e-14)
-    assert(np.linalg.norm(Fc2-Fp2,ord='fro') < 1e-14)
+    assert(np.linalg.norm(Fc2-Fp2,ord='fro') < 5e-13)
 
 def test_nELMSigmoid():
     dim = 2
