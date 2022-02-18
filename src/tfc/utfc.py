@@ -341,9 +341,9 @@ class utfc:
                     flag = onp.any(dx != 0)
                 if flag:
                     if len(dx.shape) == 1:
-                        out_tans = Hjax(x, d=d+1, full=full) * onp.expand_dims(dx, 1)
+                        out_tans = Hjax(x, d=d + 1, full=full) * onp.expand_dims(dx, 1)
                     else:
-                        out_tans = Hjax(x, d=d+1, full=full) * dx
+                        out_tans = Hjax(x, d=d + 1, full=full) * dx
             else:
                 dim0 = x.shape[0]
                 if full:
@@ -357,6 +357,7 @@ class utfc:
 
         # Provide pointer for TFC class
         self._Hjax = Hjax
+
 
 class HybridUtfc:
     """
