@@ -28,8 +28,8 @@ tfc = utfc(N, nC, int(m), basis = basis, x0=xspan[0], xf=xspan[1])
 x = tfc.x
 
 H = tfc.H
-H0 = H(tfc.x[0])
-Hf = H(tfc.x[-1])
+H0 = H(tfc.x[0:1])
+Hf = H(tfc.x[-2:-1])
 
 ## define tfc constrained expression and derivatives: **********************************************
 # switching functions

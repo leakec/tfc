@@ -44,11 +44,11 @@ tfc  = utfc(N, 4, m, basis=basis, x0=-1., xf=1.)
 H = tfc.H
 dH = tfc.dH
 
-H0 = H(tfc.z[0])
-Hf = H(tfc.z[-1])
+H0 = H(tfc.z[0:1])
+Hf = H(tfc.z[-2:-1])
 
-Hp0 = dH(tfc.z[0])
-Hpf = dH(tfc.z[-1])
+Hp0 = dH(tfc.z[0:1])
+Hpf = dH(tfc.z[-2:-1])
 
 ## defined the constrained expressions: ************************************************************
 z = tfc.z

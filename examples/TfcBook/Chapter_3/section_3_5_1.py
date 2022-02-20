@@ -32,8 +32,8 @@ def runLaneEmden(N, m, basis, k, xf):
 
     H = tfc.H
     dH = tfc.dH
-    H0 = H(x[0])
-    H0p = dH(x[0])
+    H0 = H(x[0:1])
+    H0p = dH(x[0:1])
 
     ## define tfc constrained expression and derivatives: ******************************************
     # switching function
