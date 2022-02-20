@@ -34,11 +34,11 @@ ctfc = utfc(N,nCy,mc,basis='CP',x0 = -1, xf = 1.)
 Hs  = stfc.H
 pHs  = stfc.dH
 
-Hs0 = Hs(stfc.z[0])
-Hsf = Hs(stfc.z[-1])
+Hs0 = Hs(stfc.z[0:1])
+Hsf = Hs(stfc.z[-2:-1])
 
-pHs0 = pHs(stfc.z[0])
-pHsf = pHs(stfc.z[-1])
+pHs0 = pHs(stfc.z[0:1])
+pHsf = pHs(stfc.z[-2:-1])
 
 Hc  = ctfc.H
 
