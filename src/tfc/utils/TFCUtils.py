@@ -274,7 +274,7 @@ def pe(*args: Any, constant_arg_nums: List[int] = ()) -> Any:
 
 def pejit(*args: Any, constant_arg_nums: List[int] = (), **kwargs) -> Any:
     """
-    Works like pe, but also JITs the returned function. See `pe` for more details.
+    Works like :func:`pe <tfc.utils.TFCUtils.pe>`, but also JITs the returned function. See :func:`pe <tfc.utils.TFCUtils.pe>` for more details.
 
     Parameters:
     -----------
@@ -474,7 +474,7 @@ register_pytree_node(
 
 
 class TFCDictRobust(OrderedDict):
-    """This class is like the TFCDict class, but it handles non-flat arrays."""
+    """This class is like the :class:`TFCDict <tfc.utils.TFCUtils.TFCDict>` class, but it handles non-flat arrays."""
 
     def __init__(self, *args):
         """Initialize TFCDictRobust using the OrderedDict method."""
@@ -676,7 +676,7 @@ def LS(
         Any additional arguments taken by res other than xi.
 
     constant_arg_nums: List[int], optional
-        These arguments will be removed from the residual function and treated as constant. See :meth:`pejit <tfc.utils.TFCUtils.pejit>` for more details.
+        These arguments will be removed from the residual function and treated as constant. See :func:`pejit <tfc.utils.TFCUtils.pejit>` for more details.
 
     J : function, optional
          User specified Jacobian. If None, then the Jacobian of res with respect to xi will be calculated via automatic differentiation. (Default value = None)
@@ -771,8 +771,8 @@ def LS(
 class LsClass:
     """
     JITed linear least-squares class.
-    Like the LS function, but it is in class form so that the run methd can be called multiple times without re-JITing.
-    See LS for more details.
+    Like the :func:`LS <tfc.utils.TFCUtils.LS>` function, but it is in class form so that the run methd can be called multiple times without re-JITing.
+    See :func:`LS <tfc.utils.TFCUtils.LS>` for more details.
     """
 
     def __init__(
@@ -936,7 +936,7 @@ def NLLS(
         Any additional arguments taken by res other than xi.
 
     constant_arg_nums: List[int], optional
-        These arguments will be removed from the residual function and treated as constant. See :meth:`pejit <tfc.utils.TFCUtils.pejit>` for more details.
+        These arguments will be removed from the residual function and treated as constant. See :func:`pejit <tfc.utils.TFCUtils.pejit>` for more details.
 
     J : function
          User specified Jacobian. If None, then the Jacobian of res with respect to xi will be calculated via automatic differentiation. (Default value = None)
@@ -1099,7 +1099,7 @@ def NLLS(
 class NllsClass:
     """
     JITed nonlinear least squares class.
-    Like the NLLS function, but it is in class form so that the run methd can be called multiple times without re-JITing
+    Like the :func:`NLLS <tfc.utils.TFCUtils.NLLS>` function, but it is in class form so that the run methd can be called multiple times without re-JITing
     """
 
     def __init__(
@@ -1271,14 +1271,14 @@ class NllsClass:
 
 class ComponentConstraintGraph:
     """
-     Creates a graph of all valid ways in which component constraints can be embedded.
+    Creates a graph of all valid ways in which component constraints can be embedded.
 
     Parameters
     ----------
     N : list
         A list of strings that specify the node names. These node names typically coincide with
         the names of the dependent variables.
-    E : Python dictionary
+    E : dict
         A dictionary with the following fields:
         * name - Name of the component constraint.
         * node0 - The name of one of the nodes that makes up the component constraint.  Must correspond with an element of the list given in N.
@@ -1293,7 +1293,7 @@ class ComponentConstraintGraph:
         N : list
             A list of strings that specify the node names. These node names typically coincide with
             the names of the dependent variables.
-        E : Python dictionary
+        E : dict
             A dictionary with the following fields:
             * name - Name of the component constraint.
             * node0 - The name of one of the nodes that makes up the component constraint.  Must correspond with an element of the list given in N.
