@@ -207,6 +207,7 @@ def pe(*args: Any, constant_arg_nums: List[int] = ()) -> Any:
     order = [k for k in range(len(args))]
     for k in constant_arg_nums:
         order.insert(0, order.pop(k))
+    reorder = np.argsort(np.array(order))
     dark = tuple(args[k] for k in order)
 
     # Store the removed args for later
@@ -218,7 +219,7 @@ def pe(*args: Any, constant_arg_nums: List[int] = ()) -> Any:
             # This will allow us to return a function that has completely removed those args
             # Moreover, we do it here so this reordering will be optimized by the compiler
             def f(*args):
-                new_args = tuple(args[k] for k in order)
+                new_args = tuple(args[k] for k in reorder)
                 return f_orig(*new_args)
 
             # Create the partial args needed by trace_to_jaxpr
@@ -902,7 +903,7 @@ def NLLS(
         Any additional arguments taken by res other than xi.
 
     static_arg_nums: List[int], optional
-        These arguments will be removed from the residual function and treated as constant. See `pejit` for more details.
+        These arguments will be removed from the residual function and treated as constant. See :meth:`pejit <tfc.utils.TFCUtils.pejit>` for more details.
 
     J : function
          User specified Jacobian. If None, then the Jacobian of res with respect to xi will be calculated via automatic differentiation. (Default value = None)
