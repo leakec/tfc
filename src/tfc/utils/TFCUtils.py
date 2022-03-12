@@ -710,16 +710,6 @@ def LS(
     else:
         dictFlag = False
 
-    if constant_arg_nums:
-        # Make arguments constant if desired
-        res = pe(zXi, *args, constant_arg_nums=constant_arg_nums)(res)
-
-        args = list(args)
-        constant_arg_nums.sort()
-        constant_arg_nums.reverse()
-        for k in constant_arg_nums:
-            args.pop(k - 1)
-
     if J is None:
         if dictFlag:
             if isinstance(zXi, TFCDictRobust):
@@ -743,12 +733,23 @@ def LS(
             J = lambda xi, *args: jacfwd(res, 0, holomorphic=holomorphic)(xi, *args)
 
     if method == "pinv":
-        ls = jit(lambda xi, *args: np.dot(np.linalg.pinv(J(xi, *args)), -res(xi, *args)))
+        ls = lambda xi, *args: np.dot(np.linalg.pinv(J(xi, *args)), -res(xi, *args))
     elif method == "lstsq":
-        ls = jit(lambda xi, *args: np.linalg.lstsq(J(xi, *args), -res(xi, *args), rcond=None)[0])
+        ls = lambda xi, *args: np.linalg.lstsq(J(xi, *args), -res(xi, *args), rcond=None)[0]
     else:
         TFCPrint.Error("The method entered is not valid. Please enter a valid method.")
 
+    if constant_arg_nums:
+        # Make arguments constant if desired
+        ls = pe(zXi, *args, constant_arg_nums=constant_arg_nums)(ls)
+
+        args = list(args)
+        constant_arg_nums.sort()
+        constant_arg_nums.reverse()
+        for k in constant_arg_nums:
+            args.pop(k - 1)
+
+    ls = jit(ls)
     zXi = zerosRobust(zXi)
 
     if timer:
@@ -798,16 +799,6 @@ class LsClass:
         else:
             dictFlag = False
 
-        if constant_arg_nums:
-            # Make arguments constant if desired
-            res = pe(zXi, *args, constant_arg_nums=constant_arg_nums)(res)
-
-            args = list(args)
-            constant_arg_nums.sort()
-            constant_arg_nums.reverse()
-            for k in constant_arg_nums:
-                args.pop(k - 1)
-
         if J is None:
             if dictFlag:
                 if isinstance(zXi, TFCDictRobust):
@@ -833,13 +824,24 @@ class LsClass:
                 J = lambda xi, *args: jacfwd(res, 0, holomorphic=self.holomorphic)(xi, *args)
 
         if method == "pinv":
-            self._ls = jit(lambda xi, *args: np.dot(np.linalg.pinv(J(xi, *args)), -res(xi, *args)))
+            ls = lambda xi, *args: np.dot(np.linalg.pinv(J(xi, *args)), -res(xi, *args))
         elif method == "lstsq":
-            self._ls = jit(
-                lambda xi, *args: np.linalg.lstsq(J(xi, *args), -res(xi, *args), rcond=None)[0]
-            )
+            ls = lambda xi, *args: np.linalg.lstsq(J(xi, *args), -res(xi, *args), rcond=None)[0]
+
         else:
             TFCPrint.Error("The method entered is not valid. Please enter a valid method.")
+
+        if constant_arg_nums:
+            # Make arguments constant if desired
+            ls = pe(zXi, *args, constant_arg_nums=constant_arg_nums)(ls)
+
+            args = list(args)
+            constant_arg_nums.sort()
+            constant_arg_nums.reverse()
+            for k in constant_arg_nums:
+                args.pop(k - 1)
+
+        self._ls = jit(ls)
 
         self._compiled = False
 
@@ -998,16 +1000,6 @@ def NLLS(
     else:
         dictFlag = False
 
-    if constant_arg_nums:
-        # Make arguments constant if desired
-        res = pe(xiInit, *args, constant_arg_nums=constant_arg_nums)(res)
-
-        args = list(args)
-        constant_arg_nums.sort()
-        constant_arg_nums.reverse()
-        for k in constant_arg_nums:
-            args.pop(k - 1)
-
     def cond(val):
         return np.all(
             np.array(
@@ -1047,6 +1039,17 @@ def NLLS(
         LS = lambda xi, *args: np.linalg.lstsq(J(xi, *args), res(xi, *args), rcond=None)[0]
     else:
         TFCPrint.Error("The method entered is not valid. Please enter a valid method.")
+
+    if constant_arg_nums:
+        # Make arguments constant if desired
+        LS = pe(xiInit, *args, constant_arg_nums=constant_arg_nums)(LS)
+        res = pe(xiInit, *args, constant_arg_nums=constant_arg_nums)(res)
+
+        args = list(args)
+        constant_arg_nums.sort()
+        constant_arg_nums.reverse()
+        for k in constant_arg_nums:
+            args.pop(k - 1)
 
     if body is None:
         if printOut:
@@ -1127,16 +1130,6 @@ class NllsClass:
         self._maxIter = maxIter
         self.holomorphic = holomorphic
 
-        if constant_arg_nums:
-            # Make arguments constant if desired
-            res = pe(xiInit, *args, constant_arg_nums=constant_arg_nums)(res)
-
-            args = list(args)
-            constant_arg_nums.sort()
-            constant_arg_nums.reverse()
-            for k in constant_arg_nums:
-                args.pop(k - 1)
-
         if timer and printOut:
             TFCPrint.Warning(
                 "Warning, you have both the timer and printer on in the nonlinear least-squares.\nThe time will be longer than optimal due to the printout."
@@ -1188,6 +1181,17 @@ class NllsClass:
             LS = lambda xi, *args: np.linalg.lstsq(J(xi, *args), res(xi, *args), rcond=None)[0]
         else:
             TFCPrint.Error("The method entered is not valid. Please enter a valid method.")
+
+        if constant_arg_nums:
+            # Make arguments constant if desired
+            LS = pe(xiInit, *args, constant_arg_nums=constant_arg_nums)(LS)
+            res = pe(xiInit, *args, constant_arg_nums=constant_arg_nums)(res)
+
+            args = list(args)
+            constant_arg_nums.sort()
+            constant_arg_nums.reverse()
+            for k in constant_arg_nums:
+                args.pop(k - 1)
 
         if body is None:
             if printOut:
