@@ -12,6 +12,7 @@ from .TFCUtils import (
     step,
     LS,
     LsClass,
+    pejit,
 )
 from .MakePlot import MakePlot
 from . import Latex

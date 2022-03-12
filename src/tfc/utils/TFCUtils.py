@@ -12,10 +12,14 @@ config.update("jax_enable_x64", True)
 import numpy as onp
 import jax.numpy as np
 from jax import jvp, jit, lax, jacfwd
+from jax import linear_util as lu
 from jax.util import safe_zip
 from jax.tree_util import register_pytree_node, tree_multimap
-from jax.interpreters.partial_eval import JaxprTracer
+from jax._src.api_util import flatten_fun, tree_flatten
+from jax.core import get_aval, eval_jaxpr
+from jax.interpreters.partial_eval import JaxprTracer, trace_to_jaxpr, PartialVal
 from jax.experimental.host_callback import id_tap
+from typing import List, Any, Callable
 
 
 class TFCPrint:
@@ -168,6 +172,107 @@ def egradRobust(g, j=0):
         return x_bar
 
     return wrapped
+
+
+def pe(*args: Any, constant_arg_nums: List[int] = ()) -> Any:
+    """
+    Decorator that returns a function evaluated such that the arg numbers specified in constant_arg_nums
+    and all functions that utilizes only those arguments are treated as compile time constants.
+
+    Parameters:
+    -----------
+    *args: Any
+        Arguments for the function that pe is applied to.
+    constant_arg_nums: List[int], optional
+        The arguments whose values and functions that depend only on these values should be
+        treated as cached constants.
+
+    Returns:
+    --------
+    f: Any
+        The new function whose constant_arg_num arguments have been removed. The jaxpr of this
+        function has the constant_arg_num values and all functions that depend on those values
+        cached as constants.
+
+    Usage:
+    ------
+    @pe(*args, constant_arg_nums=[0])
+    def f(x,xi):
+        # Function stuff here
+
+    # Returns an f(xi) with x treated as constant
+    """
+
+    # Reorder to put knowns first, then unknowns
+    order = [k for k in range(len(args))]
+    for k in constant_arg_nums:
+        order.insert(0, order.pop(k))
+    dark = tuple(args[k] for k in order)
+
+    # Store the removed args for later
+    num_args_remove = len(constant_arg_nums)
+
+    def wrapper(f_orig):
+        if len(constant_arg_nums) > 0:
+            # Reordering args so the ones to remove are given first
+            # This will allow us to return a function that has completely removed those args
+            # Moreover, we do it here so this reordering will be optimized by the compiler
+            def f(*args):
+                new_args = tuple(args[k] for k in order)
+                return f_orig(*new_args)
+
+            # Create the partial args needed by trace_to_jaxpr
+            def get_arg(a, unknown):
+                if unknown:
+                    return PartialVal.unknown(get_aval(a).at_least_vspace())
+                else:
+                    return PartialVal.known(a)
+            part_args = tuple((get_arg(a, k >= num_args_remove) for k,a in enumerate(dark)))
+
+            # Create jaxpr
+            wrap = lu.wrap_init(f)
+            _, in_tree = tree_flatten((args, {}))
+            wrap_flat, out_tree = flatten_fun(wrap, in_tree)
+            jaxpr, _, const = trace_to_jaxpr(wrap_flat, part_args)
+
+            # Create new, partially evaluated function
+            if out_tree().num_leaves == 1 and out_tree().num_nodes == 1:
+                # out_tree() is PyTreeDef(*), so just return the value. Since eval_jaxpr returns a list,
+                # this is just value [0]
+                f_removed = lambda *args: eval_jaxpr(jaxpr, const, *dark[0:num_args_remove], *args)[0]
+            else:
+                # Use out_tree() to reshape the args correctly
+                f_removed = lambda *args: out_tree().from_iterable_tree(eval_jaxpr(jaxpr, const, *dark[0:num_args_remove], *args))
+            return f_removed
+        else:
+            return f_orig
+    return wrapper
+
+
+def pejit(*args: Any, constant_arg_nums: List[int] = (), **kwargs) -> Any:
+    """
+    Works like pe, but also JITs the returned function. See `pe` for more details.
+
+    Parameters:
+    -----------
+    *args: Any
+        Arguments for the function that pe is applied to.
+    constant_arg_nums: List[int], optional
+        The arguments whose values and functions that depend only on these values should be
+        treated as cached constants.
+    **kwargs: Any
+        Keyword arguments passed on to JIT.
+
+    Returns:
+    --------
+    f: Any
+        The new function whose constant_arg_num arguments have been removed. The jaxpr of this
+        function has the constant_arg_num values and all functions that depend on those values
+        cached, and they are treated as compile time constants.
+    """
+    def wrap(f_orig):
+        return jit(pe(*args, constant_arg_nums = constant_arg_nums)(f_orig), **kwargs)
+    return wrap
 
 
 class TFCDict(OrderedDict):
@@ -739,6 +844,7 @@ def NLLS(
     xiInit,
     res,
     *args,
+    constant_arg_nums:List[int] = [],
     J=None,
     cond=None,
     body=None,
@@ -770,6 +876,9 @@ def NLLS(
 
     *args : iterable
         Any additional arguments taken by res other than xi.
+
+    static_arg_nums: List[int], optional
+        These arguments will be removed from the residual function and treated as constant. See `pejit` for more details.
 
     J : function
          User specified Jacobian. If None, then the Jacobian of res with respect to xi will be calculated via automatic differentiation. (Default value = None)
@@ -830,6 +939,16 @@ def NLLS(
         dictFlag = True
     else:
         dictFlag = False
+
+    if constant_arg_nums:
+        # Make arguments constant if desired
+        res = pe(xiInit, *args, constant_arg_nums=constant_arg_nums)(res)
+
+        args = list(args)
+        constant_arg_nums.sort()
+        constant_arg_nums.reverse()
+        for k in constant_arg_nums:
+            args.pop(k-1)
 
     def cond(val):
         return np.all(
@@ -892,6 +1011,7 @@ def NLLS(
                 return val
 
     nlls = jit(lambda val: lax.while_loop(cond, body, val))
+
     if dictFlag:
         dxi = np.ones_like(xiInit.toArray())
     else:
@@ -928,6 +1048,8 @@ class NllsClass:
         self,
         xiInit,
         res,
+        *args,
+        constant_arg_nums:List[int] = [],
         J=None,
         cond=None,
         body=None,
@@ -946,6 +1068,16 @@ class NllsClass:
         self.timer = timer
         self._maxIter = maxIter
         self.holomorphic = holomorphic
+
+        if constant_arg_nums:
+            # Make arguments constant if desired
+            res = pe(xiInit, *args, constant_arg_nums=constant_arg_nums)(res)
+
+            args = list(args)
+            constant_arg_nums.sort()
+            constant_arg_nums.reverse()
+            for k in constant_arg_nums:
+                args.pop(k-1)
 
         if timer and printOut:
             TFCPrint.Warning(
