@@ -92,7 +92,7 @@ xi0 = np.zeros(H(x).shape[1])
 IC = {'y0': np.array([y0]), 'y0p': np.array([y0p])}
 
 
-nlls = NllsClass(xi0,L,timer=True,tol=tfcTol)
+nlls = NllsClass(xi0,L,IC,timer=True,tol=tfcTol)
 
 ## initialize dictionary to record solution: *******************************************************
 xSol    = onp.zeros((Nstep,N))

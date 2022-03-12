@@ -3,7 +3,7 @@ import jax.numpy as np
 from jax import vmap, jacfwd, jit, lax
 
 from tfc import utfc
-from tfc.utils import TFCDictRobust, egrad, NllsClass
+from tfc.utils import TFCDictRobust, egrad
 
 from util import rich3_lyap, getL1L2, getJacobi
 

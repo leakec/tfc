@@ -98,7 +98,7 @@ IC = {'R0': np.zeros((3,)), \
       'c': 2.*onp.ones(1)}
 
 ## NONLINEAR LEAST-SQUARES CLASS *****************************************************************************
-nlls = NllsClass(xi,L,maxIter=2,timer=True)
+nlls = NllsClass(xi,L,IC,maxIter=2,timer=True)
 
 R0 = np.array([500000., 100000., 50000.])
 V0 = np.array([-3000., 0., 0.])

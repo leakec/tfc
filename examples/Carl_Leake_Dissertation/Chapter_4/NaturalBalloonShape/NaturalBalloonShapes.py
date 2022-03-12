@@ -87,7 +87,7 @@ resTh = lambda x,xi,const: c(xi)*dth(x,xi)+q(x,xi,const)*r(x,xi)*(w*np.sin(th(x,
 resQ = lambda x,xi,const: c(xi)*dq(x,xi,const)+q(x,xi,const)**2*r(x,xi)*w*np.cos(th(x,xi))
 resR = lambda x,xi: c(xi)*dr(x,xi)-np.sin(th(x,xi))
 resZ = lambda x,xi: c(xi)*dz(x,xi)-np.cos(th(x,xi))
-L = jit(lambda xi,const: np.hstack([resTh(x,xi,const), resQ(x,xi,const), resR(x,xi), resZ(x,xi)]))
+L = jit(lambda xi,x,const: np.hstack([resTh(x,xi,const), resQ(x,xi,const), resR(x,xi), resZ(x,xi)]))
 
 # Create plot
 th2 = np.linspace(0.,2.*np.pi,num=100)
@@ -142,13 +142,13 @@ for k in range(atmData.shape[0]-1,-1,-1):
         xi['xiQ'] = onp.dot(onp.linalg.pinv(jacfwd(q,1)(x,xi,const)['xiQ']),qo.flatten()-q(x,xi,const))
         
         # Create NLLS class
-        nlls = NllsClass(xi,L,tol=tol,maxIter=maxIter,timer=True)
+        nlls = NllsClass(xi,L,x,const,tol=tol,maxIter=maxIter,timer=True,constant_arg_nums=[1])
 
     # Run the NLLS
     xi,_,time[k] = nlls.run(xi,const)
 
     # Plots and results
-    print("Altitude: "+str(atmData['Alt (km)'][k])+"km \t Norm of the residual: "+str(np.linalg.norm(L(xi,const))))
+    print("Altitude: "+str(atmData['Alt (km)'][k])+"km \t Norm of the residual: "+str(np.linalg.norm(L(xi,x,const))))
 
     th1 = np.linspace(0.,xi['beta'],num=100).flatten()
     x1 = -Rs*np.sin(th1)

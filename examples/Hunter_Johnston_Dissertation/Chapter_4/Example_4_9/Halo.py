@@ -45,11 +45,11 @@ tfc = utfc(N,4,m,basis=basis,x0=-1.,xf=1.)
 H = tfc.H
 pH = tfc.dH
 
-H0 = H(tfc.z[0])
-Hf = H(tfc.z[-1])
+H0 = H(tfc.z[0:1])
+Hf = H(tfc.z[-2:-1])
 
-Hp0 = pH(tfc.z[0])
-Hpf = pH(tfc.z[-1])
+Hp0 = pH(tfc.z[0:1])
+Hpf = pH(tfc.z[-2:-1])
 
 ## DEFINE THE ASSUMED SOLUTION: *****************************************************************************
 z = tfc.z
@@ -125,7 +125,8 @@ xi = TFCDictRobust({'xis':xis,\
                     'dX':dX,'dY':dY,'dZ':dZ,\
                     'b':b})
 
-nlls = NllsClass(xi,L,tol=tol,maxIter=maxIter,timer=True)
+# Using dummy value of C for now
+nlls = NllsClass(xi,L,1,tol=tol,maxIter=maxIter,timer=True)
 
 ## RUN TEST *************************************************************************************************
 sol = {Lpt:{

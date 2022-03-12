@@ -143,7 +143,7 @@ for k in range(atmData.shape[0]-1,-1,-1):
         xi['xiQ'] = onp.dot(onp.linalg.pinv(jacfwd(q,1)(x,xi,const)['xiQ']),qo.flatten()-q(x,xi,const))
         
         # Create NLLS class
-        nlls = NllsClass(xi,L,tol=tol,maxIter=maxIter,timer=True)
+        nlls = NllsClass(xi,L,const,tol=tol,maxIter=maxIter,timer=True)
 
     # Run the NLLS
     xi,_,time[k] = nlls.run(xi,const)

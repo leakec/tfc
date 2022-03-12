@@ -39,8 +39,8 @@ xtfc = utfc(N,nCx,m,basis='CP', x0 = -1, xf = 1.)
 utfc = utfc(N,nCu,m,basis='CP', x0 = -1, xf = 1.)
 
 Hx  = xtfc.H
-Hx0 = Hx(xtfc.z[0])
-Hxf = Hx(xtfc.z[-1])
+Hx0 = Hx(xtfc.z[0:1])
+Hxf = Hx(xtfc.z[-2:-1])
 
 Hu  = utfc.H
 
@@ -72,7 +72,8 @@ xi_u = onp.zeros(Hu(z).shape[1])
 
 xi = TFCDict({'xi_x':xi_x,'xi_u':xi_u})
 
-nlls = NllsClass(xi,L,tol=tol,maxIter=2,timer=True)
+# Using dummy number for c here just for tracing
+nlls = NllsClass(xi,L,1,tol=tol,maxIter=2,timer=True)
 
 def InnerLoop(tf,xi,z):
     xi['xi_x'] = onp.zeros(Hx(z).shape[1])

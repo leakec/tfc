@@ -90,7 +90,7 @@ xi = TFCDictRobust({'xis':xis,\
 IC = {'R0': np.zeros((3,)), 'V0': np.zeros((3,)), 'ag': np.zeros((3,))}
 
 ## NONLINEAR LEAST-SQUARES CLASS *****************************************************************************
-nlls = NllsClass(xi,L,tol=tol,maxIter=maxIter,timer=True)
+nlls = NllsClass(xi,L,IC,tol=tol,maxIter=maxIter,timer=True)
 
 R0 = np.array([-150000., 30000., 15000.])
 V0 = np.array([915., 0., 0.])
