@@ -45,15 +45,15 @@ u = lambda xi,*x: u1(xi,*x)+np.sin(np.pi*x[0])-u1(xi,x[0],np.zeros_like(x[1]))-x
 uxx = egrad(egrad(u,1),1)
 utt = egrad(egrad(u,2),2)
 
-L = lambda xi: uxx(xi,*x)-utt(xi,*x)
+L = lambda xi,*x: uxx(xi,*x)-utt(xi,*x)
 
 # Solve the problem
 xi = np.zeros(H(*x).shape[1])
 
 if xtfc:
-    xi,time = LS(xi,L,method='lstsq',timer=True)
+    xi,time = LS(xi,L,*x,method='lstsq',timer=True,constant_arg_nums=[1,2])
 else:
-    xi,time = LS(xi,L,timer=True)
+    xi,time = LS(xi,L,*x,timer=True,constant_arg_nums=[1,2])
 
 # Calculate the test set error
 nTest = 100
