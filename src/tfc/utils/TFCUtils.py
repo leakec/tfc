@@ -712,7 +712,7 @@ def LS(
 
     if constant_arg_nums:
         # Make arguments constant if desired
-        res = pe(xiInit, *args, constant_arg_nums=constant_arg_nums)(res)
+        res = pe(zXi, *args, constant_arg_nums=constant_arg_nums)(res)
 
         args = list(args)
         constant_arg_nums.sort()
