@@ -227,7 +227,8 @@ def pe(*args: Any, constant_arg_nums: List[int] = ()) -> Any:
                     return PartialVal.unknown(get_aval(a).at_least_vspace())
                 else:
                     return PartialVal.known(a)
-            part_args = tuple((get_arg(a, k >= num_args_remove) for k,a in enumerate(dark)))
+
+            part_args = tuple((get_arg(a, k >= num_args_remove) for k, a in enumerate(dark)))
 
             # Create jaxpr
             wrap = lu.wrap_init(f)
@@ -239,13 +240,18 @@ def pe(*args: Any, constant_arg_nums: List[int] = ()) -> Any:
             if out_tree().num_leaves == 1 and out_tree().num_nodes == 1:
                 # out_tree() is PyTreeDef(*), so just return the value. Since eval_jaxpr returns a list,
                 # this is just value [0]
-                f_removed = lambda *args: eval_jaxpr(jaxpr, const, *dark[0:num_args_remove], *args)[0]
+                f_removed = lambda *args: eval_jaxpr(jaxpr, const, *dark[0:num_args_remove], *args)[
+                    0
+                ]
             else:
                 # Use out_tree() to reshape the args correctly
-                f_removed = lambda *args: out_tree().from_iterable_tree(eval_jaxpr(jaxpr, const, *dark[0:num_args_remove], *args))
+                f_removed = lambda *args: out_tree().from_iterable_tree(
+                    eval_jaxpr(jaxpr, const, *dark[0:num_args_remove], *args)
+                )
             return f_removed
         else:
             return f_orig
+
     return wrapper
 
 
@@ -270,8 +276,10 @@ def pejit(*args: Any, constant_arg_nums: List[int] = (), **kwargs) -> Any:
         function has the constant_arg_num values and all functions that depend on those values
         cached, and they are treated as compile time constants.
     """
+
     def wrap(f_orig):
-        return jit(pe(*args, constant_arg_nums = constant_arg_nums)(f_orig), **kwargs)
+        return jit(pe(*args, constant_arg_nums=constant_arg_nums)(f_orig), **kwargs)
+
     return wrap
 
 
@@ -844,7 +852,7 @@ def NLLS(
     xiInit,
     res,
     *args,
-    constant_arg_nums:List[int] = [],
+    constant_arg_nums: List[int] = [],
     J=None,
     cond=None,
     body=None,
@@ -948,7 +956,7 @@ def NLLS(
         constant_arg_nums.sort()
         constant_arg_nums.reverse()
         for k in constant_arg_nums:
-            args.pop(k-1)
+            args.pop(k - 1)
 
     def cond(val):
         return np.all(
@@ -1049,7 +1057,7 @@ class NllsClass:
         xiInit,
         res,
         *args,
-        constant_arg_nums:List[int] = [],
+        constant_arg_nums: List[int] = [],
         J=None,
         cond=None,
         body=None,
@@ -1077,7 +1085,7 @@ class NllsClass:
             constant_arg_nums.sort()
             constant_arg_nums.reverse()
             for k in constant_arg_nums:
-                args.pop(k-1)
+                args.pop(k - 1)
 
         if timer and printOut:
             TFCPrint.Warning(
