@@ -648,7 +648,15 @@ register_pytree_node(
 
 
 def LS(
-    zXi, res, *args, J=None, method="pinv", timer=False, timerType="process_time", holomorphic=False
+    zXi,
+    res,
+    *args,
+    constant_arg_nums: List[int] = [],
+    J=None,
+    method="pinv",
+    timer=False,
+    timerType="process_time",
+    holomorphic=False,
 ):
     """
     JITed least squares.
@@ -666,6 +674,9 @@ def LS(
 
     *args : iterable
         Any additional arguments taken by res other than xi.
+
+    constant_arg_nums: List[int], optional
+        These arguments will be removed from the residual function and treated as constant. See :meth:`pejit <tfc.utils.TFCUtils.pejit>` for more details.
 
     J : function, optional
          User specified Jacobian. If None, then the Jacobian of res with respect to xi will be calculated via automatic differentiation. (Default value = None)
@@ -698,6 +709,16 @@ def LS(
         dictFlag = True
     else:
         dictFlag = False
+
+    if constant_arg_nums:
+        # Make arguments constant if desired
+        res = pe(xiInit, *args, constant_arg_nums=constant_arg_nums)(res)
+
+        args = list(args)
+        constant_arg_nums.sort()
+        constant_arg_nums.reverse()
+        for k in constant_arg_nums:
+            args.pop(k - 1)
 
     if J is None:
         if dictFlag:
@@ -758,7 +779,9 @@ class LsClass:
         self,
         zXi,
         res,
+        *args,
         J=None,
+        constant_arg_nums: List[int] = [],
         method="pinv",
         timer=False,
         timerType="process_time",
@@ -774,6 +797,16 @@ class LsClass:
             dictFlag = True
         else:
             dictFlag = False
+
+        if constant_arg_nums:
+            # Make arguments constant if desired
+            res = pe(zXi, *args, constant_arg_nums=constant_arg_nums)(res)
+
+            args = list(args)
+            constant_arg_nums.sort()
+            constant_arg_nums.reverse()
+            for k in constant_arg_nums:
+                args.pop(k - 1)
 
         if J is None:
             if dictFlag:
@@ -902,7 +935,7 @@ def NLLS(
     *args : iterable
         Any additional arguments taken by res other than xi.
 
-    static_arg_nums: List[int], optional
+    constant_arg_nums: List[int], optional
         These arguments will be removed from the residual function and treated as constant. See :meth:`pejit <tfc.utils.TFCUtils.pejit>` for more details.
 
     J : function
