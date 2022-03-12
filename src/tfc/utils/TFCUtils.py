@@ -11,7 +11,7 @@ from jax.config import config
 config.update("jax_enable_x64", True)
 import numpy as onp
 import jax.numpy as np
-from jax import jvp, jit, lax, jacfwd
+from jax import jvp, jit, lax, jacfwd, tree_map
 from jax import linear_util as lu
 from jax.util import safe_zip
 from jax.tree_util import register_pytree_node, tree_multimap
@@ -224,15 +224,29 @@ def pe(*args: Any, constant_arg_nums: List[int] = ()) -> Any:
             # Create the partial args needed by trace_to_jaxpr
             def get_arg(a, unknown):
                 if unknown:
-                    return PartialVal.unknown(get_aval(a).at_least_vspace())
+                    return tree_flatten(
+                        (
+                            tree_map(
+                                lambda x: PartialVal.unknown(get_aval(x).at_least_vspace()), a
+                            ),
+                            {},
+                        )
+                    )[0]
                 else:
                     return PartialVal.known(a)
 
-            part_args = tuple((get_arg(a, k >= num_args_remove) for k, a in enumerate(dark)))
+            part_args = []
+            for k, a in enumerate(dark):
+                temp = get_arg(a, k >= num_args_remove)
+                if isinstance(temp, list):
+                    part_args += temp
+                else:
+                    part_args.append(temp)
+            part_args = tuple(part_args)
 
             # Create jaxpr
             wrap = lu.wrap_init(f)
-            _, in_tree = tree_flatten((args, {}))
+            _, in_tree = tree_flatten((dark, {}))
             wrap_flat, out_tree = flatten_fun(wrap, in_tree)
             jaxpr, _, const = trace_to_jaxpr(wrap_flat, part_args)
 
@@ -240,13 +254,15 @@ def pe(*args: Any, constant_arg_nums: List[int] = ()) -> Any:
             if out_tree().num_leaves == 1 and out_tree().num_nodes == 1:
                 # out_tree() is PyTreeDef(*), so just return the value. Since eval_jaxpr returns a list,
                 # this is just value [0]
-                f_removed = lambda *args: eval_jaxpr(jaxpr, const, *dark[0:num_args_remove], *args)[
-                    0
-                ]
+                f_removed = lambda *args: eval_jaxpr(
+                    jaxpr, const, *tree_flatten((*dark[0:num_args_remove], *args, {}))[0]
+                )[0]
             else:
-                # Use out_tree() to reshape the args correctly
-                f_removed = lambda *args: out_tree().from_iterable_tree(
-                    eval_jaxpr(jaxpr, const, *dark[0:num_args_remove], *args)
+                # Use out_tree() to reshape the args correctly.
+                f_removed = lambda *args: out_tree().unflatten(
+                    eval_jaxpr(
+                        jaxpr, const, *tree_flatten((*dark[0:num_args_remove], *args, {}))[0]
+                    )
                 )
             return f_removed
         else:
