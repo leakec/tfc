@@ -71,14 +71,14 @@ ypp = egrad(yp)
 
 ## define the loss function: ***********************************************************************
 #   yₓₓ + w^2 y = 0
-L = jit(lambda xi,IC: ypp(x,xi,IC) + w**2*y(x,xi,IC))
+L = jit(lambda xi,x,IC: ypp(x,xi,IC) + w**2*y(x,xi,IC))
 
 ## construct the least-squares class: **************************************************************
 xi0 = np.zeros(H(x).shape[1])
 IC = {'y0': np.array([y0]), 'y0p': np.array([y0p])}
 
 
-ls = LsClass(xi0,L,timer=True)
+ls = LsClass(xi0,L,x,IC,timer=True,constant_arg_nums=[1])
 
 ## initialize dictionary to record solution: *******************************************************
 xSol    = onp.zeros((Nstep,N))
@@ -100,7 +100,7 @@ for i in tqdm.trange(Nstep):
 
     # save solution to python dictionary 
     ySol[i,:]   = y(x,xi,IC)[:-1]
-    res[i,:]    = np.abs(L(xi,IC))[:-1]
+    res[i,:]    = np.abs(L(xi,x,IC))[:-1]
 
     # update initial condtions
     IC['y0']  = y(x,xi,IC)[-1]
