@@ -65,7 +65,7 @@ The authors of this repsitory and the associated theory have gone to lengths to 
     author = {Carl Leake and Hunter Johnston},
     title = {{TFC: A Functional Interpolation Framework}},
     url = {https://github.com/leakec/tfc},
-    version = {0.1.5},
+    version = {0.1.6},
     year = {2021},
 }
 @article{TFC, 
