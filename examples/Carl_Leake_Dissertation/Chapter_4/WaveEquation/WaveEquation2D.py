@@ -45,15 +45,16 @@ uxx = egrad(egrad(u,1),1)
 uyy = egrad(egrad(u,2),2)
 utt = egrad(egrad(u,3),3)
 
-L = lambda xi: uxx(xi,*x)+uyy(xi,*x)-64.*utt(xi,*x)
+L = lambda xi,*x: uxx(xi,*x)+uyy(xi,*x)-64.*utt(xi,*x)
 
 # Solve the problem
 xi = np.zeros(H(*x).shape[1])
 
 if xtfc:
-    xi,time = LS(xi,L,method='lstsq',timer=True)
+    xi,time = LS(xi,L,*x,method='lstsq',timer=True,constant_arg_nums=[1,2,3])
 else:
-    xi,time = LS(xi,L,timer=True)
+    # This could be sped up using constant_arg_nums like above. However, I don't have enough memory on my machine, as the constant_arg_nums uses more memory. 
+    xi,time = LS(xi,L,*x,timer=True)
 
 # Calculate the test set error
 dark = np.meshgrid(np.linspace(x0[0],xf[0],nTest),
