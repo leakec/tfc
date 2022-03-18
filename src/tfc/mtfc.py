@@ -6,7 +6,6 @@ import numpy as onp
 import jax.numpy as np
 from jax import core, abstract_arrays, jvp
 from jax.interpreters import ad, batching, xla
-from jax.ops import index_update, index
 from jax.lib import xla_client
 
 from .utils.TFCUtils import TFCPrint
