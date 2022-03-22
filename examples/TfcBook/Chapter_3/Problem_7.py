@@ -45,10 +45,10 @@ H = tfc.H
 dH = tfc.dH
 
 H0 = H(tfc.z[0:1])
-Hf = H(tfc.z[-2:-1])
+Hf = H(tfc.z[-1:])
 
 Hp0 = dH(tfc.z[0:1])
-Hpf = dH(tfc.z[-2:-1])
+Hpf = dH(tfc.z[-1:])
 
 ## defined the constrained expressions: ************************************************************
 z = tfc.z

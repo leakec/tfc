@@ -46,10 +46,10 @@ H = tfc.H
 pH = tfc.dH
 
 H0 = H(tfc.z[0:1])
-Hf = H(tfc.z[-2:-1])
+Hf = H(tfc.z[-1:])
 
 Hp0 = pH(tfc.z[0:1])
-Hpf = pH(tfc.z[-2:-1])
+Hpf = pH(tfc.z[-1:])
 
 ## DEFINE THE ASSUMED SOLUTION: *****************************************************************************
 z = tfc.z
