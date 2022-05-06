@@ -255,15 +255,11 @@ def pe(*args: Any, constant_arg_nums: List[int] = ()) -> Any:
             if out_tree().num_leaves == 1 and out_tree().num_nodes == 1:
                 # out_tree() is PyTreeDef(*), so just return the value. Since eval_jaxpr returns a list,
                 # this is just value [0]
-                f_removed = lambda *args: eval_jaxpr(
-                    jaxpr, const, *tree_flatten((*args, {}))[0]
-                )[0]
+                f_removed = lambda *args: eval_jaxpr(jaxpr, const, *tree_flatten((*args, {}))[0])[0]
             else:
                 # Use out_tree() to reshape the args correctly.
                 f_removed = lambda *args: out_tree().unflatten(
-                    eval_jaxpr(
-                        jaxpr, const, *tree_flatten((*args, {}))[0]
-                    )
+                    eval_jaxpr(jaxpr, const, *tree_flatten((*args, {}))[0])
                 )
             return f_removed
         else:
