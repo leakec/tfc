@@ -17,7 +17,7 @@ from jax.util import safe_zip
 from jax.tree_util import register_pytree_node, tree_map
 from jax._src.api_util import flatten_fun, tree_flatten
 from jax.core import get_aval, eval_jaxpr
-from jax.interpreters.partial_eval import JaxprTracer, trace_to_jaxpr, PartialVal
+from jax.interpreters.partial_eval import JaxprTracer, trace_to_jaxpr_nounits, PartialVal
 from jax.experimental.host_callback import id_tap
 from typing import List, Any, Callable
 
@@ -222,7 +222,7 @@ def pe(*args: Any, constant_arg_nums: List[int] = ()) -> Any:
                 new_args = tuple(args[k] for k in reorder)
                 return f_orig(*new_args)
 
-            # Create the partial args needed by trace_to_jaxpr
+            # Create the partial args needed by trace_to_jaxpr_nounits
             def get_arg(a, unknown):
                 if unknown:
                     return tree_flatten(
@@ -249,20 +249,20 @@ def pe(*args: Any, constant_arg_nums: List[int] = ()) -> Any:
             wrap = lu.wrap_init(f)
             _, in_tree = tree_flatten((dark, {}))
             wrap_flat, out_tree = flatten_fun(wrap, in_tree)
-            jaxpr, _, const = trace_to_jaxpr(wrap_flat, part_args)
+            jaxpr, _, const = trace_to_jaxpr_nounits(wrap_flat, part_args)
 
             # Create new, partially evaluated function
             if out_tree().num_leaves == 1 and out_tree().num_nodes == 1:
                 # out_tree() is PyTreeDef(*), so just return the value. Since eval_jaxpr returns a list,
                 # this is just value [0]
                 f_removed = lambda *args: eval_jaxpr(
-                    jaxpr, const, *tree_flatten((*dark[0:num_args_remove], *args, {}))[0]
+                    jaxpr, const, *tree_flatten((*args, {}))[0]
                 )[0]
             else:
                 # Use out_tree() to reshape the args correctly.
                 f_removed = lambda *args: out_tree().unflatten(
                     eval_jaxpr(
-                        jaxpr, const, *tree_flatten((*dark[0:num_args_remove], *args, {}))[0]
+                        jaxpr, const, *tree_flatten((*args, {}))[0]
                     )
                 )
             return f_removed
