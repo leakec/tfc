@@ -14,7 +14,7 @@ import jax.numpy as np
 from jax import jvp, jit, lax, jacfwd, tree_map
 from jax import linear_util as lu
 from jax.util import safe_zip
-from jax.tree_util import register_pytree_node, tree_multimap
+from jax.tree_util import register_pytree_node, tree_map
 from jax._src.api_util import flatten_fun, tree_flatten
 from jax.core import get_aval, eval_jaxpr
 from jax.interpreters.partial_eval import JaxprTracer, trace_to_jaxpr, PartialVal
@@ -99,7 +99,7 @@ def egrad(g, j=0):
     return wrapped
 
 
-@partial(partial, tree_multimap)
+@partial(partial, tree_map)
 def onesRobust(val):
     """Returns ones_like val, but can handle arrays and dictionaries.
 
@@ -116,7 +116,7 @@ def onesRobust(val):
     return onp.ones(val.shape, dtype=val.dtype)
 
 
-@partial(partial, tree_multimap)
+@partial(partial, tree_map)
 def zerosRobust(val):
     """Returns zeros_like val, but can handle arrays and dictionaries.
 
