@@ -8,3 +8,4 @@ __pycache__
 *.egg-info
 src/tfc/utils/BF/BF.py
 src/tfc/utils/BF/BF_wrap.cpp
+*tags
