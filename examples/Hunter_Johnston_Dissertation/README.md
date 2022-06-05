@@ -1,0 +1,1 @@
+All of the examples conatined within this directory are from [Hunter Johnston's PhD dissertation](https://www.researchgate.net/publication/351655972_The_Theory_of_Functional_Connections_A_journey_from_theory_to_application).
