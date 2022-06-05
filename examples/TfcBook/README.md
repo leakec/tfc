@@ -1,0 +1,1 @@
+All of the examples contained within this directory are from the [TFC textbook](https://www.lulu.com/en/us/shop/daniele-mortari-and-hunter-johnston-and-carl-leake/the-theory-of-functional-connections/hardcover/product-ve2ren.html?page=1&pageSize=4).
