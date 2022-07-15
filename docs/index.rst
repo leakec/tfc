@@ -11,6 +11,12 @@ Welcome to the documentation for TFC!
     notebooks/PDE
 
 .. toctree::
+    :maxdepth: 1
+    :caption: Advanced TFC Tutorials
+
+    notebooks/ODE_system
+
+.. toctree::
      :maxdepth: 1
      :caption: Utilities Tutorials
 
