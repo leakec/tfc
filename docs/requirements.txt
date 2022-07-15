@@ -13,3 +13,4 @@ colorama
 graphviz
 yattag
 plotly 
+Jinja2<3.1
