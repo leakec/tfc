@@ -3,6 +3,7 @@
 **A functional interpolation framework with applications in solving differential equations.**
 
 ![Continuous integration](https://github.com/leakec/tfc/actions/workflows/ci.yml/badge.svg)
+[![Documentation Status](https://readthedocs.org/projects/tfc-documentation/badge/?version=latest)](https://tfc-documentation.readthedocs.io/en/latest/?badge=latest)
 ![PyPI version](https://img.shields.io/pypi/v/tfc)
 
 [**Installation guide**](#installation)
