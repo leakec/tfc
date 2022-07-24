@@ -318,7 +318,7 @@ class TFCDict(OrderedDict):
 
     def getSlices(self):
         """Function that creates slices for each of the keys in the dictionary."""
-        if all(isinstance(value, np.ndarray) for value in self.values()):
+        if all(isinstance(value, np.ndarray) or isinstance(value, onp.ndarray) for value in self.values()):
             arrLen = 0
             self._slices = [
                 slice(0, 0, 1),
