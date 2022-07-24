@@ -282,8 +282,8 @@ class mtfc:
         x = tuple([onp.zeros(self.N) for x in range(self.dim)])
         if self.basis in ["CP", "LeP"]:
             for k in range(self.dim):
-                nProd = onp.prod(self.n[k + 1 :])
-                nStack = onp.prod(self.n[0:k])
+                nProd = int(onp.prod(self.n[k + 1 :]))
+                nStack = int(onp.prod(self.n[0:k]))
                 n = self.n[k] - 1
                 I = onp.linspace(0, n, n + 1).reshape((n + 1, 1))
                 dark = onp.cos(np.pi * (n - I) / float(n))
@@ -292,8 +292,8 @@ class mtfc:
                 x[k][:] = (self.z[k, :] - z0) / self.c[k] + self.x0[k]
         else:
             for k in range(self.dim):
-                nProd = onp.prod(self.n[k + 1 :])
-                nStack = onp.prod(self.n[0:k])
+                nProd = int(onp.prod(self.n[k + 1 :]))
+                nStack = int(onp.prod(self.n[0:k]))
                 dark = onp.linspace(z0, zf, num=self.n[k]).reshape((self.n[k], 1))
                 dark = onp.hstack([dark] * nProd).flatten()
                 self.z[k, :] = onp.array([dark] * nStack).flatten()
