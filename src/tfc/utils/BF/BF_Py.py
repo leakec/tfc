@@ -87,4 +87,81 @@ class BasisFunc(ABC):
 
     @abstractmethod
     def _Hint(self, z: npt.NDArray, d: uint) -> npt.NDArray:
+        """
+        Internal method used to calcualte the basis function value.
+
+        Parameters:
+        -----------
+        z: NDArray
+            Values to calculate the basis functions for.
+        d: uint
+            Derivative order.
+
+        Returns:
+        --------
+        H: NDArray
+            Basis function values.
+        """
         pass
+
+
+class CP(BasisFunc):
+    def _Hint(self, z: npt.NDArray, d: uint) -> npt.NDArray:
+        """
+        Internal method used to calcualte the CP basis function values.
+
+        Parameters:
+        -----------
+        z: NDArray
+            Values to calculate the basis functions for.
+        d: uint
+            Derivative order.
+
+        Returns:
+        --------
+        H: NDArray
+            Basis function values.
+        """
+        if len(z.shape) == 1:
+            z = np.expand_dims(z, 1)
+        N = np.size(z)
+        One = np.ones_like(z)
+        Zero = np.zeros_like(z)
+        if self._m == 1:
+            if d > 0:
+                F = Zero
+            else:
+                F = One
+            return F
+        elif self._m == 2:
+            if d > 1:
+                F = np.hstack((Zero, Zero))
+            elif d > 0:
+                F = np.hstack((Zero, One))
+            else:
+                F = np.hstack((One, z))
+            return F
+        else:
+            F = np.hstack((One, z, np.zeros((N, self._m - 2), dtype=z.dtype)))
+            for k in range(2, self._m):
+                F[:, k : k + 1] = 2 * z * F[:, k - 1 : k] - F[:, k - 2 : k - 1]
+
+            def Recurse(dark, d, dCurr=0):
+                if dCurr == d:
+                    return dark
+                else:
+                    if dCurr == 0:
+                        dark2 = np.hstack((Zero, One, np.zeros((N, self._m - 2), dtype=z.dtype)))
+                    else:
+                        dark2 = np.zeros((N, self._m), dtype=z.dtype)
+                    for k in range(2, self._m):
+                        dark2[:, k : k + 1] = (
+                            (2 + 2 * dCurr) * dark[:, k - 1 : k]
+                            + 2 * x * dark2[:, k - 1 : k]
+                            - dark2[:, k - 2 : k - 1]
+                        )
+                    dCurr += 1
+                    return Recurse(dark2, d, dCurr=dCurr)
+
+            F = Recurse(F, d)
+            return F
