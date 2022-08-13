@@ -1,23 +1,32 @@
 import numpy as np
 from abc import ABC, abstractmethod
 from numpy import typing as npt
-from numbers import Number
-from typing import Sequence, Annotated, Gt
+from typing import Sequence, Annotated, Gt, Union
 
 uint = Annotated[int, Gt(0)]
+Number = Union[int, float, complex]
+
 
 class BasisFunc(ABC):
     """
     Python implementation of the basis function classes. These are an alternative
     to the C++ versions. They can not be JIT-ed, but they do support alternative
     types, e.g., single float, complex, etc. Even though they cannnot be JIT-ed,
-    they can often be used in JIT functions, if their arguments can be removed 
+    they can often be used in JIT functions, if their arguments can be removed
     from said functions. For example, when solving an ODE, oftentimes the basis
-    functions can be treated as compile time constants. This can be done using 
+    functions can be treated as compile time constants. This can be done using
     `pejit`: see `pejit` for more details.
     """
 
-    def __init__(self, x0: Number, xf: Number, nC: Sequence[Number], m: uint, z: Number = 0 zf: Number = float("inf")) -> None:
+    def __init__(
+        self,
+        x0: Number,
+        xf: Number,
+        nC: Sequence[Number],
+        m: uint,
+        z0: Number = 0,
+        zf: Number = float("inf"),
+    ) -> None:
         """
         Initialize the basis class.
 
@@ -37,6 +46,7 @@ class BasisFunc(ABC):
             End of the basis function domain.
         """
 
+        self._m = m
         self._nC = nC
         self._numC = len(nC)
 
@@ -46,7 +56,7 @@ class BasisFunc(ABC):
             self._x0 = 0.0
         else:
             self._x0 = x0
-            self._c = (zf-z0)/(xf-x0)
+            self._c = (zf - z0) / (xf - x0)
 
     def H(self, x: npt.NDArray, d: uint = 0, full: bool = False) -> npt.NDArray:
         """
@@ -68,9 +78,9 @@ class BasisFunc(ABC):
             The basis function values.
         """
 
-        z = (x-self._x0)*self._c + self._z0
+        z = (x - self._x0) * self._c + self._z0
         dMult = self._c**d
-        F = self._Hint(z,d)*dMult
+        F = self._Hint(z, d) * dMult
         if not full:
             F = np.delete(F, self._nC)
         return F
