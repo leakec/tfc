@@ -1,92 +1,94 @@
 from jax.config import config
 config.update('jax_enable_x64', True)
 import jax.numpy as np
-from jax import vmap, grad
 
 from tfc.utils.BF import CP, LeP, LaP, HoPpro, HoPphy, FS, ELMReLU, ELMSigmoid, ELMTanh, ELMSin, ELMSwish
 from tfc.utils import egrad
 
 def test_CP():
-    from pOP import CP as pCP
+    from tfc.utils.BF.BF_Py import CP as pCP
     x = np.linspace(0,2,num=10)
-    z = (x-x[0])*2./(x[-1]-x[0])-1.
+
     cp1 = CP(0.,2.,np.array([],dtype=np.int32),5)
     cp2 = CP(0.,2.,np.array([],dtype=np.int32),10)
     Fc1 = cp1.H(x,0,False)
     Fc2 = cp2.H(x,3,False)
 
-    z = z.reshape(10,1)
-    Fp1 = pCP(z,4)
-    Fp2 = pCP(z,9,d=3)
+    pcp1 = pCP(0.,2.,np.array([],dtype=np.int32),5)
+    pcp2 = pCP(0.,2.,np.array([],dtype=np.int32),10)
+    Fp1 = pcp1.H(x,d=0,full=False)
+    Fp2 = pcp2.H(x,d=3,full=False)
 
     assert(np.linalg.norm(Fc1-Fp1,ord='fro') < 1e-14)
     assert(np.linalg.norm(Fc2-Fp2,ord='fro') < 1e-14)
 
 def test_LeP():
-    from pOP import LeP as pLeP
+    from tfc.utils.BF.BF_Py import LeP as pLeP
     x = np.linspace(0,2,num=10)
-    z = (x-x[0])*2./(x[-1]-x[0])-1.
     lep1 = LeP(0.,2.,np.array([],dtype=np.int32),5)
     lep2 = LeP(0.,2.,np.array([],dtype=np.int32),10)
     Fc1 = lep1.H(x,0,False)
     Fc2 = lep2.H(x,3,False)
 
-    z = z.reshape(10,1)
-    Fp1 = pLeP(z,4)
-    Fp2 = pLeP(z,9,d=3)
+    plep1 = pLeP(0.,2.,np.array([],dtype=np.int32),5)
+    plep2 = pLeP(0.,2.,np.array([],dtype=np.int32),10)
+    Fp1 = plep1.H(x,d=0,full=False)
+    Fp2 = plep2.H(x,d=3,full=False)
 
     assert(np.linalg.norm(Fc1-Fp1,ord='fro') < 1e-14)
     assert(np.linalg.norm(Fc2-Fp2,ord='fro') < 1e-14)
 
 def test_LaP():
-    from pOP import LaP as pLaP
+    from tfc.utils.BF.BF_Py import LaP as pLaP
     x = np.linspace(0,5,num=10)
     lap1 = LaP(0.,5.,np.array([],dtype=np.int32),5)
     lap2 = LaP(0.,5.,np.array([],dtype=np.int32),10)
     Fc1 = lap1.H(x,0,False)
     Fc2 = lap2.H(x,3,False)
 
-    x = x.reshape(10,1)
-    Fp1 = pLaP(x,4)
-    Fp2 = pLaP(x,9,d=3)
+    plap1 = pLaP(0.,5.,np.array([],dtype=np.int32),5)
+    plap2 = pLaP(0.,5.,np.array([],dtype=np.int32),10)
+    Fp1 = plap1.H(x,d=0,full=False)
+    Fp2 = plap2.H(x,d=3,full=False)
 
     assert(np.linalg.norm(Fc1-Fp1,ord='fro') < 1e-14)
     assert(np.linalg.norm(Fc2-Fp2,ord='fro') < 1e-14)
 
 def test_HoPpro():
-    from pOP import HoPpro as pHoPpro
+    from tfc.utils.BF.BF_Py import HoPpro as pHoPpro
     x = np.linspace(0,5,num=10)
     hoppro1 = HoPpro(0.,5.,np.array([],dtype=np.int32),5)
     hoppro2 = HoPpro(0.,5.,np.array([],dtype=np.int32),10)
     Fc1 = hoppro1.H(x,0,False)
     Fc2 = hoppro2.H(x,3,False)
 
-    x = x.reshape(10,1)
-    Fp1 = pHoPpro(x,4)
-    Fp2 = pHoPpro(x,9,d=3)
+    phoppro1 = pHoPpro(0.,5.,np.array([],dtype=np.int32),5)
+    phoppro2 = pHoPpro(0.,5.,np.array([],dtype=np.int32),10)
+    Fp1 = phoppro1.H(x,0,full=False)
+    Fp2 = phoppro2.H(x,3,full=False)
 
     assert(np.linalg.norm(Fc1-Fp1,ord='fro') < 1e-14)
     assert(np.linalg.norm(Fc2-Fp2,ord='fro') < 1e-14)
 
 def test_HoPphy():
-    from pOP import HoPphy as pHoPphy
+    from tfc.utils.BF.BF_Py import HoPphy as pHoPphy
     x = np.linspace(0,5,num=10)
     hopphy1 = HoPphy(0.,5.,np.array([],dtype=np.int32),5)
     hopphy2 = HoPphy(0.,5.,np.array([],dtype=np.int32),10)
     Fc1 = hopphy1.H(x,0,False)
     Fc2 = hopphy2.H(x,3,False)
 
-    x = x.reshape(10,1)
-    Fp1 = pHoPphy(x,4)
-    Fp2 = pHoPphy(x,9,d=3)
+    phopphy1 = pHoPphy(0.,5.,np.array([],dtype=np.int32),5)
+    phopphy2 = pHoPphy(0.,5.,np.array([],dtype=np.int32),10)
+    Fp1 = phopphy1.H(x,d=0,full=False)
+    Fp2 = phopphy2.H(x,d=3,full=False)
 
     assert(np.linalg.norm(Fc1-Fp1,ord='fro') < 1e-14)
     assert(np.linalg.norm(Fc2-Fp2,ord='fro') < 1e-14)
 
 def test_FS():
-    from pOP import FS as pFS
+    from tfc.utils.BF.BF_Py import FS as pFS
     x = np.linspace(0,2*np.pi,num=10)
-    z = (x-x[0])*2.*np.pi/(x[-1]-x[0])-np.pi
     fs1 = FS(0.,2.*np.pi,np.array([],dtype=np.int32),5)
     fs2 = FS(0.,2.*np.pi,np.array([],dtype=np.int32),10)
     Fc1 = fs1.H(x,0,False)
@@ -95,12 +97,13 @@ def test_FS():
     Fc4 = fs2.H(x,3,False)
     Fc5 = fs2.H(x,4,False)
 
-    z = z.reshape(10,1)
-    Fp1 = pFS(z,4)
-    Fp2 = pFS(z,9,d=1)
-    Fp3 = pFS(z,9,d=2)
-    Fp4 = pFS(z,9,d=3)
-    Fp5 = pFS(z,9,d=4)
+    pfs1 = pFS(0.,2.*np.pi,np.array([],dtype=np.int32),5)
+    pfs2 = pFS(0.,2.*np.pi,np.array([],dtype=np.int32),10)
+    Fp1 = pfs1.H(x,d=0,full=False)
+    Fp2 = pfs2.H(x,d=1,full=False)
+    Fp3 = pfs2.H(x,d=2,full=False)
+    Fp4 = pfs2.H(x,d=3,full=False)
+    Fp5 = pfs2.H(x,d=4,full=False)
 
     assert(np.linalg.norm(Fc1-Fp1,ord='fro') < 1e-14)
     assert(np.linalg.norm(Fc2-Fp2,ord='fro') < 1e-14)
