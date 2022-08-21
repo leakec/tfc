@@ -570,3 +570,105 @@ class FS(BasisFunc):
                     else:
                         F[:, k : k + 1] = -(g**d) * np.cos(g * z)
         return F
+
+
+class ELM(BasisFunc):
+    """
+    Extreme learning machine abstract basis class.
+    """
+
+    def __init__(
+        self,
+        x0: Number,
+        xf: Number,
+        nC: npt.NDArray,
+        m: uint,
+    ) -> None:
+        """
+        Initialize the basis class.
+
+        Parameters:
+        -----------
+        x0: Number
+            Start of the problem domain.
+        xf: Number
+            End of the problem domain.
+        nC: npt.NDArray
+            Basis functions to be removed
+        m: uint
+            Number of basis functions.
+        """
+        super().__init__(x0, xf, nC, m, 0.0, 1.0)
+
+        self._w = np.random.uniform(low=-10.0, high=10.0, size=self._m)
+        self._w = self._w.reshape((self._m, 1))
+        self._b = np.random.uniform(low=-10.0, high=10.0, size=self._m)
+        self._b = self._b.reshape((self._m, 1))
+
+    @property
+    def w(self) -> npt.NDArray:
+        """
+        Weights of the ELM
+        """
+        return self._w
+
+    @property
+    def b(self) -> npt.NDArray:
+        """
+        Biases of the ELM
+        """
+        return self._b
+
+    @w.setter
+    def w(self, val: npt.NDArray) -> None:
+        """
+        Weights of the ELM.
+        """
+        if val.size == self._m:
+            self._w = val
+            if self._w.shape != (self._m, 1):
+                self._w = self._w.reshape((self._m, 1))
+        else:
+            raise ValueError(
+                f"Input array of size {val.size} was received, but size {self._m} was expected."
+            )
+
+    @b.setter
+    def b(self, val: npt.NDArray) -> None:
+        """
+        Biases of the ELM.
+        """
+        if val.size == self._m:
+            self._b = val
+            if self._b.shape != (self._m, 1):
+                self._b = self._b.reshape((self._b, 1))
+        else:
+            raise ValueError(
+                f"Input array of size {val.size} was received, but size {self._m} was expected."
+            )
+
+
+class ELMReLU(ELM):
+    def _Hint(self, z: npt.NDArray, d: uint) -> npt.NDArray:
+        """
+        Internal method used to calcualte the ELMRelu basis function values.
+
+        Parameters:
+        -----------
+        z: NDArray
+            Values to calculate the basis functions for.
+        d: uint
+            Derivative order.
+
+        Returns:
+        --------
+        H: NDArray
+            Basis function values.
+        """
+
+        if d == 0:
+            return np.maximum(0.0, self._w * z + self._b)
+        elif d == 1:
+            return self._w * np.where(self._w * z + self._b > 0.0, 1.0, 0.0)
+        else:
+            return np.zeros((self._m, z.size))

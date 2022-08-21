@@ -112,25 +112,22 @@ def test_FS():
     assert(np.linalg.norm(Fc5-Fp5,ord='fro') < 5e-13)
 
 def test_ELMReLU():
-    from jax.nn import relu as ReLU
+    from tfc.utils.BF.BF_Py import ELMReLU as pELMReLU 
     x = np.linspace(0,1,num=10)
     elm = ELMReLU(0.,1.,np.array([],dtype=np.int32),10)
     Fc1 = elm.H(x,0,False)
     Fc2 = elm.H(x,1,False)
     Fc3 = elm.H(x,2,False)
-    Fc4 = elm.H(x,3,False)
 
-    x = x.reshape(10,1)
-    x = np.ones((10,10))*x
-    w = elm.w.reshape(1,10)
-    b = elm.b.reshape(1,10)
-    relu = lambda x: ReLU(w*x+b)
-    drelu = egrad(relu)
-    d2relu = egrad(drelu)
+    w = elm.w
+    b = elm.b
+    pelm = pELMReLU(0.,1.,np.array([],dtype=np.int32),10)
+    pelm.w = w
+    pelm.b = b
 
-    Fp1 = relu(x)
-    Fp2 = drelu(x)
-    Fp3 = d2relu(x)
+    Fp1 = pelm.H(x,d=0,full=False)
+    Fp2 = pelm.H(x,d=1,full=False)
+    Fp3 = pelm.H(x,d=2,full=False)
 
     assert(np.linalg.norm(Fc1-Fp1,ord='fro') < 1e-14)
     assert(np.linalg.norm(Fc2-Fp2,ord='fro') < 1e-14)
