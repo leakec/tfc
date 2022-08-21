@@ -80,6 +80,8 @@ class BasisFunc(ABC):
         """
 
         z = (x - self._x0) * self._c + self._z0
+        if len(z.shape) == 1:
+            z = np.expand_dims(z, 1)
         dMult = self._c**d
         F = self._Hint(z, d) * dMult
         if not full and self._numC > 0:
@@ -150,8 +152,6 @@ class CP(BasisFunc):
         H: NDArray
             Basis function values.
         """
-        if len(z.shape) == 1:
-            z = np.expand_dims(z, 1)
         N = np.size(z)
         One = np.ones_like(z)
         Zero = np.zeros_like(z)
@@ -238,8 +238,6 @@ class LeP(BasisFunc):
         H: NDArray
             Basis function values.
         """
-        if len(z.shape) == 1:
-            z = np.expand_dims(z, 1)
         N = np.size(z)
         One = np.ones_like(z)
         Zero = np.zeros_like(z)
@@ -305,8 +303,6 @@ class LaP(BasisFunc):
         H: NDArray
             Basis function values.
         """
-        if len(z.shape) == 1:
-            z = np.expand_dims(z, 1)
         N = np.size(z)
         One = np.ones_like(z)
         Zero = np.zeros_like(z)
@@ -372,8 +368,6 @@ class HoPpro(BasisFunc):
         H: NDArray
             Basis function valuesa
         """
-        if len(z.shape) == 1:
-            z = np.expand_dims(z, 1)
         N = np.size(z)
         One = np.ones_like(z)
         Zero = np.zeros_like(z)
@@ -437,8 +431,6 @@ class HoPphy(BasisFunc):
         H: NDArray
             Basis function valuesa
         """
-        if len(z.shape) == 1:
-            z = np.expand_dims(z, 1)
         N = np.size(z)
         One = np.ones_like(z)
         Zero = np.zeros_like(z)
@@ -527,8 +519,6 @@ class FS(BasisFunc):
         H: NDArray
             Basis function values.
         """
-        if len(z.shape) == 1:
-            z = np.expand_dims(z, 1)
         N = np.size(z)
         F = np.zeros((N, self._m))
         if d == 0:
@@ -626,8 +616,8 @@ class ELM(BasisFunc):
         """
         if val.size == self._m:
             self._w = val
-            if self._w.shape != (self._m, 1):
-                self._w = self._w.reshape((self._m, 1))
+            if self._w.shape != (1, self._m):
+                self._w = self._w.reshape((1, self._m))
         else:
             raise ValueError(
                 f"Input array of size {val.size} was received, but size {self._m} was expected."
@@ -640,8 +630,8 @@ class ELM(BasisFunc):
         """
         if val.size == self._m:
             self._b = val
-            if self._b.shape != (self._m, 1):
-                self._b = self._b.reshape((self._b, 1))
+            if self._b.shape != (1, self._m):
+                self._b = self._b.reshape((1, self._m))
         else:
             raise ValueError(
                 f"Input array of size {val.size} was received, but size {self._m} was expected."
