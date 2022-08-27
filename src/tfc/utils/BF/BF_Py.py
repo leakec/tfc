@@ -763,7 +763,7 @@ class ELMSin(ELM):
 class ELMSwish(ELM):
     def _Hint(self, z: npt.NDArray, d: uint) -> npt.NDArray:
         """
-        Internal method used to calcualte the ELMSin basis function values.
+        Internal method used to calcualte the ELMSwish basis function values.
 
         Parameters:
         -----------
