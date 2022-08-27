@@ -1,12 +1,8 @@
 import numpy as np
+import jax.numpy as jnp
 from abc import ABC, abstractmethod
 from numpy import typing as npt
-from typing import Annotated, Union
-from annotated_types import Gt
-
-uint = Annotated[int, Gt(0)]
-Number = Union[int, float, complex]
-
+from tfc.utils.types import uint, Number
 
 class BasisFunc(ABC):
     """
@@ -591,9 +587,9 @@ class ELM(BasisFunc):
         super().__init__(x0, xf, nC, m, 0.0, 1.0)
 
         self._w = np.random.uniform(low=-10.0, high=10.0, size=self._m)
-        self._w = self._w.reshape((self._m, 1))
+        self._w = self._w.reshape((1, self._m))
         self._b = np.random.uniform(low=-10.0, high=10.0, size=self._m)
-        self._b = self._b.reshape((self._m, 1))
+        self._b = self._b.reshape((1, self._m))
 
     @property
     def w(self) -> npt.NDArray:
@@ -662,3 +658,132 @@ class ELMReLU(ELM):
             return self._w * np.where(self._w * z + self._b > 0.0, 1.0, 0.0)
         else:
             return np.zeros((self._m, z.size))
+
+class ELMSigmoid(ELM):
+    def _Hint(self, z: npt.NDArray, d: uint) -> npt.NDArray:
+        """
+        Internal method used to calcualte the ELMSigmoid basis function values.
+
+        Parameters:
+        -----------
+        z: NDArray
+            Values to calculate the basis functions for.
+        d: uint
+            Derivative order.
+
+        Returns:
+        --------
+        H: NDArray
+            Basis function values.
+        """
+
+        from tfc.utils import egrad
+        
+        f = lambda x: 1.0/(1.0+jnp.exp(-self._w*x-self._b))
+
+        def Recurse(dark, d, dCurr=0):
+            if dCurr == d:
+                return dark
+            else:
+                dark2 = egrad(dark)
+                dCurr += 1
+                return Recurse(dark2, d, dCurr=dCurr)
+
+        return Recurse(f, d)(z).to_py()
+
+class ELMTanh(ELM):
+    def _Hint(self, z: npt.NDArray, d: uint) -> npt.NDArray:
+        """
+        Internal method used to calcualte the ELMTanh basis function values.
+
+        Parameters:
+        -----------
+        z: NDArray
+            Values to calculate the basis functions for.
+        d: uint
+            Derivative order.
+
+        Returns:
+        --------
+        H: NDArray
+            Basis function values.
+        """
+
+        from tfc.utils import egrad
+        
+        f = lambda x: jnp.tanh(self._w*x+self._b)
+
+        def Recurse(dark, d, dCurr=0):
+            if dCurr == d:
+                return dark
+            else:
+                dark2 = egrad(dark)
+                dCurr += 1
+                return Recurse(dark2, d, dCurr=dCurr)
+
+        return Recurse(f, d)(z).to_py()
+
+class ELMSin(ELM):
+    def _Hint(self, z: npt.NDArray, d: uint) -> npt.NDArray:
+        """
+        Internal method used to calcualte the ELMSin basis function values.
+
+        Parameters:
+        -----------
+        z: NDArray
+            Values to calculate the basis functions for.
+        d: uint
+            Derivative order.
+
+        Returns:
+        --------
+        H: NDArray
+            Basis function values.
+        """
+
+        from tfc.utils import egrad
+        
+        f = lambda x: jnp.sin(self._w*x+self._b)
+
+        def Recurse(dark, d, dCurr=0):
+            if dCurr == d:
+                return dark
+            else:
+                dark2 = egrad(dark)
+                dCurr += 1
+                return Recurse(dark2, d, dCurr=dCurr)
+
+        return Recurse(f, d)(z).to_py()
+
+class ELMSwish(ELM):
+    def _Hint(self, z: npt.NDArray, d: uint) -> npt.NDArray:
+        """
+        Internal method used to calcualte the ELMSin basis function values.
+
+        Parameters:
+        -----------
+        z: NDArray
+            Values to calculate the basis functions for.
+        d: uint
+            Derivative order.
+
+        Returns:
+        --------
+        H: NDArray
+            Basis function values.
+        """
+
+        from tfc.utils import egrad
+        
+        f = lambda x: (self._w*x+self._b)/(1.0+jnp.exp(-self._w*x-self._b))
+
+        def Recurse(dark, d, dCurr=0):
+            if dCurr == d:
+                return dark
+            else:
+                dark2 = egrad(dark)
+                dCurr += 1
+                return Recurse(dark2, d, dCurr=dCurr)
+
+        return Recurse(f, d)(z).to_py()
+
