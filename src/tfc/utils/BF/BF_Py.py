@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from numpy import typing as npt
 from tfc.utils.types import uint, Number
 
+
 class BasisFunc(ABC):
     """
     Python implementation of the basis function classes. These are an alternative
@@ -659,6 +660,7 @@ class ELMReLU(ELM):
         else:
             return np.zeros((self._m, z.size))
 
+
 class ELMSigmoid(ELM):
     def _Hint(self, z: npt.NDArray, d: uint) -> npt.NDArray:
         """
@@ -678,8 +680,8 @@ class ELMSigmoid(ELM):
         """
 
         from tfc.utils import egrad
-        
-        f = lambda x: 1.0/(1.0+jnp.exp(-self._w*x-self._b))
+
+        f = lambda x: 1.0 / (1.0 + jnp.exp(-self._w * x - self._b))
 
         def Recurse(dark, d, dCurr=0):
             if dCurr == d:
@@ -690,6 +692,7 @@ class ELMSigmoid(ELM):
                 return Recurse(dark2, d, dCurr=dCurr)
 
         return Recurse(f, d)(z).to_py()
+
 
 class ELMTanh(ELM):
     def _Hint(self, z: npt.NDArray, d: uint) -> npt.NDArray:
@@ -710,8 +713,8 @@ class ELMTanh(ELM):
         """
 
         from tfc.utils import egrad
-        
-        f = lambda x: jnp.tanh(self._w*x+self._b)
+
+        f = lambda x: jnp.tanh(self._w * x + self._b)
 
         def Recurse(dark, d, dCurr=0):
             if dCurr == d:
@@ -722,6 +725,7 @@ class ELMTanh(ELM):
                 return Recurse(dark2, d, dCurr=dCurr)
 
         return Recurse(f, d)(z).to_py()
+
 
 class ELMSin(ELM):
     def _Hint(self, z: npt.NDArray, d: uint) -> npt.NDArray:
@@ -742,8 +746,8 @@ class ELMSin(ELM):
         """
 
         from tfc.utils import egrad
-        
-        f = lambda x: jnp.sin(self._w*x+self._b)
+
+        f = lambda x: jnp.sin(self._w * x + self._b)
 
         def Recurse(dark, d, dCurr=0):
             if dCurr == d:
@@ -754,6 +758,7 @@ class ELMSin(ELM):
                 return Recurse(dark2, d, dCurr=dCurr)
 
         return Recurse(f, d)(z).to_py()
+
 
 class ELMSwish(ELM):
     def _Hint(self, z: npt.NDArray, d: uint) -> npt.NDArray:
@@ -774,8 +779,8 @@ class ELMSwish(ELM):
         """
 
         from tfc.utils import egrad
-        
-        f = lambda x: (self._w*x+self._b)/(1.0+jnp.exp(-self._w*x-self._b))
+
+        f = lambda x: (self._w * x + self._b) / (1.0 + jnp.exp(-self._w * x - self._b))
 
         def Recurse(dark, d, dCurr=0):
             if dCurr == d:
@@ -786,4 +791,3 @@ class ELMSwish(ELM):
                 return Recurse(dark2, d, dCurr=dCurr)
 
         return Recurse(f, d)(z).to_py()
-
