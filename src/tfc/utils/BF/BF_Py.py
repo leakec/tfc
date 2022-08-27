@@ -871,3 +871,70 @@ class nBasisFunc(BasisFunc):
         """
 
         return self._c
+
+    def H(self, z: npt.NDArray, d: npt.NDArray, full: bool = False) -> npt.NDArray:
+        """
+        Returns the basis function matrix for the x with a derivative of order d.
+
+        Parameters:
+        -----------
+        z: NDArray
+            Input array. Values to calculate the basis function for.
+        d: NDArray
+            Order of the derivative
+        full: bool
+            Whether to return the full basis function set, or remove
+            the columns associated with self._nC.
+
+        Returns:
+        --------
+        H: NDArray
+            The basis function values.
+        """
+
+        # Check dimensions
+        N = z.shape[0]
+        if z.shape[1] != self._dim:
+            raise ValueError(
+                f"Incorrect dimension for x. Expected {self._dim} but got {z.shape[1]}."
+            )
+
+        # Create individual basis functions for each dimension
+        T = np.zeros((N, self._m, self._dim), dtype=z.dtype)
+        for k in range(self._dim):
+            T[:, :, k] = self._Hint(z[:, k : k + 1], d[k])
+
+        # Define functions for use in generating the CP sheet
+        def MultT(vec: npt.NDArray) -> npt.NDArray:
+            tout = np.ones((N, 1), dtype=z.dtype)
+            for k in range(self._dim):
+                tout *= T[:, vec[k] : vec[k] + 1, k]
+            return tout
+
+        def Recurse(dim: int, out: npt.NDArray, vec: npt.NDArray, n: int = 0):
+            if dim > 0:
+                for x in range(self._m):
+                    vec[dim] = x
+                    out, n = Recurse(dim - 1, out, vec, n=n)
+            else:
+                for x in range(self._m):
+                    vec[dim] = x
+                    if full:
+                        if np.sum(vec) <= self._m - 1:
+                            out[:, n : n + 1] = MultT(vec)
+                            n += 1
+                    else:
+                        if any(vec >= self._nC) and np.sum(vec) <= self._m - 1:
+                            out[:, n : n + 1] = MultT(vec)
+                            n += 1
+            return out, n
+
+        # Calculate and store all possible combinations of the individual basis functions
+        vec = np.zeros(self._dim, dtype=int)
+        if full:
+            out = np.zeros((N, self._numBasisFuncFull), dtype=z.dtype)
+        else:
+            out = np.zeros((N, self._numBasisFunc), dtype=z.dtype)
+        out, _ = Recurse(self._dim - 1, out, vec)
+
+        return out
