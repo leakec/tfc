@@ -842,9 +842,9 @@ class nBasisFunc(BasisFunc):
         self._numBasisFuncFull = self._NumBasisFunc(self._dim - 1, vec, full=True)
 
     def _NumBasisFunc(self, dim: int, vec: npt.NDArray, n: int = 0, full: bool = False):
-        if self._dim > 0:
+        if dim > 0:
             for x in range(self._m):
-                vec[self._dim] = x
+                vec[dim] = x
                 n = self._NumBasisFunc(dim - 1, vec, n=n, full=full)
         else:
             for x in range(self._m):
@@ -938,3 +938,33 @@ class nBasisFunc(BasisFunc):
         out, _ = Recurse(self._dim - 1, out, vec)
 
         return out
+
+
+class nCP(nBasisFunc, CP):
+    """
+    n-dimensional Chebyshev polynomial basis functions.
+    """
+
+    def __init__(
+        self,
+        x0: npt.NDArray,
+        xf: npt.NDArray,
+        nC: npt.NDArray,
+        m: uint,
+    ) -> None:
+        """
+        Initialize the n-dimensional CP class.
+
+        Parameters:
+        -----------
+        x0: NDArray
+            Start of the problem domain.
+        xf: NDArray
+            End of the problem domain.
+        nC: NDArray
+            Basis functions to be removed
+        m: uint
+            Number of basis functions.
+        """
+
+        nBasisFunc.__init__(self, x0, xf, nC, m, -1.0, 1.0)
