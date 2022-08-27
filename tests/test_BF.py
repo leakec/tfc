@@ -119,11 +119,9 @@ def test_ELMReLU():
     Fc2 = elm.H(x,1,False)
     Fc3 = elm.H(x,2,False)
 
-    w = elm.w
-    b = elm.b
     pelm = pELMReLU(0.,1.,np.array([],dtype=np.int32),10)
-    pelm.w = w
-    pelm.b = b
+    pelm.w = elm.w 
+    pelm.b = elm.b
 
     Fp1 = pelm.H(x,d=0,full=False)
     Fp2 = pelm.H(x,d=1,full=False)
@@ -134,102 +132,52 @@ def test_ELMReLU():
     assert(np.linalg.norm(Fc3-Fp3,ord='fro') < 1e-14)
 
 def test_ELMSigmoid():
+    from tfc.utils.BF.BF_Py import ELMSigmoid as pELMSigmoid
     x = np.linspace(0,1,num=10)
     elm = ELMSigmoid(0.,1.,np.array([],dtype=np.int32),10)
     Fc1 = elm.H(x,0,False)
     Fc2 = elm.H(x,1,False)
     Fc3 = elm.H(x,2,False)
     Fc4 = elm.H(x,3,False)
-    Fc5 = elm.H(x,4,False)
-    Fc6 = elm.H(x,5,False)
-    Fc7 = elm.H(x,6,False)
-    Fc8 = elm.H(x,7,False)
-    Fc9 = elm.H(x,8,False)
 
-    x = x.reshape(10,1)
-    x = np.ones((10,10))*x
-    w = elm.w.reshape(1,10)
-    b = elm.b.reshape(1,10)
-    sig = lambda x: 1./(1.+np.exp(-w*x-b))
-    dsig = egrad(sig)
-    d2sig = egrad(dsig)
-    d3sig = egrad(d2sig)
-    d4sig = egrad(d2sig)
-    #d5sig = egrad(d2sig)
-    #d6sig = egrad(d2sig)
-    #d7sig = egrad(d2sig)
-    #d8sig = egrad(d2sig)
-    #d9sig = egrad(d2sig)
+    pelm = pELMSigmoid(0.,1.,np.array([],dtype=np.int32),10)
+    pelm.w = elm.w
+    pelm.b = elm.b
 
-    Fp1 = sig(x)
-    Fp2 = dsig(x)
-    Fp3 = d2sig(x)
-    Fp4 = d3sig(x)
-    #Fp5 = d4sig(x)
-    #Fp6 = d5sig(x)
-    #Fp7 = d6sig(x)
-    #Fp8 = d7sig(x)
-    #Fp9 = d8sig(x)
+    Fp1 = pelm.H(x,0,False)
+    Fp2 = pelm.H(x,1,False)
+    Fp3 = pelm.H(x,2,False)
+    Fp4 = pelm.H(x,3,False)
 
     assert(np.linalg.norm(Fc1-Fp1,ord='fro') < 1e-14)
     assert(np.linalg.norm(Fc2-Fp2,ord='fro') < 1e-14)
     assert(np.linalg.norm(Fc3-Fp3,ord='fro') < 5e-10)
     assert(np.linalg.norm(Fc4-Fp4,ord='fro') < 5e-10)
-    #assert(np.linalg.norm(Fc5-Fp5,ord='fro') < 5e-10)
-    #assert(np.linalg.norm(Fc6-Fp6,ord='fro') < 1e-10)
-    #assert(np.linalg.norm(Fc7-Fp7,ord='fro') < 1e-10)
-    #assert(np.linalg.norm(Fc8-Fp8,ord='fro') < 5e-10)
-    #assert(np.linalg.norm(Fc9-Fp9,ord='fro') < 1e-12)
 
 def test_ELMTanh():
+    from tfc.utils.BF.BF_Py import ELMTanh as pELMTanh
     x = np.linspace(0,1,num=10)
     elm = ELMTanh(0.,1.,np.array([],dtype=np.int32),10)
     Fc1 = elm.H(x,0,False)
     Fc2 = elm.H(x,1,False)
     Fc3 = elm.H(x,2,False)
     Fc4 = elm.H(x,3,False)
-    Fc5 = elm.H(x,4,False)
-    Fc6 = elm.H(x,5,False)
-    Fc7 = elm.H(x,6,False)
-    Fc8 = elm.H(x,7,False)
-    Fc9 = elm.H(x,8,False)
 
-    x = x.reshape(10,1)
-    x = np.ones((10,10))*x
-    w = elm.w.reshape(1,10)
-    b = elm.b.reshape(1,10)
-    Tanh = lambda x: np.tanh(w*x + b)
-    dTanh = egrad(Tanh)
-    d2Tanh = egrad(dTanh)
-    d3Tanh = egrad(d2Tanh)
-    d4Tanh = egrad(d3Tanh)
-    #d5Tanh = egrad(d4Tanh)
-    #d6Tanh = egrad(d5Tanh)
-    #d7Tanh = egrad(d6Tanh)
-    #d8Tanh = egrad(d7Tanh)
-    #d9Tanh = egrad(d8Tanh)
-
-    Fp1 = Tanh(x)
-    Fp2 = dTanh(x)
-    Fp3 = d2Tanh(x)
-    Fp4 = d3Tanh(x)
-    #Fp5 = d4Tanh(x)
-    #Fp6 = d5Tanh(x)
-    #Fp7 = d6Tanh(x)
-    #Fp8 = d7Tanh(x)
-    #Fp9 = d8Tanh(x)
+    pelm = pELMTanh(0.,1.,np.array([],dtype=np.int32),10)
+    pelm.w = elm.w
+    pelm.b = elm.b
+    Fp1 = pelm.H(x,0,False)
+    Fp2 = pelm.H(x,1,False)
+    Fp3 = pelm.H(x,2,False)
+    Fp4 = pelm.H(x,3,False)
 
     assert(np.linalg.norm(Fc1-Fp1,ord='fro') < 1e-14)
     assert(np.linalg.norm(Fc2-Fp2,ord='fro') < 1e-14)
     assert(np.linalg.norm(Fc3-Fp3,ord='fro') < 1e-13)
     assert(np.linalg.norm(Fc4-Fp4,ord='fro') < 5e-10)
-    #assert(np.linalg.norm(Fc5-Fp5,ord='fro') < 5e-10)
-    #assert(np.linalg.norm(Fc6-Fp6,ord='fro') < 1e-9)
-    #assert(np.linalg.norm(Fc7-Fp7,ord='fro') < 5e-9)
-    #assert(np.linalg.norm(Fc8-Fp8,ord='fro') < 5e-9)
-    #assert(np.linalg.norm(Fc9-Fp9,ord='fro') < 1e-12)
 
 def test_ELMSin():
+    from tfc.utils.BF.BF_Py import ELMSin as pELMSin
     x = np.linspace(0,1,num=10)
     elm = ELMSin(0.,1.,np.array([],dtype=np.int32),10)
     Fc1 = elm.H(x,0,False)
@@ -238,22 +186,14 @@ def test_ELMSin():
     Fc4 = elm.H(x,3,False)
     Fc5 = elm.H(x,4,False)
 
-    x = x.reshape(10,1)
-    x = np.ones((10,10))*x
-    w = elm.w.reshape(1,10)
-    b = elm.b.reshape(1,10)
-    sin = lambda x: np.sin(w*x + b)
-    dsin = egrad(sin)
-    d2sin = egrad(dsin)
-    d3sin = egrad(d2sin)
-    d4sin = egrad(d3sin)
-    d5sin = egrad(d4sin)
-
-    Fp1 = sin(x)
-    Fp2 = dsin(x)
-    Fp3 = d2sin(x)
-    Fp4 = d3sin(x)
-    Fp5 = d4sin(x)
+    pelm = pELMSin(0.,1.,np.array([],dtype=np.int32),10)
+    pelm.w = elm.w
+    pelm.b = elm.b
+    Fp1 = elm.H(x,0,False)
+    Fp2 = elm.H(x,1,False)
+    Fp3 = elm.H(x,2,False)
+    Fp4 = elm.H(x,3,False)
+    Fp5 = elm.H(x,4,False)
 
     assert(np.linalg.norm(Fc1-Fp1,ord='fro') < 1e-14)
     assert(np.linalg.norm(Fc2-Fp2,ord='fro') < 1e-14)
@@ -262,6 +202,7 @@ def test_ELMSin():
     assert(np.linalg.norm(Fc5-Fp5,ord='fro') < 5e-12)
 
 def test_ELMSwish():
+    from tfc.utils.BF.BF_Py import ELMSwish as pELMSwish
     x = np.linspace(0,1,num=10)
     elm = ELMSwish(0.,1.,np.array([],dtype=np.int32),10)
     Fc1 = elm.H(x,0,False)
@@ -269,42 +210,18 @@ def test_ELMSwish():
     Fc3 = elm.H(x,2,False)
     Fc4 = elm.H(x,3,False)
     Fc5 = elm.H(x,4,False)
-    Fc6 = elm.H(x,5,False)
-    Fc7 = elm.H(x,6,False)
-    Fc8 = elm.H(x,7,False)
-    Fc9 = elm.H(x,8,False)
 
-    x = x.reshape(10,1)
-    x = np.ones((10,10))*x
-    w = elm.w.reshape(1,10)
-    b = elm.b.reshape(1,10)
-    swish = lambda x: (w*x+b) * (1./(1.+np.exp(-w*x-b)))
-    dswish = egrad(swish)
-    d2swish = egrad(dswish)
-    d3swish = egrad(d2swish)
-    d4swish = egrad(d3swish)
-    d5swish = egrad(d4swish)
-    #d6swish = egrad(d5swish)
-    #d7swish = egrad(d6swish)
-    #d8swish = egrad(d7swish)
-    #d9swish = egrad(d8swish)
-
-    Fp1 = swish(x)
-    Fp2 = dswish(x)
-    Fp3 = d2swish(x)
-    Fp4 = d3swish(x)
-    Fp5 = d4swish(x)
-    #Fp6 = d5swish(x)
-    #Fp7 = d6swish(x)
-    #Fp8 = d7swish(x)
-    #Fp9 = d8swish(x)
+    pelm = pELMSwish(0.,1.,np.array([],dtype=np.int32),10)
+    pelm.w = elm.w
+    pelm.b = elm.b
+    Fp1 = pelm.H(x,0,False)
+    Fp2 = pelm.H(x,1,False)
+    Fp3 = pelm.H(x,2,False)
+    Fp4 = pelm.H(x,3,False)
+    Fp5 = pelm.H(x,4,False)
 
     assert(np.linalg.norm(Fc1-Fp1,ord='fro') < 1e-14)
     assert(np.linalg.norm(Fc2-Fp2,ord='fro') < 1e-13)
     assert(np.linalg.norm(Fc3-Fp3,ord='fro') < 5e-10)
     assert(np.linalg.norm(Fc4-Fp4,ord='fro') < 5e-10)
     assert(np.linalg.norm(Fc5-Fp5,ord='fro') < 5e-9)
-    #assert(np.linalg.norm(Fc6-Fp6,ord='fro') < 5e-9)
-    #assert(np.linalg.norm(Fc7-Fp7,ord='fro') < 5e-9)
-    #assert(np.linalg.norm(Fc8-Fp8,ord='fro') < 1e-9)
-    # assert(np.linalg.norm(Fc9-Fp9,ord='fro') < 1e-12)
