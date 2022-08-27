@@ -791,3 +791,83 @@ class ELMSwish(ELM):
                 return Recurse(dark2, d, dCurr=dCurr)
 
         return Recurse(f, d)(z).to_py()
+
+
+class nBasisFunc(BasisFunc):
+    """
+    Python implementation of the n-dimensional basis function classes.
+    See the Python implementation of `BasisFunc` for details.
+    """
+
+    def __init__(
+        self,
+        x0: npt.NDArray,
+        xf: npt.NDArray,
+        nC: npt.NDArray,
+        m: uint,
+        z0: Number = 0.0,
+        zf: Number = 0.0,
+    ) -> None:
+        """
+        Initialize the basis class.
+
+        Parameters:
+        -----------
+        x0: NDArray
+            Start of the problem domain.
+        xf: NDArray
+            End of the problem domain.
+        nC: NDArray
+            Basis functions to be removed
+        m: uint
+            Number of basis functions.
+        z0: Number
+            Start of the basis function domain.
+        zf: Number
+            End of the basis function domain.
+        """
+
+        self._m = m
+        self._nC = nC
+        self._dim = nC.shape[0]
+        self._numC = nC.shape[1]
+
+        self._z0 = z0
+        self._zf = zf
+        self._x0 = x0
+        self._c = (zf - z0) / (xf - x0)
+
+        vec = np.zeros(self._dim)
+        self._numBasisFunc = self._NumBasisFunc(self._dim - 1, vec, full=False)
+        self._numBasisFuncFull = self._NumBasisFunc(self._dim - 1, vec, full=True)
+
+    def _NumBasisFunc(self, dim: int, vec: npt.NDArray, n: int = 0, full: bool = False):
+        if self._dim > 0:
+            for x in range(self._m):
+                vec[self._dim] = x
+                n = self._NumBasisFunc(dim - 1, vec, n=n, full=full)
+        else:
+            for x in range(self._m):
+                vec[dim] = x
+                if full:
+                    if np.sum(vec) <= self._m - 1:
+                        n += 1
+                else:
+                    if any(vec >= self._nC) and np.sum(vec) <= self._m - 1:
+                        n += 1
+        return n
+
+    @property
+    def c(self) -> npt.NDArray:
+        """
+        Return the constants that map the problem domain to the basis
+        function domain.
+
+        Returns:
+        --------
+        npt.NDArray
+            The constants that map the problem domain to the basis function
+            domain.
+        """
+
+        return self._c
