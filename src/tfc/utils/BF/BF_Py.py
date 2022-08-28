@@ -835,9 +835,13 @@ class nBasisFunc(BasisFunc):
         self._z0 = z0
         self._zf = zf
         self._x0 = x0
-        self._c = (zf - z0) / (xf - x0)
+        if self._x0.shape != (self._dim, 1):
+            self._x0 = self._x0.reshape((self._dim, 1))
+        if xf.shape != (self._dim, 1):
+            xf = xf.reshape((self._dim, 1))
+        self._c = (zf - z0) / (xf - self._x0)
 
-        vec = np.zeros(self._dim)
+        vec = np.zeros((self._dim, 1))
         self._numBasisFunc = self._NumBasisFunc(self._dim - 1, vec, full=False)
         self._numBasisFuncFull = self._NumBasisFunc(self._dim - 1, vec, full=True)
 
@@ -851,9 +855,14 @@ class nBasisFunc(BasisFunc):
                 vec[dim] = x
                 if full:
                     if np.sum(vec) <= self._m - 1:
+                        # If the degree of the produce of univariate basis functions is less than
+                        # the degree specified, then add one to the count.
                         n += 1
                 else:
-                    if any(vec >= self._nC) and np.sum(vec) <= self._m - 1:
+                    if not np.all(np.any(vec == self._nC, axis=1)) and np.sum(vec) <= self._m - 1:
+                        # If at least one of the dimensions' basis functions is not a constraint
+                        # and the degree of the product of univariate basis functions is less than
+                        # the degree specified, add one to the count
                         n += 1
         return n
 
@@ -872,7 +881,7 @@ class nBasisFunc(BasisFunc):
 
         return self._c
 
-    def H(self, z: npt.NDArray, d: npt.NDArray, full: bool = False) -> npt.NDArray:
+    def H(self, x: npt.NDArray, d: npt.NDArray, full: bool = False) -> npt.NDArray:
         """
         Returns the basis function matrix for the x with a derivative of order d.
 
@@ -880,6 +889,7 @@ class nBasisFunc(BasisFunc):
         -----------
         z: NDArray
             Input array. Values to calculate the basis function for.
+            Should be size dim x N.
         d: NDArray
             Order of the derivative
         full: bool
@@ -893,49 +903,60 @@ class nBasisFunc(BasisFunc):
         """
 
         # Check dimensions
-        N = z.shape[0]
-        if z.shape[1] != self._dim:
+        N = x.shape[1]
+        if x.shape[0] != self._dim:
             raise ValueError(
                 f"Incorrect dimension for x. Expected {self._dim} but got {z.shape[1]}."
             )
 
+        # Convert to basis function domain
+        z = (x - self._x0) * self._c + self._z0
+
         # Create individual basis functions for each dimension
         T = np.zeros((N, self._m, self._dim), dtype=z.dtype)
         for k in range(self._dim):
-            T[:, :, k] = self._Hint(z[:, k : k + 1], d[k])
+            T[:, :, k] = self._Hint(z[k : k + 1, :].T, d[k]) * self._c[k] ** d[k]
 
         # Define functions for use in generating the CP sheet
         def MultT(vec: npt.NDArray) -> npt.NDArray:
             tout = np.ones((N, 1), dtype=z.dtype)
             for k in range(self._dim):
-                tout *= T[:, vec[k] : vec[k] + 1, k]
+                tout *= T[:, vec[k, 0] : vec[k, 0] + 1, k]
             return tout
 
-        def Recurse(dim: int, out: npt.NDArray, vec: npt.NDArray, n: int = 0):
+        def Recurse(dim: int, out: npt.NDArray, vec: npt.NDArray, n: int = 0, full: bool = False):
             if dim > 0:
                 for x in range(self._m):
                     vec[dim] = x
-                    out, n = Recurse(dim - 1, out, vec, n=n)
+                    out, n = Recurse(dim - 1, out, vec, n=n, full=full)
             else:
                 for x in range(self._m):
                     vec[dim] = x
                     if full:
                         if np.sum(vec) <= self._m - 1:
+                            # If the degree of the produce of univariate basis functions is less than
+                            # the degree specified, then include this vector.
                             out[:, n : n + 1] = MultT(vec)
                             n += 1
                     else:
-                        if any(vec >= self._nC) and np.sum(vec) <= self._m - 1:
+                        if (
+                            not np.all(np.any(vec == self._nC, axis=1))
+                            and np.sum(vec) <= self._m - 1
+                        ):
+                            # If at least one of the dimensions' basis functions is not a constraint
+                            # and the degree of the product of univariate basis functions is less than
+                            # the degree specified, include this vector.
                             out[:, n : n + 1] = MultT(vec)
                             n += 1
             return out, n
 
         # Calculate and store all possible combinations of the individual basis functions
-        vec = np.zeros(self._dim, dtype=int)
+        vec = np.zeros((self._dim, 1), dtype=int)
         if full:
             out = np.zeros((N, self._numBasisFuncFull), dtype=z.dtype)
         else:
             out = np.zeros((N, self._numBasisFunc), dtype=z.dtype)
-        out, _ = Recurse(self._dim - 1, out, vec)
+        out, _ = Recurse(self._dim - 1, out, vec, full=full)
 
         return out
 
@@ -968,3 +989,63 @@ class nCP(nBasisFunc, CP):
         """
 
         nBasisFunc.__init__(self, x0, xf, nC, m, -1.0, 1.0)
+
+
+class nLeP(nBasisFunc, LeP):
+    """
+    n-dimensional Legendre polynomial basis functions.
+    """
+
+    def __init__(
+        self,
+        x0: npt.NDArray,
+        xf: npt.NDArray,
+        nC: npt.NDArray,
+        m: uint,
+    ) -> None:
+        """
+        Initialize the n-dimensional LeP class.
+
+        Parameters:
+        -----------
+        x0: NDArray
+            Start of the problem domain.
+        xf: NDArray
+            End of the problem domain.
+        nC: NDArray
+            Basis functions to be removed
+        m: uint
+            Number of basis functions.
+        """
+
+        nBasisFunc.__init__(self, x0, xf, nC, m, -1.0, 1.0)
+
+
+class nFS(nBasisFunc, FS):
+    """
+    n-dimensional Fourier series basis functions.
+    """
+
+    def __init__(
+        self,
+        x0: npt.NDArray,
+        xf: npt.NDArray,
+        nC: npt.NDArray,
+        m: uint,
+    ) -> None:
+        """
+        Initialize the n-dimensional FS class.
+
+        Parameters:
+        -----------
+        x0: NDArray
+            Start of the problem domain.
+        xf: NDArray
+            End of the problem domain.
+        nC: NDArray
+            Basis functions to be removed
+        m: uint
+            Number of basis functions.
+        """
+
+        nBasisFunc.__init__(self, x0, xf, nC, m, -np.pi, np.pi)
