@@ -285,6 +285,7 @@ def test_nELMSwish():
 
 
 def test_nELMReLU():
+    from tfc.utils.BF.BF_Py import nELMReLU as pnELMReLU
     dim = 2
     nC = -1 * np.ones(1, dtype=np.int32)
     d = np.zeros(dim, dtype=np.int32)
@@ -316,15 +317,16 @@ def test_nELMReLU():
     Fc3 = elm2.H(X.T, d3, False)
     Fc4 = elm2.H(X.T, d4, False)
 
-    x = np.ones((100, 10)) * z[:, 0:1]
-    y = np.ones((100, 10)) * z[:, 1:2]
-    w1 = w[0, :].reshape((1, 10))
-    w2 = w[1, :].reshape((1, 10))
-    b = b.reshape((1, 10))
-    relu = lambda x, y: np.maximum(np.zeros_like(x), w1 * x + w2 * y + b)
-
-    Fp1 = relu(x, y)
-    Fp2 = onp.delete(egrad(relu, 1)(x, y), nC2[0], axis=1)
+    pelm1 = pnELMReLU(X[0, :], X[-1, :], nC, 10)
+    pelm1.w = w
+    pelm1.b = b
+    pelm2 = pnELMReLU(X[0, :], X[-1, :], nC2, 10)
+    pelm2.w = w
+    pelm2.b = b
+    Fp1 = elm1.H(X.T, d, False)
+    Fp2 = elm2.H(X.T, d2, False)
+    Fp3 = elm2.H(X.T, d3, False)
+    Fp4 = elm2.H(X.T, d4, False)
 
     assert np.linalg.norm(Fc1 - Fp1, ord="fro") < 1e-14
     assert np.linalg.norm(Fc2 - Fp2, ord="fro") < 1e-14
