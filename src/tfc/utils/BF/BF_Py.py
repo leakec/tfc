@@ -887,7 +887,7 @@ class nBasisFunc(BasisFunc):
 
         Parameters:
         -----------
-        z: NDArray
+        x: NDArray
             Input array. Values to calculate the basis function for.
             Should be size dim x N.
         d: NDArray
@@ -1049,3 +1049,204 @@ class nFS(nBasisFunc, FS):
         """
 
         nBasisFunc.__init__(self, x0, xf, nC, m, -np.pi, np.pi)
+
+
+class nELM(nBasisFunc):
+    """
+    n-dimensional extreme learning machine abstract basis class.
+    """
+
+    def __init__(
+        self,
+        x0: npt.NDArray,
+        xf: npt.NDArray,
+        nC: npt.NDArray,
+        m: uint,
+        z0: Number = 0.0,
+        zf: Number = 1.0,
+    ) -> None:
+        """
+        Initialize the basis class.
+
+        Parameters:
+        -----------
+        x0: NDArray
+            Start of the problem domain.
+        xf: NDArray
+            End of the problem domain.
+        nC: NDArray
+            Basis functions to be removed
+        m: uint
+            Number of basis functions.
+        z0: Number
+            Start of the basis function domain.
+        zf: Number
+            End of the basis function domain.
+        """
+
+        self._m = m
+        self._nC = nC
+        self._dim = x0.size
+
+        if np.any(self._nC != -1):
+            self._numC = nC.size
+        else:
+            self._numC = 0
+
+        self._z0 = z0
+        self._zf = zf
+        self._x0 = x0
+        if self._x0.shape != (self._dim, 1):
+            self._x0 = self._x0.reshape((self._dim, 1))
+        if xf.shape != (self._dim, 1):
+            xf = xf.reshape((self._dim, 1))
+        self._c = (zf - z0) / (xf - self._x0)
+
+        self._numBasisFunc = self._m - self._numC
+        self._numBasisFuncFull = self._m
+
+        self._w = np.random.uniform(low=-1.0, high=1.0, size=self._dim * self._m)
+        self._w = self._w.reshape((self._dim, self._m))
+        self._b = np.random.uniform(low=-1.0, high=1.0, size=self._m)
+        self._b = self._b.reshape((1, self._m))
+
+    @property
+    def w(self) -> npt.NDArray:
+        """
+        Weights of the nELM
+        """
+        return self._w
+
+    @property
+    def b(self) -> npt.NDArray:
+        """
+        Biases of the nELM
+        """
+        return self._b
+
+    @w.setter
+    def w(self, val: npt.NDArray) -> None:
+        """
+        Weights of the nELM.
+        """
+        if val.size == self._m * self._dim:
+            self._w = val
+            if self._w.shape != (self._dim, self._m):
+                self._w = self._w.reshape((self._dim, self._m))
+        else:
+            raise ValueError(
+                f"Input array of size {val.size} was received, but size {self._m*self._dim} was expected."
+            )
+
+    @b.setter
+    def b(self, val: npt.NDArray) -> None:
+        """
+        Biases of the nELM.
+        """
+        if val.size == self._m:
+            self._b = val
+            if self._b.shape != (1, self._m):
+                self._b = self._b.reshape((1, self._m))
+        else:
+            raise ValueError(
+                f"Input array of size {val.size} was received, but size {self._m} was expected."
+            )
+
+    def H(self, x: npt.NDArray, d: npt.NDArray, full: bool = False) -> npt.NDArray:
+        """
+        Returns the basis function matrix for the x with a derivative of order d.
+
+        Parameters:
+        -----------
+        x: NDArray
+            Input array. Values to calculate the basis function for.
+            Should be size dim x N.
+        d: NDArray
+            Order of the derivative
+        full: bool
+            Whether to return the full basis function set, or remove
+            the columns associated with self._nC.
+
+        Returns:
+        --------
+        H: NDArray
+            The basis function values.
+        """
+
+        # Check dimensions
+        if x.shape[0] != self._dim:
+            raise ValueError(
+                f"Incorrect dimension for x. Expected {self._dim} but got {z.shape[1]}."
+            )
+
+        # Convert to basis function domain
+        z = ((x - self._x0) * self._c + self._z0).T
+
+        F = self._nHint(z, d)
+        if not full and self._numC > 0:
+            F = np.delete(F, self._nC)
+        return F
+
+    @abstractmethod
+    def _nHint(self, z: npt.NDArray, d: npt.NDArray) -> npt.NDArray:
+        """
+        Internal method used to calcualte the basis function value.
+
+        Parameters:
+        -----------
+        z: NDArray
+            Values to calculate the basis functions for.
+        d: NDArray
+            Derivative order.
+
+        Returns:
+        --------
+        H: NDArray
+            Basis function values.
+        """
+        pass
+
+    def _Hint(self, z: npt.NDArray, d: uint) -> npt.NDArray:
+        """
+        Dummy function, this should never be called!
+        """
+        raise ValueError("Error: This function should never be called.")
+
+
+class nELMReLU(nELM):
+    def _nHint(self, z: npt.NDArray, d: npt.NDArray) -> npt.NDArray:
+        """
+        Internal method used to calcualte the basis function value.
+
+        Parameters:
+        -----------
+        z: NDArray
+            Values to calculate the basis functions for.
+        d: NDArray
+            Derivative order.
+
+        Returns:
+        --------
+        H: NDArray
+            Basis function values.
+        """
+        ind = -1
+        zeroFlag = False
+        dorder = np.sum(d)
+        if dorder > 1:
+            zeroFlag = True
+        elif dorder == 1:
+            ind = np.where(d == 1)[0]
+
+        if zeroFlag:
+            # Derivative order is high enough that everything is zeros
+            return np.zeros((z.shape[0], self._m))
+        elif ind != -1:
+            # We have a derivative on only one variable
+            return (
+                self._c[ind]
+                * self._w[ind : ind + 1, :]
+                * np.where(z * self._w + self._b > 0.0, 1.0, 0.0)
+            )
+        else:
+            return np.maximum(0.0, z * self._w + self._b)
