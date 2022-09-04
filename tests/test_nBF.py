@@ -199,6 +199,7 @@ def test_nELMTanh():
 
 
 def test_nELMSin():
+    from tfc.utils.BF.BF_Py import nELMSin as pnELMSin
     dim = 2
     nC = -1 * np.ones(1, dtype=np.int32)
     d = np.zeros(dim, dtype=np.int32)
@@ -226,16 +227,15 @@ def test_nELMSin():
     Fc1 = elm1.H(X.T, d, False)
     Fc2 = elm2.H(X.T, d2, False)
 
-    x = np.ones((100, 10)) * z[:, 0:1]
-    y = np.ones((100, 10)) * z[:, 1:2]
-    w1 = w[0, :].reshape((1, 10))
-    w2 = w[1, :].reshape((1, 10))
-    b = b.reshape((1, 10))
-    Sin = lambda x, y: np.sin(w1 * x + w2 * y + b)
-    mydSin = egrad(egrad(egrad(egrad(egrad(Sin, 0), 0), 1), 1), 1)
+    pelm1 = pnELMSin(X[0, :], X[-1, :], nC, 10)
+    pelm1.w = w
+    pelm1.b = b
+    pelm2 = pnELMSin(X[0, :], X[-1, :], nC2, 10)
+    pelm2.w = w
+    pelm2.b = b
 
-    Fp1 = Sin(x, y)
-    Fp2 = onp.delete(mydSin(x, y), nC2[0], axis=1)
+    Fp1 = pelm1.H(X.T, d, False)
+    Fp2 = pelm2.H(X.T, d2, False)
 
     assert np.linalg.norm(Fc1 - Fp1, ord="fro") < 1e-14
     assert np.linalg.norm(Fc2 - Fp2, ord="fro") < 1e-12
@@ -323,12 +323,12 @@ def test_nELMReLU():
     pelm2 = pnELMReLU(X[0, :], X[-1, :], nC2, 10)
     pelm2.w = w
     pelm2.b = b
-    Fp1 = elm1.H(X.T, d, False)
-    Fp2 = elm2.H(X.T, d2, False)
-    Fp3 = elm2.H(X.T, d3, False)
-    Fp4 = elm2.H(X.T, d4, False)
+    Fp1 = pelm1.H(X.T, d, False)
+    Fp2 = pelm2.H(X.T, d2, False)
+    Fp3 = pelm2.H(X.T, d3, False)
+    Fp4 = pelm2.H(X.T, d4, False)
 
     assert np.linalg.norm(Fc1 - Fp1, ord="fro") < 1e-14
     assert np.linalg.norm(Fc2 - Fp2, ord="fro") < 1e-14
-    assert np.linalg.norm(Fc3, ord="fro") < 1e-14
-    assert np.linalg.norm(Fc4, ord="fro") < 1e-14
+    assert np.linalg.norm(Fc3 - Fp3, ord="fro") < 1e-14
+    assert np.linalg.norm(Fc4 - Fp4, ord="fro") < 1e-14
