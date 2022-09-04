@@ -3,10 +3,8 @@ from jax.config import config
 config.update("jax_enable_x64", True)
 import numpy as onp
 import jax.numpy as np
-from jax import vmap, grad
 
 from tfc.utils.BF import nCP, nLeP, nFS, nELMSigmoid, nELMTanh, nELMSin, nELMSwish, nELMReLU
-from tfc.utils import egrad
 
 
 def test_nCP():
