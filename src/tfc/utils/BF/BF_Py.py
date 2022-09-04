@@ -1184,7 +1184,7 @@ class nELM(nBasisFunc):
 
         F = self._nHint(z, d)
         if not full and self._numC > 0:
-            F = np.delete(F, self._nC)
+            F = np.delete(F, self._nC, axis=1)
         return F
 
     @abstractmethod
@@ -1236,7 +1236,7 @@ class nELMReLU(nELM):
         if dorder > 1:
             zeroFlag = True
         elif dorder == 1:
-            ind = np.where(d == 1)[0]
+            ind = np.where(d == 1)[0][0]
 
         if zeroFlag:
             # Derivative order is high enough that everything is zeros
@@ -1246,7 +1246,48 @@ class nELMReLU(nELM):
             return (
                 self._c[ind]
                 * self._w[ind : ind + 1, :]
-                * np.where(z * self._w + self._b > 0.0, 1.0, 0.0)
+                * np.where(np.dot(z, self._w) + self._b > 0.0, 1.0, 0.0)
             )
         else:
-            return np.maximum(0.0, z * self._w + self._b)
+            return np.maximum(0.0, np.dot(z, self._w) + self._b)
+
+
+class nELMSin(nELM):
+    def _nHint(self, z: npt.NDArray, d: npt.NDArray) -> npt.NDArray:
+        """
+        Internal method used to calcualte the basis function value.
+
+        Parameters:
+        -----------
+        z: NDArray
+            Values to calculate the basis functions for.
+        d: NDArray
+            Derivative order.
+
+        Returns:
+        --------
+        H: NDArray
+            Basis function values.
+        """
+
+        from tfc.utils import egrad
+
+        f = lambda *x: jnp.sin(jnp.dot(jnp.hstack(x), self._w) + self._b)
+
+        z = jnp.split(z, z.shape[1], axis=1)
+
+        def Recurse(dark, d, dim, dCurr=0):
+            if dCurr == d:
+                return dark
+            else:
+                dark2 = egrad(dark, dim)
+                dCurr += 1
+                return Recurse(dark2, d, dim, dCurr=dCurr)
+
+        dark = f
+        dark2 = 1
+        for dim, deriv in enumerate(d):
+            dark2 *= self._c[dim] ** deriv
+            dark = Recurse(dark, deriv, dim)
+
+        return (dark(*z) * dark2).to_py()
