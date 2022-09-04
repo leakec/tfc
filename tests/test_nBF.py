@@ -115,6 +115,7 @@ def test_nFS():
 
 def test_nELMSigmoid():
     from tfc.utils.BF.BF_Py import nELMSigmoid as pnELMSigmoid
+
     dim = 2
     nC = -1 * np.ones(1, dtype=np.int32)
     d = np.zeros(dim, dtype=np.int32)
@@ -156,6 +157,7 @@ def test_nELMSigmoid():
 
 def test_nELMTanh():
     from tfc.utils.BF.BF_Py import nELMTanh as pnELMTanh
+
     dim = 2
     nC = -1 * np.ones(1, dtype=np.int32)
     d = np.zeros(dim, dtype=np.int32)
@@ -198,6 +200,7 @@ def test_nELMTanh():
 
 def test_nELMSin():
     from tfc.utils.BF.BF_Py import nELMSin as pnELMSin
+
     dim = 2
     nC = -1 * np.ones(1, dtype=np.int32)
     d = np.zeros(dim, dtype=np.int32)
@@ -241,6 +244,7 @@ def test_nELMSin():
 
 def test_nELMSwish():
     from tfc.utils.BF.BF_Py import nELMSwish as pnELMSwish
+
     dim = 2
     nC = -1 * np.ones(1, dtype=np.int32)
     d = np.zeros(dim, dtype=np.int32)
@@ -283,6 +287,7 @@ def test_nELMSwish():
 
 def test_nELMReLU():
     from tfc.utils.BF.BF_Py import nELMReLU as pnELMReLU
+
     dim = 2
     nC = -1 * np.ones(1, dtype=np.int32)
     d = np.zeros(dim, dtype=np.int32)
