@@ -1214,6 +1214,10 @@ class nELM(nBasisFunc):
 
 
 class nELMReLU(nELM):
+    """
+    n-dimensional ELM ReLU basis functions.
+    """
+
     def _nHint(self, z: npt.NDArray, d: npt.NDArray) -> npt.NDArray:
         """
         Internal method used to calcualte the basis function value.
@@ -1253,6 +1257,10 @@ class nELMReLU(nELM):
 
 
 class nELMSin(nELM):
+    """
+    n-dimensional ELM sin basis functions.
+    """
+
     def _nHint(self, z: npt.NDArray, d: npt.NDArray) -> npt.NDArray:
         """
         Internal method used to calcualte the basis function value.
@@ -1273,6 +1281,143 @@ class nELMSin(nELM):
         from tfc.utils import egrad
 
         f = lambda *x: jnp.sin(jnp.dot(jnp.hstack(x), self._w) + self._b)
+
+        z = jnp.split(z, z.shape[1], axis=1)
+
+        def Recurse(dark, d, dim, dCurr=0):
+            if dCurr == d:
+                return dark
+            else:
+                dark2 = egrad(dark, dim)
+                dCurr += 1
+                return Recurse(dark2, d, dim, dCurr=dCurr)
+
+        dark = f
+        dark2 = 1
+        for dim, deriv in enumerate(d):
+            dark2 *= self._c[dim] ** deriv
+            dark = Recurse(dark, deriv, dim)
+
+        return (dark(*z) * dark2).to_py()
+
+
+class nELMTanh(nELM):
+    """
+    n-dimensional ELM tanh basis functions.
+    """
+
+    def _nHint(self, z: npt.NDArray, d: npt.NDArray) -> npt.NDArray:
+        """
+        Internal method used to calcualte the basis function value.
+
+        Parameters:
+        -----------
+        z: NDArray
+            Values to calculate the basis functions for.
+        d: NDArray
+            Derivative order.
+
+        Returns:
+        --------
+        H: NDArray
+            Basis function values.
+        """
+
+        from tfc.utils import egrad
+
+        f = lambda *x: jnp.tanh(jnp.dot(jnp.hstack(x), self._w) + self._b)
+
+        z = jnp.split(z, z.shape[1], axis=1)
+
+        def Recurse(dark, d, dim, dCurr=0):
+            if dCurr == d:
+                return dark
+            else:
+                dark2 = egrad(dark, dim)
+                dCurr += 1
+                return Recurse(dark2, d, dim, dCurr=dCurr)
+
+        dark = f
+        dark2 = 1
+        for dim, deriv in enumerate(d):
+            dark2 *= self._c[dim] ** deriv
+            dark = Recurse(dark, deriv, dim)
+
+        return (dark(*z) * dark2).to_py()
+
+
+class nELMSigmoid(nELM):
+    """
+    n-dimensional ELM sigmoid basis functions.
+    """
+
+    def _nHint(self, z: npt.NDArray, d: npt.NDArray) -> npt.NDArray:
+        """
+        Internal method used to calcualte the basis function value.
+
+        Parameters:
+        -----------
+        z: NDArray
+            Values to calculate the basis functions for.
+        d: NDArray
+            Derivative order.
+
+        Returns:
+        --------
+        H: NDArray
+            Basis function values.
+        """
+
+        from tfc.utils import egrad
+
+        f = lambda *x: 1.0 / (1.0 + jnp.exp(-jnp.dot(jnp.hstack(x), self._w) - self._b))
+
+        z = jnp.split(z, z.shape[1], axis=1)
+
+        def Recurse(dark, d, dim, dCurr=0):
+            if dCurr == d:
+                return dark
+            else:
+                dark2 = egrad(dark, dim)
+                dCurr += 1
+                return Recurse(dark2, d, dim, dCurr=dCurr)
+
+        dark = f
+        dark2 = 1
+        for dim, deriv in enumerate(d):
+            dark2 *= self._c[dim] ** deriv
+            dark = Recurse(dark, deriv, dim)
+
+        return (dark(*z) * dark2).to_py()
+
+
+class nELMSwish(nELM):
+    """
+    n-dimensional ELM swish basis functions.
+    """
+
+    def _nHint(self, z: npt.NDArray, d: npt.NDArray) -> npt.NDArray:
+        """
+        Internal method used to calcualte the basis function value.
+
+        Parameters:
+        -----------
+        z: NDArray
+            Values to calculate the basis functions for.
+        d: NDArray
+            Derivative order.
+
+        Returns:
+        --------
+        H: NDArray
+            Basis function values.
+        """
+
+        from tfc.utils import egrad
+
+        def f(*x):
+            dark = jnp.dot(jnp.hstack(x), self._w) + self._b
+            return dark / (1.0 + jnp.exp(-dark))
 
         z = jnp.split(z, z.shape[1], axis=1)
 
