@@ -284,8 +284,8 @@ class mtfc:
         self.c = self.basisClass.c
 
         # Calculate z points and corresponding x
-        self.z = onp.zeros((self.dim, self.N))
-        x = tuple([onp.zeros(self.N) for x in range(self.dim)])
+        self.z = onp.zeros((self.dim, self.N),dtype=self.x0.dtype)
+        x = tuple([onp.zeros(self.N,dtype=self.x0.dtype) for x in range(self.dim)])
         if self.basis in ["CP", "LeP"]:
             for k in range(self.dim):
                 nProd = int(onp.prod(self.n[k + 1 :]))
