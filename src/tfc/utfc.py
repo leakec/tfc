@@ -44,7 +44,9 @@ class utfc:
         This optional keyword argument specifies the basis functions to be used. (Default value = "CP")
     """
 
-    def __init__(self, N, nC, deg, basis="CP", x0=None, xf=None, backend: Literal["C++","Python"] = "C++"):
+    def __init__(
+        self, N, nC, deg, basis="CP", x0=None, xf=None, backend: Literal["C++", "Python"] = "C++"
+    ):
         """
         Constructor for the utfc class.
 
@@ -100,12 +102,12 @@ class utfc:
 
         # Setup the basis function
         if backend == "C++":
-            from .utils import BF 
+            from .utils import BF
         elif backend == "Python":
             from .utils.BF import BF_Py as BF
         else:
             TFCPrint.Error(
-                f"The backend {backend} was specified, but can only be one of \"C++\" or \"Python\"."
+                f'The backend {backend} was specified, but can only be one of "C++" or "Python".'
             )
         if self.basis == "CP":
             self.basisClass = BF.CP(self.x0, self.xf, self.nC, self.deg + 1)
@@ -149,7 +151,7 @@ class utfc:
             n = self.N - 1
             # Multiplying x0 by 0 below so the array I has the same
             # type as x0.
-            I = np.linspace(0*x0, n, n + 1) 
+            I = np.linspace(0 * x0, n, n + 1)
             self.z = np.cos(np.pi * (n - I) / float(n))
             self.x = (self.z - z0) / self.c + self.x0
         else:

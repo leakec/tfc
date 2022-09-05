@@ -51,7 +51,17 @@ class mtfc:
         This optional keyword sets the backend used to compute the basis functions. The C++ can be used with JIT, but can only be used for doubles. The Python backend can be used for other field types, e.g., complex numbers, but does not have JIT translations. Instead, pejit must be used to set the basis function outputs as compile time constants in order to JIT.
     """
 
-    def __init__(self, n, nC, deg, dim=2, basis="CP", x0=None, xf=None, backend:Literal["C++","Python"] = "C++"):
+    def __init__(
+        self,
+        n,
+        nC,
+        deg,
+        dim=2,
+        basis="CP",
+        x0=None,
+        xf=None,
+        backend: Literal["C++", "Python"] = "C++",
+    ):
 
         # Store givens
         self._elm_classes = ["ELMSigmoid", "ELMTanh", "ELMSin", "ELMSwish", "ELMReLU"]
@@ -224,12 +234,12 @@ class mtfc:
 
         # Setup the basis function
         if backend == "C++":
-            from .utils import BF 
+            from .utils import BF
         elif backend == "Python":
             from .utils.BF import BF_Py as BF
         else:
             TFCPrint.Error(
-                f"The backend {backend} was specified, but can only be one of \"C++\" or \"Python\"."
+                f'The backend {backend} was specified, but can only be one of "C++" or "Python".'
             )
         if self.basis == "CP":
             self.basisClass = BF.nCP(self.x0, self.xf, self.nC, self.deg + 1)
@@ -283,7 +293,7 @@ class mtfc:
                 n = self.n[k] - 1
                 # Multiplying x0 by 0 here so the array will have the
                 # same type as x0.
-                I = onp.linspace(0*x0[0], n, n + 1).reshape((n + 1, 1))
+                I = onp.linspace(0 * x0[0], n, n + 1).reshape((n + 1, 1))
                 dark = onp.cos(np.pi * (n - I) / float(n))
                 dark = onp.hstack([dark] * nProd).flatten()
                 self.z[k, :] = onp.array([dark] * nStack).flatten()

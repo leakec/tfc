@@ -899,13 +899,13 @@ class nBasisFunc(BasisFunc):
     @property
     def numBasisFunc(self) -> float:
         """
-        Return the number of basis functions once user-specified 
+        Return the number of basis functions once user-specified
         functions have been removed.
 
         Returns:
         --------
         float:
-            The number of basis functions once the user-specified 
+            The number of basis functions once the user-specified
             functions have been removed.
         """
 
@@ -914,13 +914,13 @@ class nBasisFunc(BasisFunc):
     @property
     def numBasisFuncFull(self) -> float:
         """
-        Return the number of basis functions before the user-specified 
+        Return the number of basis functions before the user-specified
         functions have been removed.
 
         Returns:
         --------
         float:
-            The number of basis functions before the user-specified 
+            The number of basis functions before the user-specified
             functions have been removed.
         """
 
