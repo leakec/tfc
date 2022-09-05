@@ -82,7 +82,7 @@ class BasisFunc(ABC):
         dMult = self._c**d
         F = self._Hint(z, d) * dMult
         if not full and self._numC > 0:
-            F = np.delete(F, self._nC)
+            F = np.delete(F, self._nC, axis=1)
         return F
 
     @abstractmethod
@@ -895,6 +895,36 @@ class nBasisFunc(BasisFunc):
         """
 
         return self._c
+
+    @property
+    def numBasisFunc(self) -> float:
+        """
+        Return the number of basis functions once user-specified 
+        functions have been removed.
+
+        Returns:
+        --------
+        float:
+            The number of basis functions once the user-specified 
+            functions have been removed.
+        """
+
+        return self._numBasisFunc
+
+    @property
+    def numBasisFuncFull(self) -> float:
+        """
+        Return the number of basis functions before the user-specified 
+        functions have been removed.
+
+        Returns:
+        --------
+        float:
+            The number of basis functions before the user-specified 
+            functions have been removed.
+        """
+
+        return self._numBasisFuncFull
 
     def H(self, x: npt.NDArray, d: npt.NDArray, full: bool = False) -> npt.NDArray:
         """
