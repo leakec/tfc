@@ -101,7 +101,7 @@ class utfc:
         # Setup the basis function
         if backend == "C++":
             from .utils import BF 
-        elif backend == "Pyhon":
+        elif backend == "Python":
             from .utils.BF import BF_Py as BF
         else:
             TFCPrint.Error(
