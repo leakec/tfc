@@ -104,6 +104,21 @@ class BasisFunc(ABC):
         """
         pass
 
+    @property
+    def c(self) -> Number:
+        """
+        Return the constants that map the problem domain to the basis
+        function domain.
+
+        Returns:
+        --------
+        float
+            The constant that maps the problem domain to the basis function
+            domain.
+        """
+
+        return self._c
+
 
 class CP(BasisFunc):
     """
