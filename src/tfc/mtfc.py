@@ -5,7 +5,8 @@ config.update("jax_enable_x64", True)
 from copy import copy
 import numpy as onp
 import jax.numpy as np
-from jax import core, abstract_arrays, jvp
+from typing import Literal
+from jax import core, abstract_arrays
 from jax.interpreters import ad, batching, xla
 from jax.lib import xla_client
 
@@ -46,14 +47,17 @@ class mtfc:
     xf : list or array-like
         Specifies the end of the DE domain. (Default value = None)
 
+    backend : Literal["C++", "Python"]
+        This optional keyword sets the backend used to compute the basis functions. The C++ can be used with JIT, but can only be used for doubles. The Python backend can be used for other field types, e.g., complex numbers, but does not have JIT translations. Instead, pejit must be used to set the basis function outputs as compile time constants in order to JIT.
     """
 
-    def __init__(self, n, nC, deg, dim=2, basis="CP", x0=None, xf=None):
+    def __init__(self, n, nC, deg, dim=2, basis="CP", x0=None, xf=None, backend:Literal["C++","Python"] = "C++"):
 
         # Store givens
         self._elm_classes = ["ELMSigmoid", "ELMTanh", "ELMSin", "ELMSwish", "ELMReLU"]
         self.deg = deg
         self.dim = dim
+        self._backend = backend
 
         # Set N based on user input
         if isinstance(n, np.ndarray):
@@ -219,52 +223,44 @@ class mtfc:
                 self.nC = np.array(onC.tolist(), dtype=np.int32)
 
         # Setup the basis function
+        if backend == "C++":
+            from .utils import BF 
+        elif backend == "Python":
+            from .utils.BF import BF_Py as BF
+        else:
+            TFCPrint.Error(
+                f"The backend {backend} was specified, but can only be one of \"C++\" or \"Python\"."
+            )
         if self.basis == "CP":
-            from .utils.BF import nCP
-
-            self.basisClass = nCP(self.x0, self.xf, self.nC, self.deg + 1)
+            self.basisClass = BF.nCP(self.x0, self.xf, self.nC, self.deg + 1)
             z0 = -1.0
             zf = 1.0
         elif self.basis == "LeP":
-            from .utils.BF import nLeP
-
-            self.basisClass = nLeP(self.x0, self.xf, self.nC, self.deg + 1)
+            self.basisClass = BF.nLeP(self.x0, self.xf, self.nC, self.deg + 1)
             z0 = -1.0
             zf = 1.0
         elif self.basis == "FS":
-            from .utils.BF import nFS
-
-            self.basisClass = nFS(self.x0, self.xf, self.nC, self.deg + 1)
+            self.basisClass = BF.nFS(self.x0, self.xf, self.nC, self.deg + 1)
             z0 = -np.pi
             zf = np.pi
         elif self.basis == "ELMSigmoid":
-            from .utils.BF import nELMSigmoid
-
-            self.basisClass = nELMSigmoid(self.x0, self.xf, self.nC, self.deg + 1)
+            self.basisClass = BF.nELMSigmoid(self.x0, self.xf, self.nC, self.deg + 1)
             z0 = 0.0
             zf = 1.0
         elif self.basis == "ELMTanh":
-            from .utils.BF import nELMTanh
-
-            self.basisClass = nELMTanh(self.x0, self.xf, self.nC, self.deg + 1)
+            self.basisClass = BF.nELMTanh(self.x0, self.xf, self.nC, self.deg + 1)
             z0 = 0.0
             zf = 1.0
         elif self.basis == "ELMSin":
-            from .utils.BF import nELMSin
-
-            self.basisClass = nELMSin(self.x0, self.xf, self.nC, self.deg + 1)
+            self.basisClass = BF.nELMSin(self.x0, self.xf, self.nC, self.deg + 1)
             z0 = 0.0
             zf = 1.0
         elif self.basis == "ELMSwish":
-            from .utils.BF import nELMSwish
-
-            self.basisClass = nELMSwish(self.x0, self.xf, self.nC, self.deg + 1)
+            self.basisClass = BF.nELMSwish(self.x0, self.xf, self.nC, self.deg + 1)
             z0 = 0.0
             zf = 1.0
         elif self.basis == "ELMReLU":
-            from .utils.BF import nELMReLU
-
-            self.basisClass = nELMReLU(self.x0, self.xf, self.nC, self.deg + 1)
+            self.basisClass = BF.nELMReLU(self.x0, self.xf, self.nC, self.deg + 1)
             z0 = 0.0
             zf = 1.0
         else:
@@ -285,7 +281,9 @@ class mtfc:
                 nProd = int(onp.prod(self.n[k + 1 :]))
                 nStack = int(onp.prod(self.n[0:k]))
                 n = self.n[k] - 1
-                I = onp.linspace(0, n, n + 1).reshape((n + 1, 1))
+                # Multiplying x0 by 0 here so the array will have the
+                # same type as x0.
+                I = onp.linspace(0*x0[0], n, n + 1).reshape((n + 1, 1))
                 dark = onp.cos(np.pi * (n - I) / float(n))
                 dark = onp.hstack([dark] * nProd).flatten()
                 self.z[k, :] = onp.array([dark] * nStack).flatten()
@@ -294,7 +292,7 @@ class mtfc:
             for k in range(self.dim):
                 nProd = int(onp.prod(self.n[k + 1 :]))
                 nStack = int(onp.prod(self.n[0:k]))
-                dark = onp.linspace(z0, zf, num=self.n[k]).reshape((self.n[k], 1))
+                dark = onp.linspace(z0, zf, num=self.n[k], dtype=x0.dtype).reshape((self.n[k], 1))
                 dark = onp.hstack([dark] * nProd).flatten()
                 self.z[k, :] = onp.array([dark] * nStack).flatten()
                 x[k][:] = (self.z[k, :] - z0) / self.c[k] + self.x0[k]
@@ -495,10 +493,11 @@ class mtfc:
         d0 = onp.zeros(self.dim, dtype=np.int32)
 
         # Regiser XLA function
-        obj = self.basisClass.xlaCapsule
-        xlaName = "BasisFunc" + str(self.basisClass.identifier)
-        xlaName = xlaName.encode("utf-8")
-        xla_client.register_custom_call_target(xlaName, obj, platform="cpu")
+        if self._backend == "C++":
+            obj = self.basisClass.xlaCapsule
+            xlaName = "BasisFunc" + str(self.basisClass.identifier)
+            xlaName = xlaName.encode("utf-8")
+            xla_client.register_custom_call_target(xlaName, obj, platform="cpu")
 
         # Create Primitives
         H_p = core.Primitive("H")
@@ -526,33 +525,34 @@ class mtfc:
 
         H_p.def_abstract_eval(H_abstract_eval)
 
-        # XLA compilation
-        def H_xla(c, *x, d=d0, full=False):
-            c = _unpack_builder(c)
-            x_shape = c.get_shape(x[0])
-            dims = x_shape.dimensions()
-            dtype = x_shape.element_type()
-            dim0 = dims[0]
-            if full:
-                dim1 = self.basisClass.numBasisFuncFull
-            else:
-                dim1 = self.basisClass.numBasisFunc
-            return xla_client.ops.CustomCall(
-                c,
-                xlaName,
-                (
-                    _constant_s32_scalar(c, self.basisClass.identifier),
-                    xla_client.ops.ConcatInDim(c, x, 0),
-                    _constant_array(c, d),
-                    _constant_s32_scalar(c, self.dim),
-                    _constant_bool(c, full),
-                    _constant_s32_scalar(c, dim0),
-                    _constant_s32_scalar(c, dim1),
-                ),
-                xla_client.Shape.array_shape(dtype, (dim0, dim1)),
-            )
+        if self._backend == "C++":
+            # XLA compilation
+            def H_xla(c, *x, d=d0, full=False):
+                c = _unpack_builder(c)
+                x_shape = c.get_shape(x[0])
+                dims = x_shape.dimensions()
+                dtype = x_shape.element_type()
+                dim0 = dims[0]
+                if full:
+                    dim1 = self.basisClass.numBasisFuncFull
+                else:
+                    dim1 = self.basisClass.numBasisFunc
+                return xla_client.ops.CustomCall(
+                    c,
+                    xlaName,
+                    (
+                        _constant_s32_scalar(c, self.basisClass.identifier),
+                        xla_client.ops.ConcatInDim(c, x, 0),
+                        _constant_array(c, d),
+                        _constant_s32_scalar(c, self.dim),
+                        _constant_bool(c, full),
+                        _constant_s32_scalar(c, dim0),
+                        _constant_s32_scalar(c, dim1),
+                    ),
+                    xla_client.Shape.array_shape(dtype, (dim0, dim1)),
+                )
 
-        xla.backend_specific_translations["cpu"][H_p] = H_xla
+            xla.backend_specific_translations["cpu"][H_p] = H_xla
 
         # Batching translation
         def H_batch(vec, batch, d=d0, full=False):
