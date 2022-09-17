@@ -602,9 +602,12 @@ class ELM(BasisFunc):
         """
         super().__init__(x0, xf, nC, m, 0.0, 1.0)
 
-        self._w = np.random.uniform(low=-10.0, high=10.0, size=self._m)
+        dtype = np.array(self._c).dtype
+        one = np.ones(1,dtype=dtype)
+
+        self._w = np.random.uniform(low=-10.0, high=10.0, size=self._m)*one
         self._w = self._w.reshape((1, self._m))
-        self._b = np.random.uniform(low=-10.0, high=10.0, size=self._m)
+        self._b = np.random.uniform(low=-10.0, high=10.0, size=self._m)*one
         self._b = self._b.reshape((1, self._m))
 
     @property
@@ -1150,9 +1153,10 @@ class nELM(nBasisFunc):
         self._numBasisFunc = self._m - self._numC
         self._numBasisFuncFull = self._m
 
-        self._w = np.random.uniform(low=-1.0, high=1.0, size=self._dim * self._m)
+        one = np.ones(1, dtype=x0.dtype)
+        self._w = np.random.uniform(low=-1.0, high=1.0, size=self._dim * self._m)*one
         self._w = self._w.reshape((self._dim, self._m))
-        self._b = np.random.uniform(low=-1.0, high=1.0, size=self._m)
+        self._b = np.random.uniform(low=-1.0, high=1.0, size=self._m)*one
         self._b = self._b.reshape((1, self._m))
 
     @property
