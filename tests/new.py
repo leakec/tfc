@@ -51,7 +51,7 @@ xi = np.zeros(H(x).shape[1])
 xi, time = LS(xi,L,x,constant_arg_nums=[1], method="lstsq", timer=True)
 
 # Create test points
-numTest = 30
+numTest = 100
 r = np.linspace(0.,1.,numTest).reshape((1,numTest))
 th = np.linspace(0.,2*np.pi,numTest).reshape((numTest,1))
 x = r*np.sin(th)
@@ -74,6 +74,24 @@ p = MakePlot([["x<sub>real</sub>","x<sub>real</sub>"]],[["x<sub>imag</sub>","x<s
 
 p.Surface(x=np.real(test), y=np.imag(test), z=np.real(U), row=1, col=1, showscale=False)
 p.Surface(x=np.real(test), y=np.imag(test), z=np.imag(U), row=1, col=2, showscale=False)
+
+p.Scatter3d(x=[1.],
+            y=[1.],
+            z=[5.],
+            mode="markers",
+            marker=dict(color="red",size=5),
+            row = 1, col = 1
+           )
+p.Scatter3d(x=[1.],
+            y=[1.],
+            z=[0.],
+            mode="markers",
+            marker=dict(color="red",size=5),
+            row = 1, col = 2
+           )
+
 p.fig['layout']['scene']['aspectmode']='cube'
+p.view(azimuth=45,elevation=25, row=1, col=1)
+p.view(azimuth=45,elevation=25, row=1, col=2)
 p.FullScreen()
 p.show()
