@@ -14,10 +14,7 @@ def test_complex_ODE():
     realSoln = lambda x: 5.0 * np.exp(x) / np.exp(1+1.j)
 
     # Create UTFC class
-    a = np.sin(np.pi/4.)
-    x0 = 1-a + (1-a)*1.j
-    xf = 1+a + (1+a)*1.j
-    tfc = utfc(100, 0, 90, basis="ELMTanh", x0=x0, xf=xf, backend="Python")
+    tfc = utfc(100, 0, 95, basis="ELMTanh", x0=0.0+0.0j, xf=1.0+0.0j, backend="Python")
     H = tfc.H
 
     # Set weigths and biases
@@ -39,7 +36,7 @@ def test_complex_ODE():
     x = (real+imag).flatten() + 1. + 1.j
 
     # Create constrained expression
-    g = lambda x,xi: np.dot(H(x),xi)
+    g = lambda x,xi: np.dot(H(x-1.0-1.0j),xi)
     u = lambda x,xi: g(x,xi) + 5.0 - g((1+1.j)*np.ones_like(x),xi)
 
     # Create loss function
@@ -64,4 +61,4 @@ def test_complex_ODE():
     maxErr = np.max(np.abs(err))
 
     # Check results
-    assert(maxErr < 1e-8)
+    assert(maxErr < 1e-7)
