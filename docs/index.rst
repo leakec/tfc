@@ -15,6 +15,7 @@ Welcome to the documentation for TFC!
     :caption: Advanced TFC Tutorials
 
     notebooks/ODE_system
+    notebooks/Complex_ODE
 
 .. toctree::
      :maxdepth: 1
