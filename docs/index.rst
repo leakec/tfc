@@ -25,6 +25,7 @@ Welcome to the documentation for TFC!
      notebooks/NLLS
      notebooks/MakePlot
      notebooks/PlotlyMakePlot
+     notebooks/pejit
      notebooks/Latex
 
 .. toctree::
