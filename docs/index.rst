@@ -11,6 +11,16 @@ Welcome to the documentation for TFC!
     notebooks/PDE
 
 .. toctree::
+     :maxdepth: 1
+     :caption: Utilities Tutorials
+
+     notebooks/LS
+     notebooks/NLLS
+     notebooks/MakePlot
+     notebooks/PlotlyMakePlot
+     notebooks/Latex
+
+.. toctree::
     :maxdepth: 1
     :caption: Advanced TFC Tutorials
 
@@ -19,14 +29,10 @@ Welcome to the documentation for TFC!
 
 .. toctree::
      :maxdepth: 1
-     :caption: Utilities Tutorials
+     :caption: Advanced Utilities Tutorials
 
-     notebooks/LS
-     notebooks/NLLS
-     notebooks/MakePlot
-     notebooks/PlotlyMakePlot
      notebooks/pejit
-     notebooks/Latex
+     notebooks/BasisFunctionBackends
 
 .. toctree::
     :maxdepth: 1
