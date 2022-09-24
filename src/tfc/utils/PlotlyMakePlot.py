@@ -556,8 +556,8 @@ class MakePlot:
             ]
         )
         if row and col:
-            sceneNum = row + col - 2
-            if sceneNum == 0:
+            sceneNum = row + col - 1
+            if sceneNum == 1:
                 sceneNum = ""
             else:
                 sceneNum = str(sceneNum)
