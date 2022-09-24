@@ -52,6 +52,7 @@ setup(
         "numpy",
         "jax",
         "jaxlib",
+        "annotated-types",
         "matplotlib",
         "colorama",
         "graphviz",

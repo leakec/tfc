@@ -1,6 +1,7 @@
 numpy
 jax
 jaxlib
+annotated-types
 matplotlib
 plotly
 kaleido

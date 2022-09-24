@@ -4,7 +4,8 @@ config.update("jax_enable_x64", True)
 
 import numpy as onp
 import jax.numpy as np
-from jax import core, abstract_arrays, jvp
+from .utils.types import Literal
+from jax import core, abstract_arrays
 from jax.interpreters import ad, batching, xla
 from jax.lib import xla_client
 
@@ -43,7 +44,9 @@ class utfc:
         This optional keyword argument specifies the basis functions to be used. (Default value = "CP")
     """
 
-    def __init__(self, N, nC, deg, basis="CP", x0=None, xf=None):
+    def __init__(
+        self, N, nC, deg, basis="CP", x0=None, xf=None, backend: Literal["C++", "Python"] = "C++"
+    ):
         """
         Constructor for the utfc class.
 
@@ -63,11 +66,14 @@ class utfc:
             This required keyword argument specifies the end of the DE domain.
         basis : {"CP","LeP","FS","ELMTanh","ELMSigmoid","ELMSin","ELMSwish","ELMReLU"}, optional
             This optional keyword argument specifies the basis functions to be used. (Default value = "CP")
+        backend : Literal["C++", "Python"]
+            This optional keyword sets the backend used to compute the basis functions. The C++ can be used with JIT, but can only be used for doubles. The Python backend can be used for other field types, e.g., complex numbers, but does not have JIT translations. Instead, pejit must be used to set the basis function outputs as compile time constants in order to JIT.
         """
 
         # Store givens
         self.N = N
         self.deg = deg
+        self._backend = backend
 
         if isinstance(nC, int):
             self.nC = onp.arange(nC, dtype=onp.int32)
@@ -95,52 +101,44 @@ class utfc:
             self.xf = xf
 
         # Setup the basis function
+        if backend == "C++":
+            from .utils import BF
+        elif backend == "Python":
+            from .utils.BF import BF_Py as BF
+        else:
+            TFCPrint.Error(
+                f'The backend {backend} was specified, but can only be one of "C++" or "Python".'
+            )
         if self.basis == "CP":
-            from .utils.BF import CP
-
-            self.basisClass = CP(self.x0, self.xf, self.nC, self.deg + 1)
+            self.basisClass = BF.CP(self.x0, self.xf, self.nC, self.deg + 1)
             z0 = -1.0
             zf = 1.0
         elif self.basis == "LeP":
-            from .utils.BF import LeP
-
-            self.basisClass = LeP(self.x0, self.xf, self.nC, self.deg + 1)
+            self.basisClass = BF.LeP(self.x0, self.xf, self.nC, self.deg + 1)
             z0 = -1.0
             zf = 1.0
         elif self.basis == "FS":
-            from .utils.BF import FS
-
-            self.basisClass = FS(self.x0, self.xf, self.nC, self.deg + 1)
+            self.basisClass = BF.FS(self.x0, self.xf, self.nC, self.deg + 1)
             z0 = -np.pi
             zf = np.pi
         elif self.basis == "ELMReLU":
-            from .utils.BF import ELMReLU
-
-            self.basisClass = ELMReLU(self.x0, self.xf, self.nC, self.deg + 1)
+            self.basisClass = BF.ELMReLU(self.x0, self.xf, self.nC, self.deg + 1)
             z0 = 0.0
             zf = 1.0
         elif self.basis == "ELMSigmoid":
-            from .utils.BF import ELMSigmoid
-
-            self.basisClass = ELMSigmoid(self.x0, self.xf, self.nC, self.deg + 1)
+            self.basisClass = BF.ELMSigmoid(self.x0, self.xf, self.nC, self.deg + 1)
             z0 = 0.0
             zf = 1.0
         elif self.basis == "ELMTanh":
-            from .utils.BF import ELMTanh
-
-            self.basisClass = ELMTanh(self.x0, self.xf, self.nC, self.deg + 1)
+            self.basisClass = BF.ELMTanh(self.x0, self.xf, self.nC, self.deg + 1)
             z0 = 0.0
             zf = 1.0
         elif self.basis == "ELMSin":
-            from .utils.BF import ELMSin
-
-            self.basisClass = ELMSin(self.x0, self.xf, self.nC, self.deg + 1)
+            self.basisClass = BF.ELMSin(self.x0, self.xf, self.nC, self.deg + 1)
             z0 = 0.0
             zf = 1.0
         elif self.basis == "ELMSwish":
-            from .utils.BF import ELMSwish
-
-            self.basisClass = ELMSwish(self.x0, self.xf, self.nC, self.deg + 1)
+            self.basisClass = BF.ELMSwish(self.x0, self.xf, self.nC, self.deg + 1)
             z0 = 0.0
             zf = 1.0
         else:
@@ -151,7 +149,9 @@ class utfc:
         # Calculate z points and corresponding x
         if self.basis in ["CP", "LeP"]:
             n = self.N - 1
-            I = np.linspace(0, n, n + 1)
+            # Multiplying x0 by 0 below so the array I has the same
+            # type as x0.
+            I = np.linspace(0 * x0, n, n + 1)
             self.z = np.cos(np.pi * (n - I) / float(n))
             self.x = (self.z - z0) / self.c + self.x0
         else:
@@ -266,10 +266,11 @@ class utfc:
             return getattr(c, "_builder", c)
 
         # Regiser XLA function
-        obj = self.basisClass.xlaCapsule
-        xlaName = "BasisFunc" + str(self.basisClass.identifier)
-        xlaName = xlaName.encode("utf-8")
-        xla_client.register_custom_call_target(xlaName, obj, platform="cpu")
+        if self._backend == "C++":
+            obj = self.basisClass.xlaCapsule
+            xlaName = "BasisFunc" + str(self.basisClass.identifier)
+            xlaName = xlaName.encode("utf-8")
+            xla_client.register_custom_call_target(xlaName, obj, platform="cpu")
 
         # Create primitives
         H_p = core.Primitive("H")
@@ -297,32 +298,33 @@ class utfc:
 
         H_p.def_abstract_eval(H_abstract_eval)
 
-        # XLA compilation
-        def H_xla(c, x, d=0, full=False):
-            c = _unpack_builder(c)
-            x_shape = c.get_shape(x)
-            dims = x_shape.dimensions()
-            dtype = x_shape.element_type()
-            dim0 = dims[0]
-            if full:
-                dim1 = self.basisClass.m
-            else:
-                dim1 = self.basisClass.m - self.basisClass.numC
-            return xla_client.ops.CustomCall(
-                c,
-                xlaName,
-                (
-                    _constant_s32_scalar(c, self.basisClass.identifier),
-                    x,
-                    _constant_s32_scalar(c, d),
-                    _constant_bool(c, full),
-                    _constant_s32_scalar(c, dim0),
-                    _constant_s32_scalar(c, dim1),
-                ),
-                xla_client.Shape.array_shape(dtype, (dim0, dim1)),
-            )
+        if self._backend == "C++":
+            # XLA compilation
+            def H_xla(c, x, d=0, full=False):
+                c = _unpack_builder(c)
+                x_shape = c.get_shape(x)
+                dims = x_shape.dimensions()
+                dtype = x_shape.element_type()
+                dim0 = dims[0]
+                if full:
+                    dim1 = self.basisClass.m
+                else:
+                    dim1 = self.basisClass.m - self.basisClass.numC
+                return xla_client.ops.CustomCall(
+                    c,
+                    xlaName,
+                    (
+                        _constant_s32_scalar(c, self.basisClass.identifier),
+                        x,
+                        _constant_s32_scalar(c, d),
+                        _constant_bool(c, full),
+                        _constant_s32_scalar(c, dim0),
+                        _constant_s32_scalar(c, dim1),
+                    ),
+                    xla_client.Shape.array_shape(dtype, (dim0, dim1)),
+                )
 
-        xla.backend_specific_translations["cpu"][H_p] = H_xla
+            xla.backend_specific_translations["cpu"][H_p] = H_xla
 
         # Define batching translation
         def H_batch(vec, batch, d=0, full=False):
