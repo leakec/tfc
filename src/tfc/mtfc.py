@@ -5,7 +5,7 @@ config.update("jax_enable_x64", True)
 from copy import copy
 import numpy as onp
 import jax.numpy as np
-from typing import Literal
+from .utils.types import Literal
 from jax import core, abstract_arrays
 from jax.interpreters import ad, batching, xla
 from jax.lib import xla_client
