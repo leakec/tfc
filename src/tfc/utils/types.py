@@ -1,6 +1,7 @@
 import sys
 from typing import Union, Any
 import numpy as np
+import numpy.typing as npt
 
 if sys.version_info >= (3, 8):
     from typing import Literal
@@ -38,4 +39,7 @@ uint = Annotated[int, Ge(0)]
 Number = Union[int, float, complex]
 
 # Array-like of strings
-StrArrayLike = np._typing._array_like._ArrayLikeStr_co
+from numpy._typing._array_like import _ArrayLikeStr_co
+
+StrArrayLike = _ArrayLikeStr_co
+npt.ArrayLike
