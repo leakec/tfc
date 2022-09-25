@@ -3,6 +3,7 @@ from numpy import typing as npt
 from .types import List
 from typing import Optional
 
+
 class table:
     """This class is used to create the text needed for latex tables."""
 
@@ -40,7 +41,7 @@ class table:
         return " & ".join(strIn) + "\\\\\n"
 
     @staticmethod
-    def _Arr2Tab(arrIn: npt.NDArray, form: str ="%.4E", rowHeader: Optional[List[str]] = None):
+    def _Arr2Tab(arrIn: npt.NDArray, form: str = "%.4E", rowHeader: Optional[List[str]] = None):
         """
         This function transforms the 2-D numpy array (arrIn) into latex tabular format. The
         "form" argument specifies the number format to be used in the tabular environment.
@@ -102,7 +103,12 @@ class table:
         return "\\end{tabular}\n\\end{center}"
 
     @staticmethod
-    def SimpleTable(arrIn: npt.NDArray, form:str ="%.4E", colHeader:Optional[List[str]]=None, rowHeader:Optional[List[str]]=None) -> str:
+    def SimpleTable(
+        arrIn: npt.NDArray,
+        form: str = "%.4E",
+        colHeader: Optional[List[str]] = None,
+        rowHeader: Optional[List[str]] = None,
+    ) -> str:
         """This function creates a simple latex table for the 2D numpy array arrIn. The
         "form" argument specifies the number format to be used in the tabular environment.
         The "colHeader" arugment is a list of strings that are used as the first row in the

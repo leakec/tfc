@@ -4,6 +4,7 @@ from yattag import Doc, indent
 from .types import List
 from .types import Path
 
+
 class HTML:
     """
     This contains helper functions for creating HTML files with yattag.
@@ -92,7 +93,7 @@ class Dot:
         self._name = name
         self.dot = Digraph(name=self._name)
 
-    def Render(self, formats : List[str] = ["cmapx", "svg"]):
+    def Render(self, formats: List[str] = ["cmapx", "svg"]):
         """
         This function renders the dot graph as a .svg and as a .cmapx.
 

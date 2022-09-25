@@ -13,6 +13,7 @@ else:
 
 if sys.version_info >= (3, 9):
     from typing import Annotated
+
     List = list
     Tuple = tuple
 else:
