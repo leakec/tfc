@@ -27,7 +27,7 @@ class MakePlot:
         style: Optional[Union[str, Dict, Path, List[str], List[Dict], List[Path]]] = None,
     ):
         """
-        This function initializes subplots based on the inputs provided.
+        This function initializes the plot/subplots based on the inputs provided.
 
         Parameters
         ----------
