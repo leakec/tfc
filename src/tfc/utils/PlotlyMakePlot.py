@@ -553,7 +553,7 @@ class MakePlot:
         elevation: float,
         row: Optional[uint] = None,
         col: Optional[uint] = None,
-        viewDistance=Optional[float],
+        viewDistance: Optional[float] = None,
     ):
         """
         Change the view on the subplot specified by row and col or on
