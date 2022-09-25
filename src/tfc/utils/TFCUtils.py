@@ -19,19 +19,25 @@ from jax._src.api_util import flatten_fun, tree_flatten
 from jax.core import get_aval, eval_jaxpr
 from jax.interpreters.partial_eval import JaxprTracer, trace_to_jaxpr_nounits, PartialVal
 from jax.experimental.host_callback import id_tap
-from typing import List, Any, Callable
+from typing import Any
+from .types import uint, List, Callable
 
 
 class TFCPrint:
-    """This class is used to print to the terminal in color."""
+    """
+    This class is used to print to the terminal in color.
+    """
 
     def __init__(self):
-        """This function is the constructor. It initializes the colorama class."""
+        """
+        This function is the constructor. It initializes the colorama class.
+        """
         initColorama()
 
     @staticmethod
-    def Error(stringIn):
-        """This function prints errors. It prints the text in 'stringIn' in bright red and
+    def Error(stringIn: str):
+        """
+        This function prints errors. It prints the text in 'stringIn' in bright red and
         exits the program.
 
         Parameters
@@ -44,8 +50,9 @@ class TFCPrint:
         sys.exit()
 
     @staticmethod
-    def Warning(stringIn):
-        """This function prints warnings. It prints the text in 'stringIn' in bright yellow.
+    def Warning(stringIn: str):
+        """
+        This function prints warnings. It prints the text in 'stringIn' in bright yellow.
 
         Parameters
         ----------
@@ -56,15 +63,16 @@ class TFCPrint:
         print(style.RESET_ALL, end="")
 
 
-def egrad(g, j=0):
-    """This function mimics egrad from autograd.
+def egrad(g: Callable[..., Any], j: uint = 0):
+    """
+    This function mimics egrad from autograd.
 
     Parameters
     ----------
-    g : function
+    g : Callable[..., Any]
         Function to take the derivative of.
 
-    j : integer, optional
+    j : uint, optional
         Parameter with which to take the derivative with respect to. (Default value = 0)
 
     Returns
@@ -73,18 +81,18 @@ def egrad(g, j=0):
         Derivative function
     """
 
-    def wrapped(*args):
+    def wrapped(*args: Any) -> Any:
         """
         Wrapper for derivative of g with respect to parameter number j.
 
         Parameters
         ----------
-        *args : iterable
+        *args : Any
             function arguments to g
 
         Returns
         -------
-        x_bar: array-like
+        x_bar: Any
             derivative of g with respect to parameter number j
         """
         tans = tuple(
