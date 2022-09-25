@@ -84,7 +84,6 @@ class MakePlot:
         zlabs: Optional[StrArrayLike] = None,
     ):
         """
-
         This function initializes the plot/subplots based on the inputs provided.
 
         Parameters

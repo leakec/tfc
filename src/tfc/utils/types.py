@@ -1,7 +1,5 @@
-import os
 import sys
 from typing import Union, Any
-from numpy import typing as npt
 import numpy as np
 
 if sys.version_info >= (3, 8):
@@ -19,11 +17,12 @@ if sys.version_info >= (3, 9):
     List = list
     Tuple = tuple
     Dict = dict
+    Tuple = tuple
 else:
     from typing_extensions import Annotated
-    from typing import List, Tuple, Dict
+    from typing import List, Tuple, Dict, Tuple
 
-from annotated_types import Gt, Ge
+from annotated_types import Gt, Ge, Lt, Le
 
 # Path
 # Path = Union[str, os.PathLike]
