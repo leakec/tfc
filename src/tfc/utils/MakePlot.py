@@ -3,38 +3,38 @@ import pickle
 import numpy as np
 
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 
 from .TFCUtils import TFCPrint
+from .types import StrArrayLike, Path, List, Dict, Literal, pint
+from typing import Optional, Union, Generator, Callable
 
 TFCPrint()
 
 
 class MakePlot:
-    """This class is used to easily create journal-article-ready plots and subplots. The class can create 2D as well as 3D plots
+    """
+    This class is used to easily create journal-article-ready plots and subplots. The class can create 2D as well as 3D plots
     and even has support for twin y-axes.
-
-    Parameters
-    ----------
-    xlabs: list or array-like
-        The x-axes labels of for the plots
-    ylabs: list or array-like
-        The y-axes labels of for the plots
-    zlabs: list or array-like, optional
-        The z-axes labels of for the plots. Setting this forces subplots to be 3D. (Default value = None)
     """
 
-    def __init__(self, xlabs, ylabs, twinYlabs=None, titles=None, zlabs=None, style=None):
-        """This function initializes subplots based on the inputs provided.
+    def __init__(self, xlabs: StrArrayLike, ylabs: StrArrayLike, titles:Optional[StrArrayLike]=None, twinYlabs: Optional[StrArrayLike]=None, zlabs:Optional[StrArrayLike]=None, style:Optional[Union[str, Dict, Path, List[str], List[Dict], List[Path]]]=None):
+        """
+        This function initializes subplots based on the inputs provided.
 
         Parameters
         ----------
-        xlabs: list or array-like
-            The x-axes labels of for the plots
-        ylabs: list or array-like
-            The y-axes labels of for the plots
-        zlabs: list or array-like, optional
+        xlabs: StrArrayLike
+            The x-axes labels for the plots
+        ylabs: StrArrayLike
+            The y-axes labels for the plots
+        titles: StrArrayLike, optional
+            The titles for the plots. (Default value = None)
+        twinYlabs: StrArrayLike, optional
+            The twin y-axes labels for the plots. Setting this forces twin axis y-axes. (Default value = None)
+        zlabs: StrArrayLike, optional
             The z-axes labels of for the plots. Setting this forces subplots to be 3D. (Default value = None)
+        style : Union[str, Dict, Path, List[str], List[Dict], List[Path]]
+            Matplotlib style. (Default value = None)
         """
 
         # Apply a style if specified
@@ -179,7 +179,9 @@ class MakePlot:
         self.fig.tight_layout()
 
     def FullScreen(self):
-        """This function makes the plot fullscreen."""
+        """
+        This function makes the plot fullscreen.
+        """
 
         # Get screensize
         import tkinter as tk
@@ -193,8 +195,9 @@ class MakePlot:
         dpi = float(self.fig.get_dpi())
         self.fig.set_size_inches(width / dpi, height / dpi)
 
-    def PartScreen(self, width, height):
-        """This function makes the plot width x height inches.
+    def PartScreen(self, width: float, height: float):
+        """
+        This function makes the plot width x height inches.
 
         Parameters
         ----------
@@ -207,25 +210,28 @@ class MakePlot:
         self.fig.set_size_inches(width, height)
 
     def show(self):
-        """This function shows the plot."""
+        """
+        This function shows the plot.
+        """
         self.fig.show()
 
     def draw(self):
-        """This function draws the canvas."""
+        """
+        This function draws the canvas.
+        """
         self.fig.canvas.draw()
 
-    def save(self, fileName, transparent=True, fileType="pdf"):
-        """This function crops and saves the figure.
+    def save(self, fileName: Path, transparent: bool=True, fileType: Literal["png", "pdf", "ps", "eps", "svg"]="pdf"):
+        """
+        This function crops and saves the figure.
 
         Parameters
         ----------
-        fileName : str
+        fileName : Path
             Filename where the figure should be saved. Note, this should not include the file extension.
-
         transparent : bool, optional
             Whether to save the plot with transparency or not. (Default value = True)
-
-        fileType : str, optional
+        fileType : Literal["png", "pdf", "ps", "eps", "svg"], optional
             File exension to use. (Default value = "pdf")
         """
         self.fig.savefig(
@@ -237,51 +243,46 @@ class MakePlot:
             transparent=transparent,
         )
 
-    def savePickle(self, fileName):
+    def savePickle(self, fileName: Path):
         """This function saves the figure in a pickle format so it can be opened and modified later.
 
         Parameters
         ----------
-        fileName : str
+        fileName : Path
             Filename where the figure should be saved. Note, this should not include the file extension.
         """
         pickle.dump(self.fig, open(fileName + ".pickle", "wb"))
 
-    def saveAll(self, fileName, transparent=True, fileType="pdf"):
+    def saveAll(self, fileName: Path, transparent:bool=True, fileType:Literal["png", "pdf", "ps", "eps", "svg"]="pdf"):
         """This function invokes the save and savePickle functions.
 
         Parameters
         ----------
-        fileName : str
+        fileName : Path
             Filename where the figure should be saved. Note, this should not include the file extension.
-
         transparent : bool, optional
             Whether to save the plot with transparency or not. (Default value = True)
-
-        fileType : str, optional
+        fileType : Literal["png", "pdf", "ps", "eps", "svg"], optional
             File exension to use. (Default value = "pdf")
         """
         self.save(fileName, transparent=transparent, fileType=fileType)
         self.savePickle(fileName)
 
-    def animate(self, animFunc, outDir="MyMovie", fileName="images", save=True, delay=10):
-        """Creates an animation using a Python generator.
+    def animate(self, animFunc: Callable[[], Generator[None, None, None]], outDir:Path ="MyMovie", fileName:str="images", save:bool=True, delay:pint=10):
+        """
+        Creates an animation using a Python generator.
 
         Parameters
         ----------
-        animFunc : generator function
-            Function that modifies what is displayed on the plot
-
-        outDir : str, optional
+        animFunc: Callable[[], Generator[None, None, None]]
+            Function whose returned generator modifies what is displayed on the plot
+        outDir : Path, optional
              Directory to save frames in: only used if save = True. (Default value = "MyMovie")
-
         fileName : str, optional
              Filename for the frames: only used if save = True. (Default value = "images")
-
         save : bool, optional
              Controls whether the function saves the frames of the animation or not. (Default value = True)
-
-        delay : integer, optional
+        delay : pint, optional
              Delay in milliseconds between frames: only used if save = False. (Default value = 10)
         """
 
