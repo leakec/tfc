@@ -17,7 +17,15 @@ class MakePlot:
     and even has support for twin y-axes.
     """
 
-    def __init__(self, xlabs: StrArrayLike, ylabs: StrArrayLike, titles:Optional[StrArrayLike]=None, twinYlabs: Optional[StrArrayLike]=None, zlabs:Optional[StrArrayLike]=None, style:Optional[Union[str, Dict, Path, List[str], List[Dict], List[Path]]]=None):
+    def __init__(
+        self,
+        xlabs: StrArrayLike,
+        ylabs: StrArrayLike,
+        titles: Optional[StrArrayLike] = None,
+        twinYlabs: Optional[StrArrayLike] = None,
+        zlabs: Optional[StrArrayLike] = None,
+        style: Optional[Union[str, Dict, Path, List[str], List[Dict], List[Path]]] = None,
+    ):
         """
         This function initializes subplots based on the inputs provided.
 
@@ -221,7 +229,12 @@ class MakePlot:
         """
         self.fig.canvas.draw()
 
-    def save(self, fileName: Path, transparent: bool=True, fileType: Literal["png", "pdf", "ps", "eps", "svg"]="pdf"):
+    def save(
+        self,
+        fileName: Path,
+        transparent: bool = True,
+        fileType: Literal["png", "pdf", "ps", "eps", "svg"] = "pdf",
+    ):
         """
         This function crops and saves the figure.
 
@@ -253,7 +266,12 @@ class MakePlot:
         """
         pickle.dump(self.fig, open(fileName + ".pickle", "wb"))
 
-    def saveAll(self, fileName: Path, transparent:bool=True, fileType:Literal["png", "pdf", "ps", "eps", "svg"]="pdf"):
+    def saveAll(
+        self,
+        fileName: Path,
+        transparent: bool = True,
+        fileType: Literal["png", "pdf", "ps", "eps", "svg"] = "pdf",
+    ):
         """This function invokes the save and savePickle functions.
 
         Parameters
@@ -268,7 +286,14 @@ class MakePlot:
         self.save(fileName, transparent=transparent, fileType=fileType)
         self.savePickle(fileName)
 
-    def animate(self, animFunc: Callable[[], Generator[None, None, None]], outDir:Path ="MyMovie", fileName:str="images", save:bool=True, delay:pint=10):
+    def animate(
+        self,
+        animFunc: Callable[[], Generator[None, None, None]],
+        outDir: Path = "MyMovie",
+        fileName: str = "images",
+        save: bool = True,
+        delay: pint = 10,
+    ):
         """
         Creates an animation using a Python generator.
 

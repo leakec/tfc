@@ -26,7 +26,7 @@ else:
 from annotated_types import Gt, Ge
 
 # Path
-#Path = Union[str, os.PathLike]
+# Path = Union[str, os.PathLike]
 Path = str
 
 # Integer > 0
@@ -40,4 +40,3 @@ Number = Union[int, float, complex]
 
 # Array-like of strings
 StrArrayLike = np._typing._array_like._ArrayLikeStr_co
-
