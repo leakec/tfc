@@ -1,11 +1,13 @@
 import numpy as np
-
+from numpy import typing as npt
+from .types import List
+from typing import Optional
 
 class table:
     """This class is used to create the text needed for latex tables."""
 
     @staticmethod
-    def _Header(numCols):
+    def _Header(numCols: int) -> str:
         """This function creates the table header based on the number of columns.
 
         Parameters
@@ -21,13 +23,13 @@ class table:
         return "\\begin{center}\n\\begin{tabular}{" + "|c" * numCols + "|}\n"
 
     @staticmethod
-    def _colHeader(strIn):
+    def _colHeader(strIn: List[str]) -> str:
         """This function creates the column header based on the list of strings that are passed in
         via the input strIn.
 
         Parameters
         ----------
-        strIn : list
+        strIn : List[str]
             List of strings that form the column headers.
 
         Returns
@@ -38,8 +40,9 @@ class table:
         return " & ".join(strIn) + "\\\\\n"
 
     @staticmethod
-    def _Arr2Tab(arrIn, form="%.4E", rowHeader=None):
-        """This function transforms the 2-D numpy array (arrIn) into latex tabular format. The
+    def _Arr2Tab(arrIn: npt.NDArray, form: str ="%.4E", rowHeader: Optional[List[str]] = None):
+        """
+        This function transforms the 2-D numpy array (arrIn) into latex tabular format. The
         "form" argument specifies the number format to be used in the tabular environment.
         The "rowHeader" argument is a list of strings that are used in the first column of
         each row in the tabular environment. The latex tabular environment is returned as a
@@ -47,13 +50,13 @@ class table:
 
         Parameters
         ----------
-        arrIn : array-like
+        arrIn : NDArray
             Array to convert to Latex table.
 
         form : str, optional
              Format string for the table numbers. (Default value = "%.4E")
 
-        rowHeader : list, optional
+        rowHeader : Optional[List[str]]
              List of strings to use as the row headers. (Default value = None)
 
         Returns
@@ -92,12 +95,14 @@ class table:
         return out.rstrip()
 
     @staticmethod
-    def _Footer():
-        """This function creates the footer for the latex table."""
+    def _Footer() -> str:
+        """
+        This function creates the footer for the latex table.
+        """
         return "\\end{tabular}\n\\end{center}"
 
     @staticmethod
-    def SimpleTable(arrIn, form="%.4E", colHeader=None, rowHeader=None):
+    def SimpleTable(arrIn: npt.NDArray, form:str ="%.4E", colHeader:Optional[List[str]]=None, rowHeader:Optional[List[str]]=None) -> str:
         """This function creates a simple latex table for the 2D numpy array arrIn. The
         "form" argument specifies the number format to be used in the tabular environment.
         The "colHeader" arugment is a list of strings that are used as the first row in the
@@ -107,22 +112,22 @@ class table:
 
         Parameters
         ----------
-        arrIn : array-like
+        arrIn : NDArray
             Array to convert to Latex table.
 
         form : str, optional
              Format string for the table numbers. (Default value = "%.4E")
 
-        colHeader : list, optional
+        colHeader : Optional[List[str]]
             List of strings that form the column headers. (Default value = None)
 
-        rowHeader : list, optional
+        rowHeader : Optional[List[str]]
              List of strings to use as the row headers. (Default value = None)
 
         Returns
         -------
-            table : str
-                Latex table as a string.
+        table : str
+            Latex table as a string.
         """
 
         if colHeader is None and rowHeader is None:

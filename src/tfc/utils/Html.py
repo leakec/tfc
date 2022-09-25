@@ -99,7 +99,7 @@ class Dot:
         Parameters
         ----------
         formats : List[str], optional
-            List whose elementts dictate which formats to render the dot graph in. Default value = ["cmapx", "svg"]
+            List whose elementts dictate which formats to render the dot graph in. (Default value = ["cmapx", "svg"])
         """
         for f in formats:
             self.dot.render(self._outFile, format=f, cleanup=True, view=False)
