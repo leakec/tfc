@@ -19,8 +19,8 @@ from jax._src.api_util import flatten_fun, tree_flatten
 from jax.core import get_aval, eval_jaxpr
 from jax.interpreters.partial_eval import JaxprTracer, trace_to_jaxpr_nounits, PartialVal
 from jax.experimental.host_callback import id_tap
-from typing import Any
-from .types import uint, List, Callable
+from typing import Any, Callable
+from .types import uint, List
 
 
 class TFCPrint:
