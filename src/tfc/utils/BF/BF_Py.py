@@ -3,6 +3,7 @@ import jax.numpy as jnp
 from abc import ABC, abstractmethod
 from numpy import typing as npt
 from tfc.utils.types import uint, Number
+from typing import Callable, Tuple
 
 
 class BasisFunc(ABC):
@@ -28,19 +29,19 @@ class BasisFunc(ABC):
         """
         Initialize the basis class.
 
-        Parameters:
-        -----------
-        x0: Number
+        Parameters
+        ----------
+        x0 : Number
             Start of the problem domain.
-        xf: Number
+        xf : Number
             End of the problem domain.
-        nC: npt.NDArray
+        nC : npt.NDArray
             Basis functions to be removed
-        m: uint
+        m : uint
             Number of basis functions.
-        z0: Number
+        z0 : Number
             Start of the basis function domain.
-        zf: Number
+        zf : Number
             End of the basis function domain.
         """
 
@@ -60,19 +61,19 @@ class BasisFunc(ABC):
         """
         Returns the basis function matrix for the x with a derivative of order d.
 
-        Parameters:
-        -----------
-        x: NDArray
+        Parameters
+        ----------
+        x : NDArray
             Input array. Values to calculate the basis function for.
-        d: uint
+        d : uint
             Order of the derivative
-        full: bool
+        full : bool
             Whether to return the full basis function set, or remove
             the columns associated with self._nC.
 
-        Returns:
-        --------
-        H: NDArray
+        Returns
+        -------
+        H : NDArray
             The basis function values.
         """
 
@@ -90,16 +91,16 @@ class BasisFunc(ABC):
         """
         Internal method used to calcualte the basis function value.
 
-        Parameters:
-        -----------
-        z: NDArray
+        Parameters
+        ----------
+        z : NDArray
             Values to calculate the basis functions for.
-        d: uint
+        d : uint
             Derivative order.
 
-        Returns:
-        --------
-        H: NDArray
+        Returns
+        -------
+        H : NDArray
             Basis function values.
         """
         pass
@@ -110,8 +111,8 @@ class BasisFunc(ABC):
         Return the constants that map the problem domain to the basis
         function domain.
 
-        Returns:
-        --------
+        Returns
+        -------
         float
             The constant that maps the problem domain to the basis function
             domain.
@@ -135,15 +136,15 @@ class CP(BasisFunc):
         """
         Initialize the basis class.
 
-        Parameters:
-        -----------
-        x0: Number
+        Parameters
+        ----------
+        x0 : Number
             Start of the problem domain.
-        xf: Number
+        xf : Number
             End of the problem domain.
-        nC: npt.NDArray
+        nC : npt.NDArray
             Basis functions to be removed
-        m: uint
+        m:  uint
             Number of basis functions.
         """
         super().__init__(x0, xf, nC, m, -1.0, 1.0)
@@ -152,16 +153,16 @@ class CP(BasisFunc):
         """
         Internal method used to calcualte the CP basis function values.
 
-        Parameters:
-        -----------
-        z: NDArray
+        Parameters
+        ----------
+        z : NDArray
             Values to calculate the basis functions for.
-        d: uint
+        d : uint
             Derivative order.
 
-        Returns:
-        --------
-        H: NDArray
+        Returns
+        -------
+        H : NDArray
             Basis function values.
         """
         N = np.size(z)
@@ -186,7 +187,10 @@ class CP(BasisFunc):
             for k in range(2, self._m):
                 F[:, k : k + 1] = 2 * z * F[:, k - 1 : k] - F[:, k - 2 : k - 1]
 
-            def Recurse(dark, d, dCurr=0):
+            def Recurse(dark: npt.NDArray, d: uint, dCurr: uint = 0) -> npt.NDArray:
+                """
+                Take derivative recursively.
+                """
                 if dCurr == d:
                     return dark
                 else:
@@ -221,15 +225,15 @@ class LeP(BasisFunc):
         """
         Initialize the basis class.
 
-        Parameters:
-        -----------
-        x0: Number
+        Parameters
+        ----------
+        x0 : Number
             Start of the problem domain.
-        xf: Number
+        xf : Number
             End of the problem domain.
-        nC: npt.NDArray
+        nC : npt.NDArray
             Basis functions to be removed
-        m: uint
+        m : uint
             Number of basis functions.
         """
         super().__init__(x0, xf, nC, m, -1.0, 1.0)
@@ -238,16 +242,16 @@ class LeP(BasisFunc):
         """
         Internal method used to calcualte the LeP basis function values.
 
-        Parameters:
-        -----------
-        z: NDArray
+        Parameters
+        ----------
+        z : NDArray
             Values to calculate the basis functions for.
-        d: uint
+        d : uint
             Derivative order.
 
-        Returns:
-        --------
-        H: NDArray
+        Returns
+        -------
+        H : NDArray
             Basis function values.
         """
         N = np.size(z)
@@ -274,7 +278,10 @@ class LeP(BasisFunc):
                     (2.0 * k + 1.0) * z * F[:, k : k + 1] - k * F[:, k - 1 : k]
                 ) / (k + 1.0)
 
-            def Recurse(dark, d, dCurr=0):
+            def Recurse(dark: npt.NDArray, d: uint, dCurr: uint = 0) -> npt.NDArray:
+                """
+                Take derivative recursively.
+                """
                 if dCurr == d:
                     return dark
                 else:
@@ -303,16 +310,16 @@ class LaP(BasisFunc):
         """
         Internal method used to calcualte the LaP basis function values.
 
-        Parameters:
-        -----------
-        z: NDArray
+        Parameters
+        ----------
+        z : NDArray
             Values to calculate the basis functions for.
-        d: uint
+        d : uint
             Derivative order.
 
-        Returns:
-        --------
-        H: NDArray
+        Returns
+        -------
+        H : NDArray
             Basis function values.
         """
         N = np.size(z)
@@ -339,7 +346,10 @@ class LaP(BasisFunc):
                     (2.0 * k + 1.0 - z) * F[:, k : k + 1] - k * F[:, k - 1 : k]
                 ) / (k + 1.0)
 
-            def Recurse(dark, d, dCurr=0):
+            def Recurse(dark: npt.NDArray, d: uint, dCurr: uint = 0) -> npt.NDArray:
+                """
+                Take derivative recursively.
+                """
                 if dCurr == d:
                     return dark
                 else:
@@ -368,16 +378,16 @@ class HoPpro(BasisFunc):
         """
         Internal method used to calcualte the HoPpro basis function values.
 
-        Parameters:
-        -----------
-        z: NDArray
+        Parameters
+        ----------
+        z : NDArray
             Values to calculate the basis functions for.
-        d: uint
+        d : uint
             Derivative order.
 
-        Returns:
-        --------
-        H: NDArray
+        Returns
+        -------
+        H : NDArray
             Basis function valuesa
         """
         N = np.size(z)
@@ -402,7 +412,10 @@ class HoPpro(BasisFunc):
             for k in range(1, self._m - 1):
                 F[:, k + 1 : k + 2] = z * F[:, k : k + 1] - k * F[:, k - 1 : k]
 
-            def Recurse(dark, d, dCurr=0):
+            def Recurse(dark: npt.NDArray, d: uint, dCurr: uint = 0) -> npt.NDArray:
+                """
+                Take derivative recursively.
+                """
                 if dCurr == d:
                     return dark
                 else:
@@ -431,16 +444,16 @@ class HoPphy(BasisFunc):
         """
         Internal method used to calcualte the HoPpro basis function values.
 
-        Parameters:
-        -----------
-        z: NDArray
+        Parameters
+        ----------
+        z : NDArray
             Values to calculate the basis functions for.
-        d: uint
+        d : uint
             Derivative order.
 
-        Returns:
-        --------
-        H: NDArray
+        Returns
+        -------
+        H : NDArray
             Basis function valuesa
         """
         N = np.size(z)
@@ -465,7 +478,10 @@ class HoPphy(BasisFunc):
             for k in range(1, self._m - 1):
                 F[:, k + 1 : k + 2] = 2.0 * z * F[:, k : k + 1] - 2.0 * k * F[:, k - 1 : k]
 
-            def Recurse(dark, d, dCurr=0):
+            def Recurse(dark: npt.NDArray, d: uint, dCurr: uint = 0) -> npt.NDArray:
+                """
+                Take derivative recursively.
+                """
                 if dCurr == d:
                     return dark
                 else:
@@ -502,15 +518,15 @@ class FS(BasisFunc):
         """
         Initialize the basis class.
 
-        Parameters:
-        -----------
-        x0: Number
+        Parameters
+        ----------
+        x0 : Number
             Start of the problem domain.
-        xf: Number
+        xf : Number
             End of the problem domain.
-        nC: npt.NDArray
+        nC : npt.NDArray
             Basis functions to be removed
-        m: uint
+        m : uint
             Number of basis functions.
         """
         super().__init__(x0, xf, nC, m, -np.pi, np.pi)
@@ -519,16 +535,16 @@ class FS(BasisFunc):
         """
         Internal method used to calcualte the CP basis function values.
 
-        Parameters:
-        -----------
-        z: NDArray
+        Parameters
+        ----------
+        z : NDArray
             Values to calculate the basis functions for.
-        d: uint
+        d : uint
             Derivative order.
 
-        Returns:
-        --------
-        H: NDArray
+        Returns
+        -------
+        H : NDArray
             Basis function values.
         """
         N = np.size(z)
@@ -589,15 +605,15 @@ class ELM(BasisFunc):
         """
         Initialize the basis class.
 
-        Parameters:
-        -----------
-        x0: Number
+        Parameters
+        ----------
+        x0 : Number
             Start of the problem domain.
-        xf: Number
+        xf : Number
             End of the problem domain.
-        nC: npt.NDArray
+        nC : npt.NDArray
             Basis functions to be removed
-        m: uint
+        m : uint
             Number of basis functions.
         """
         super().__init__(x0, xf, nC, m, 0.0, 1.0)
@@ -614,6 +630,11 @@ class ELM(BasisFunc):
     def w(self) -> npt.NDArray:
         """
         Weights of the ELM
+
+        Returns
+        -------
+        NDArray
+            Weights of the ELM.
         """
         return self._w
 
@@ -621,6 +642,11 @@ class ELM(BasisFunc):
     def b(self) -> npt.NDArray:
         """
         Biases of the ELM
+
+        Returns
+        -------
+        NDArray
+            Biases of the ELM.
         """
         return self._b
 
@@ -628,6 +654,11 @@ class ELM(BasisFunc):
     def w(self, val: npt.NDArray) -> None:
         """
         Weights of the ELM.
+
+        Parameters
+        ----------
+        val : NDArray
+            New weights.
         """
         if val.size == self._m:
             self._w = val
@@ -642,6 +673,11 @@ class ELM(BasisFunc):
     def b(self, val: npt.NDArray) -> None:
         """
         Biases of the ELM.
+
+        Parameters
+        ----------
+        val : NDArray
+            New biases.
         """
         if val.size == self._m:
             self._b = val
@@ -658,16 +694,16 @@ class ELMReLU(ELM):
         """
         Internal method used to calcualte the ELMRelu basis function values.
 
-        Parameters:
-        -----------
-        z: NDArray
+        Parameters
+        ----------
+        z : NDArray
             Values to calculate the basis functions for.
-        d: uint
+        d : uint
             Derivative order.
 
-        Returns:
-        --------
-        H: NDArray
+        Returns
+        -------
+        H : NDArray
             Basis function values.
         """
 
@@ -684,16 +720,16 @@ class ELMSigmoid(ELM):
         """
         Internal method used to calcualte the ELMSigmoid basis function values.
 
-        Parameters:
-        -----------
-        z: NDArray
+        Parameters
+        ----------
+        z : NDArray
             Values to calculate the basis functions for.
-        d: uint
+        d : uint
             Derivative order.
 
-        Returns:
-        --------
-        H: NDArray
+        Returns
+        -------
+        H : NDArray
             Basis function values.
         """
 
@@ -701,7 +737,12 @@ class ELMSigmoid(ELM):
 
         f = lambda x: 1.0 / (1.0 + jnp.exp(-self._w * x - self._b))
 
-        def Recurse(dark, d, dCurr=0):
+        def Recurse(
+            dark: Callable[[npt.NDArray], jnp.ndarray], d: uint, dCurr: uint = 0
+        ) -> Callable[[npt.NDArray], jnp.ndarray]:
+            """
+            Take derivative recursively.
+            """
             if dCurr == d:
                 return dark
             else:
@@ -709,7 +750,7 @@ class ELMSigmoid(ELM):
                 dCurr += 1
                 return Recurse(dark2, d, dCurr=dCurr)
 
-        return Recurse(f, d)(z).to_py()
+        return np.asarray(Recurse(f, d)(z))
 
 
 class ELMTanh(ELM):
@@ -717,16 +758,16 @@ class ELMTanh(ELM):
         """
         Internal method used to calcualte the ELMTanh basis function values.
 
-        Parameters:
-        -----------
-        z: NDArray
+        Parameters
+        ----------
+        z : NDArray
             Values to calculate the basis functions for.
-        d: uint
+        d : uint
             Derivative order.
 
-        Returns:
-        --------
-        H: NDArray
+        Returns
+        -------
+        H : NDArray
             Basis function values.
         """
 
@@ -734,7 +775,12 @@ class ELMTanh(ELM):
 
         f = lambda x: jnp.tanh(self._w * x + self._b)
 
-        def Recurse(dark, d, dCurr=0):
+        def Recurse(
+            dark: Callable[[npt.NDArray], jnp.ndarray], d: uint, dCurr: uint = 0
+        ) -> Callable[[npt.NDArray], jnp.ndarray]:
+            """
+            Take derivative recursively.
+            """
             if dCurr == d:
                 return dark
             else:
@@ -742,7 +788,7 @@ class ELMTanh(ELM):
                 dCurr += 1
                 return Recurse(dark2, d, dCurr=dCurr)
 
-        return Recurse(f, d)(z).to_py()
+        return np.asarray(Recurse(f, d)(z))
 
 
 class ELMSin(ELM):
@@ -750,16 +796,16 @@ class ELMSin(ELM):
         """
         Internal method used to calcualte the ELMSin basis function values.
 
-        Parameters:
-        -----------
-        z: NDArray
+        Parameters
+        ----------
+        z : NDArray
             Values to calculate the basis functions for.
-        d: uint
+        d : uint
             Derivative order.
 
-        Returns:
-        --------
-        H: NDArray
+        Returns
+        -------
+        H : NDArray
             Basis function values.
         """
 
@@ -767,7 +813,12 @@ class ELMSin(ELM):
 
         f = lambda x: jnp.sin(self._w * x + self._b)
 
-        def Recurse(dark, d, dCurr=0):
+        def Recurse(
+            dark: Callable[[npt.NDArray], jnp.ndarray], d: uint, dCurr: uint = 0
+        ) -> Callable[[npt.NDArray], jnp.ndarray]:
+            """
+            Take derivative recursively.
+            """
             if dCurr == d:
                 return dark
             else:
@@ -775,7 +826,7 @@ class ELMSin(ELM):
                 dCurr += 1
                 return Recurse(dark2, d, dCurr=dCurr)
 
-        return Recurse(f, d)(z).to_py()
+        return np.asarray(Recurse(f, d)(z))
 
 
 class ELMSwish(ELM):
@@ -783,16 +834,16 @@ class ELMSwish(ELM):
         """
         Internal method used to calcualte the ELMSwish basis function values.
 
-        Parameters:
-        -----------
-        z: NDArray
+        Parameters
+        ----------
+        z : NDArray
             Values to calculate the basis functions for.
-        d: uint
+        d : uint
             Derivative order.
 
-        Returns:
-        --------
-        H: NDArray
+        Returns
+        -------
+        H : NDArray
             Basis function values.
         """
 
@@ -800,7 +851,12 @@ class ELMSwish(ELM):
 
         f = lambda x: (self._w * x + self._b) / (1.0 + jnp.exp(-self._w * x - self._b))
 
-        def Recurse(dark, d, dCurr=0):
+        def Recurse(
+            dark: Callable[[npt.NDArray], jnp.ndarray], d: uint, dCurr: uint = 0
+        ) -> Callable[[npt.NDArray], jnp.ndarray]:
+            """
+            Take derivative recursively.
+            """
             if dCurr == d:
                 return dark
             else:
@@ -808,7 +864,7 @@ class ELMSwish(ELM):
                 dCurr += 1
                 return Recurse(dark2, d, dCurr=dCurr)
 
-        return Recurse(f, d)(z).to_py()
+        return np.asarray(Recurse(f, d)(z))
 
 
 class nBasisFunc(BasisFunc):
@@ -829,19 +885,19 @@ class nBasisFunc(BasisFunc):
         """
         Initialize the basis class.
 
-        Parameters:
-        -----------
-        x0: NDArray
+        Parameters
+        ----------
+        x0 : NDArray
             Start of the problem domain.
-        xf: NDArray
+        xf : NDArray
             End of the problem domain.
-        nC: NDArray
+        nC : NDArray
             Basis functions to be removed
-        m: uint
+        m : uint
             Number of basis functions.
-        z0: Number
+        z0 : Number
             Start of the basis function domain.
-        zf: Number
+        zf : Number
             End of the basis function domain.
         """
 
@@ -863,7 +919,26 @@ class nBasisFunc(BasisFunc):
         self._numBasisFunc = self._NumBasisFunc(self._dim - 1, vec, full=False)
         self._numBasisFuncFull = self._NumBasisFunc(self._dim - 1, vec, full=True)
 
-    def _NumBasisFunc(self, dim: int, vec: npt.NDArray, n: int = 0, full: bool = False):
+    def _NumBasisFunc(self, dim: int, vec: npt.NDArray, n: int = 0, full: bool = False) -> int:
+        """
+        Calculate the number of basis functions.
+
+        Parameters
+        ----------
+        dim : int
+            Number of dimensions.
+        vec : NDArray
+            Vector used to keep track of the order of the basis function.
+        n : int, optional
+            Count of the number of basis functions so far. (Default value = 0)
+        full : bool, optional
+            If true, then does not remove basis functions based on self._nC. (Default value = False)
+
+        Returns
+        -------
+        int
+            Number of basis functions.
+        """
         if dim > 0:
             for x in range(self._m):
                 vec[dim] = x
@@ -890,8 +965,8 @@ class nBasisFunc(BasisFunc):
         Return the constants that map the problem domain to the basis
         function domain.
 
-        Returns:
-        --------
+        Returns
+        -------
         npt.NDArray
             The constants that map the problem domain to the basis function
             domain.
@@ -905,8 +980,8 @@ class nBasisFunc(BasisFunc):
         Return the number of basis functions once user-specified
         functions have been removed.
 
-        Returns:
-        --------
+        Returns
+        -------
         float:
             The number of basis functions once the user-specified
             functions have been removed.
@@ -920,8 +995,8 @@ class nBasisFunc(BasisFunc):
         Return the number of basis functions before the user-specified
         functions have been removed.
 
-        Returns:
-        --------
+        Returns
+        -------
         float:
             The number of basis functions before the user-specified
             functions have been removed.
@@ -933,20 +1008,20 @@ class nBasisFunc(BasisFunc):
         """
         Returns the basis function matrix for the x with a derivative of order d.
 
-        Parameters:
+        Parameters
         -----------
-        x: NDArray
+        x : NDArray
             Input array. Values to calculate the basis function for.
             Should be size dim x N.
-        d: NDArray
+        d : NDArray
             Order of the derivative
         full: bool
             Whether to return the full basis function set, or remove
             the columns associated with self._nC.
 
-        Returns:
-        --------
-        H: NDArray
+        Returns
+        -------
+        H : NDArray
             The basis function values.
         """
 
@@ -967,12 +1042,50 @@ class nBasisFunc(BasisFunc):
 
         # Define functions for use in generating the CP sheet
         def MultT(vec: npt.NDArray) -> npt.NDArray:
+            """
+            Creates basis functions for the multidimensional case by mulitplying the basis functions
+            for the single dimensional cases together.
+
+            Parameters
+            ----------
+            vec : NDArray
+                Used to track the basis functions used from the single dimensional cases.
+
+            Returns
+            -------
+            NDArray
+                Basis functions for the multidimensional case.
+            """
             tout = np.ones((N, 1), dtype=z.dtype)
             for k in range(self._dim):
                 tout *= T[:, vec[k, 0] : vec[k, 0] + 1, k]
             return tout
 
-        def Recurse(dim: int, out: npt.NDArray, vec: npt.NDArray, n: int = 0, full: bool = False):
+        def Recurse(
+            dim: int, out: npt.NDArray, vec: npt.NDArray, n: int = 0, full: bool = False
+        ) -> Tuple[npt.NDArray, int]:
+            """
+            Creates basis functions for the multidimensional case given the basis functions
+            for the single dimensional cases.
+
+            Parameters
+            ----------
+            dim : int
+                Number of dimensions.
+            out : NDArray
+                Basis function for the multidimensional case created so far.
+            n : int, optional
+                Count of the number of basis functions created so far. (Default value = 0)
+            full : bool, optional
+                If true, then does not remove basis functions based on self._nC. (Default value = False)
+
+            Returns
+            -------
+            out : NDArraY
+                Basis functions for the multidimensional case created so far.
+            n : int
+                Basis function count.
+            """
             if dim > 0:
                 for x in range(self._m):
                     vec[dim] = x
@@ -1024,15 +1137,15 @@ class nCP(nBasisFunc, CP):
         """
         Initialize the n-dimensional CP class.
 
-        Parameters:
-        -----------
-        x0: NDArray
+        Parameters
+        ----------
+        x0 : NDArray
             Start of the problem domain.
-        xf: NDArray
+        xf : NDArray
             End of the problem domain.
-        nC: NDArray
+        nC : NDArray
             Basis functions to be removed
-        m: uint
+        m : uint
             Number of basis functions.
         """
 
@@ -1054,15 +1167,15 @@ class nLeP(nBasisFunc, LeP):
         """
         Initialize the n-dimensional LeP class.
 
-        Parameters:
-        -----------
-        x0: NDArray
+        Parameters
+        ----------
+        x0 : NDArray
             Start of the problem domain.
-        xf: NDArray
+        xf : NDArray
             End of the problem domain.
-        nC: NDArray
+        nC : NDArray
             Basis functions to be removed
-        m: uint
+        m : uint
             Number of basis functions.
         """
 
@@ -1084,15 +1197,15 @@ class nFS(nBasisFunc, FS):
         """
         Initialize the n-dimensional FS class.
 
-        Parameters:
-        -----------
-        x0: NDArray
+        Parameters
+        ----------
+        x0 : NDArray
             Start of the problem domain.
-        xf: NDArray
+        xf : NDArray
             End of the problem domain.
-        nC: NDArray
+        nC : NDArray
             Basis functions to be removed
-        m: uint
+        m : uint
             Number of basis functions.
         """
 
@@ -1116,19 +1229,19 @@ class nELM(nBasisFunc):
         """
         Initialize the basis class.
 
-        Parameters:
-        -----------
-        x0: NDArray
+        Parameters
+        ----------
+        x0 : NDArray
             Start of the problem domain.
-        xf: NDArray
+        xf : NDArray
             End of the problem domain.
-        nC: NDArray
+        nC : NDArray
             Basis functions to be removed
-        m: uint
+        m : uint
             Number of basis functions.
-        z0: Number
+        z0 : Number
             Start of the basis function domain.
-        zf: Number
+        zf : Number
             End of the basis function domain.
         """
 
@@ -1163,6 +1276,11 @@ class nELM(nBasisFunc):
     def w(self) -> npt.NDArray:
         """
         Weights of the nELM
+
+        Returns
+        -------
+        NDArray
+            Weights of the ELM.
         """
         return self._w
 
@@ -1170,6 +1288,11 @@ class nELM(nBasisFunc):
     def b(self) -> npt.NDArray:
         """
         Biases of the nELM
+
+        Returns
+        -------
+        NDArray
+            Biases of the ELM.
         """
         return self._b
 
@@ -1177,6 +1300,11 @@ class nELM(nBasisFunc):
     def w(self, val: npt.NDArray) -> None:
         """
         Weights of the nELM.
+
+        Parameters
+        ----------
+        val : NDArray
+            New weights.
         """
         if val.size == self._m * self._dim:
             self._w = val
@@ -1191,6 +1319,11 @@ class nELM(nBasisFunc):
     def b(self, val: npt.NDArray) -> None:
         """
         Biases of the nELM.
+
+        Parameters
+        ----------
+        val : NDArray
+            New biases.
         """
         if val.size == self._m:
             self._b = val
@@ -1205,20 +1338,20 @@ class nELM(nBasisFunc):
         """
         Returns the basis function matrix for the x with a derivative of order d.
 
-        Parameters:
-        -----------
-        x: NDArray
+        Parameters
+        ----------
+        x : NDArray
             Input array. Values to calculate the basis function for.
             Should be size dim x N.
-        d: NDArray
+        d : NDArray
             Order of the derivative
-        full: bool
+        full : bool
             Whether to return the full basis function set, or remove
             the columns associated with self._nC.
 
-        Returns:
-        --------
-        H: NDArray
+        Returns
+        -------
+        H : NDArray
             The basis function values.
         """
 
@@ -1241,16 +1374,16 @@ class nELM(nBasisFunc):
         """
         Internal method used to calcualte the basis function value.
 
-        Parameters:
-        -----------
-        z: NDArray
+        Parameters
+        ----------
+        z : NDArray
             Values to calculate the basis functions for.
-        d: NDArray
+        d : NDArray
             Derivative order.
 
-        Returns:
-        --------
-        H: NDArray
+        Returns
+        -------
+        H : NDArray
             Basis function values.
         """
         pass
@@ -1271,16 +1404,16 @@ class nELMReLU(nELM):
         """
         Internal method used to calcualte the basis function value.
 
-        Parameters:
-        -----------
-        z: NDArray
+        Parameters
+        ----------
+        z : NDArray
             Values to calculate the basis functions for.
-        d: NDArray
+        d : NDArray
             Derivative order.
 
-        Returns:
-        --------
-        H: NDArray
+        Returns
+        -------
+        H : NDArray
             Basis function values.
         """
         ind = -1
@@ -1314,16 +1447,16 @@ class nELMSin(nELM):
         """
         Internal method used to calcualte the basis function value.
 
-        Parameters:
-        -----------
-        z: NDArray
+        Parameters
+        ----------
+        z : NDArray
             Values to calculate the basis functions for.
-        d: NDArray
+        d : NDArray
             Derivative order.
 
-        Returns:
-        --------
-        H: NDArray
+        Returns
+        -------
+        H : NDArray
             Basis function values.
         """
 
@@ -1333,7 +1466,9 @@ class nELMSin(nELM):
 
         z = jnp.split(z, z.shape[1], axis=1)
 
-        def Recurse(dark, d, dim, dCurr=0):
+        def Recurse(
+            dark: Callable[[npt.NDArray], jnp.ndarray], d: uint, dim: uint, dCurr: uint = 0
+        ) -> Callable[[npt.NDArray], jnp.ndarray]:
             if dCurr == d:
                 return dark
             else:
@@ -1347,7 +1482,7 @@ class nELMSin(nELM):
             dark2 *= self._c[dim] ** deriv
             dark = Recurse(dark, deriv, dim)
 
-        return (dark(*z) * dark2).to_py()
+        return np.asarray((dark(*z) * dark2))
 
 
 class nELMTanh(nELM):
@@ -1359,15 +1494,15 @@ class nELMTanh(nELM):
         """
         Internal method used to calcualte the basis function value.
 
-        Parameters:
-        -----------
-        z: NDArray
+        Parameters
+        ----------
+        z : NDArray
             Values to calculate the basis functions for.
-        d: NDArray
+        d : NDArray
             Derivative order.
 
-        Returns:
-        --------
+        Returns
+        -------
         H: NDArray
             Basis function values.
         """
@@ -1378,7 +1513,9 @@ class nELMTanh(nELM):
 
         z = jnp.split(z, z.shape[1], axis=1)
 
-        def Recurse(dark, d, dim, dCurr=0):
+        def Recurse(
+            dark: Callable[[npt.NDArray], jnp.ndarray], d: uint, dim: uint, dCurr: uint = 0
+        ) -> Callable[[npt.NDArray], jnp.ndarray]:
             if dCurr == d:
                 return dark
             else:
@@ -1392,7 +1529,7 @@ class nELMTanh(nELM):
             dark2 *= self._c[dim] ** deriv
             dark = Recurse(dark, deriv, dim)
 
-        return (dark(*z) * dark2).to_py()
+        return np.asarray((dark(*z) * dark2))
 
 
 class nELMSigmoid(nELM):
@@ -1423,7 +1560,9 @@ class nELMSigmoid(nELM):
 
         z = jnp.split(z, z.shape[1], axis=1)
 
-        def Recurse(dark, d, dim, dCurr=0):
+        def Recurse(
+            dark: Callable[[npt.NDArray], jnp.ndarray], d: uint, dim: uint, dCurr: uint = 0
+        ) -> Callable[[npt.NDArray], jnp.ndarray]:
             if dCurr == d:
                 return dark
             else:
@@ -1437,7 +1576,7 @@ class nELMSigmoid(nELM):
             dark2 *= self._c[dim] ** deriv
             dark = Recurse(dark, deriv, dim)
 
-        return (dark(*z) * dark2).to_py()
+        return np.asarray((dark(*z) * dark2))
 
 
 class nELMSwish(nELM):
@@ -1449,16 +1588,16 @@ class nELMSwish(nELM):
         """
         Internal method used to calcualte the basis function value.
 
-        Parameters:
-        -----------
-        z: NDArray
+        Parameters
+        ----------
+        z : NDArray
             Values to calculate the basis functions for.
-        d: NDArray
+        d : NDArray
             Derivative order.
 
-        Returns:
-        --------
-        H: NDArray
+        Returns
+        -------
+        H : NDArray
             Basis function values.
         """
 
@@ -1470,7 +1609,9 @@ class nELMSwish(nELM):
 
         z = jnp.split(z, z.shape[1], axis=1)
 
-        def Recurse(dark, d, dim, dCurr=0):
+        def Recurse(
+            dark: Callable[[npt.NDArray], jnp.ndarray], d: uint, dim: uint, dCurr: uint = 0
+        ) -> Callable[[npt.NDArray], jnp.ndarray]:
             if dCurr == d:
                 return dark
             else:
@@ -1484,4 +1625,4 @@ class nELMSwish(nELM):
             dark2 *= self._c[dim] ** deriv
             dark = Recurse(dark, deriv, dim)
 
-        return (dark(*z) * dark2).to_py()
+        return np.asarray((dark(*z) * dark2))
