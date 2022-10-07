@@ -2,6 +2,7 @@ import sys
 from typing import Union, Any
 import numpy as np
 import numpy.typing as npt
+import jax.numpy as jnp
 
 if sys.version_info >= (3, 8):
     from typing import Literal
@@ -39,7 +40,10 @@ uint = Annotated[int, Ge(0)]
 Number = Union[int, float, complex]
 
 # Array-like of strings
-from numpy._typing._array_like import _ArrayLikeStr_co
+from numpy._typing._array_like import _ArrayLikeStr_co, _ArrayLikeInt_co
 
 StrArrayLike = _ArrayLikeStr_co
-npt.ArrayLike
+IntArrayLike = _ArrayLikeInt_co
+
+# JAX array or numpy array
+JaxOrNumpyArray = Union[npt.NDArray, jnp.ndarray]

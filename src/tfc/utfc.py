@@ -4,7 +4,9 @@ config.update("jax_enable_x64", True)
 
 import numpy as onp
 import jax.numpy as np
-from .utils.types import Literal
+import numpy.typing as npt
+from typing import Optional, cast
+from .utils.types import Literal, Number, uint, IntArrayLike, JaxOrNumpyArray
 from jax import core, abstract_arrays
 from jax.interpreters import ad, batching, xla
 from jax.lib import xla_client
@@ -28,24 +30,33 @@ class utfc:
     ----------
     N : int
         Number of points to use when discretizing the domain.
-    nC : int or list or array-like
+    nC : IntArrayLike
         Number of functions to remove from the free function linear expansion. This variable is used to account for basis functions that are linearly dependent on support functions used in the construction of the constrained expressions. It can be expressed in 1 of 2 ways.
 
         1. As an integer. When expressed as an integer, the first nC basis functions are removed from the free function.
         2. As a list or array. When expressed as a list or array, the basis functions corresponding to the numbers given by the list or array are removed from the free function.
 
-    m : int
+    deg : int
         Degree of the basis function expansion. This number is one less than the number of basis functions used before removing those specified by nC.
     x0 : float, optional
         Specifies the beginning of the DE domain. (Default value = 0)
     xf : float
         This required keyword argument specifies the end of the DE domain.
-    basis : {"CP","LeP","FS","ELMTanh","ELMSigmoid","ELMSin","ELMSwish","ELMReLU"}, optional
+    basis : Literal["CP","LeP","FS","ELMTanh","ELMSigmoid","ELMSin","ELMSwish","ELMReLU"], optional
         This optional keyword argument specifies the basis functions to be used. (Default value = "CP")
     """
 
     def __init__(
-        self, N, nC, deg, basis="CP", x0=None, xf=None, backend: Literal["C++", "Python"] = "C++"
+        self,
+        N: uint,
+        nC: IntArrayLike,
+        deg: uint,
+        basis: Literal[
+            "CP", "LeP", "FS", "ELMTanh", "ELMSigmoid", "ELMSin", "ELMSwish", "ELMReLU"
+        ] = "CP",
+        x0: Optional[float] = None,
+        xf: Optional[float] = None,
+        backend: Literal["C++", "Python"] = "C++",
     ):
         """
         Constructor for the utfc class.
@@ -58,7 +69,7 @@ class utfc:
             Number of functions to remove from the free function linear expansion. This variable is used to account for basis functions that are linearly dependent on support functions used in the construction of the constrained expressions. It can be expressed in 1 of 2 ways.
             1. As an integer. When expressed as an integer, the first nC basis functions are removed from the free function.
             2. As a list or array. When expressed as a list or array, the basis functions corresponding to the numbers given by the list or array are removed from the free function.
-        m : int
+        deg : int
             Degree of the basis function expansion. This number is one less than the number of basis functions used before removing those specified by nC.
         x0 : float, optional
             Specifies the beginning of the DE domain. (Default value = 0)
@@ -76,11 +87,11 @@ class utfc:
         self._backend = backend
 
         if isinstance(nC, int):
-            self.nC = onp.arange(nC, dtype=onp.int32)
+            self.nC: npt.NDArray = onp.arange(nC, dtype=onp.int32)
         elif isinstance(nC, np.ndarray):
-            self.nC = nC.astype(onp.int32)
+            self.nC: npt.NDArray = cast(npt.NDArray, nC.astype(onp.int32))
         elif isinstance(nC, list):
-            self.nC = np.array(nC, dtype=np.int32)
+            self.nC: npt.NDArray = np.array(nC, dtype=np.int32)
         if self.nC.shape[0] > self.deg:
             TFCPrint.Error("Number of basis functions is less than number of constraints!")
         if np.any(self.nC < 0):
@@ -151,7 +162,7 @@ class utfc:
             n = self.N - 1
             # Multiplying x0 by 0 below so the array I has the same
             # type as x0.
-            I = np.linspace(0 * x0, n, n + 1)
+            I = np.linspace(0 * self.x0, n, n + 1)
             self.z = np.cos(np.pi * (n - I) / float(n))
             self.x = (self.z - z0) / self.c + self.x0
         else:
@@ -160,13 +171,13 @@ class utfc:
 
         self._SetupJax()
 
-    def H(self, x, full=False):
+    def H(self, x: JaxOrNumpyArray, full: bool = False) -> npt.NDArray:
         """
         This function computes the basis function matrix for the points specified by x.
 
         Parameters
         ----------
-        x : array-like
+        x : JaxOrNumpyArray
             Points to calculate the basis functions at.
 
         full : bool, optional
@@ -174,17 +185,17 @@ class utfc:
 
         Returns
         -------
-        H : array-like
+        H : NDArray
             Basis function matrix.
         """
         return self._Hjax(x, d=0, full=full)
 
-    def dH(self, x, full=False):
+    def dH(self, x: JaxOrNumpyArray, full: bool = False) -> npt.NDArray:
         """This function computes the deriative of H. See documentation of 'H' for more details.
 
         Parameters
         ----------
-        x : array-like
+        x : JaxOrNumpyArray
             Points to calculate the basis functions at.
 
         full : bool, optional
@@ -192,17 +203,17 @@ class utfc:
 
         Returns
         -------
-        H : array-like
+        H : NDArray
             Derivative of the basis function matrix.
         """
         return self._Hjax(x, d=1, full=full)
 
-    def d2H(self, x, full=False):
+    def d2H(self, x: JaxOrNumpyArray, full: bool = False) -> npt.NDArray:
         """This function computes the second deriative of H. See documentation of H for more details.
 
         Parameters
         ----------
-        x : array-like
+        x : JaxOrNumpyArray
             Points to calculate the basis functions at.
 
         full : bool, optional
@@ -210,17 +221,17 @@ class utfc:
 
         Returns
         -------
-        d2H : array-like
+        d2H : NDArray
             Second derivative of the basis function matrix.
         """
         return self._Hjax(x, d=2, full=full)
 
-    def d4H(self, x, full=False):
+    def d4H(self, x: JaxOrNumpyArray, full: bool = False) -> npt.NDArray:
         """This function computes the fourth deriative of H. See documentation of H for more details.
 
         Parameters
         ----------
-        x : array-like
+        x : JaxOrNumpyArray
             Points to calculate the basis functions at.
 
         full : bool, optional
@@ -228,17 +239,17 @@ class utfc:
 
         Returns
         -------
-        d4H : array-like
+        d4H : NDArray
             Fourth derivative of the basis function matrix.
         """
         return self._Hjax(x, d=4, full=full)
 
-    def d8H(self, x, full=False):
+    def d8H(self, x: JaxOrNumpyArray, full: bool = False) -> npt.NDArray:
         """This function computes the eighth deriative of H. See documentation of H for more details.
 
         Parameters
         ----------
-        x : array-like
+        x : JaxOrNumpyArray
             Points to calculate the basis functions at.
 
         full : bool, optional
@@ -246,7 +257,7 @@ class utfc:
 
         Returns
         -------
-        d8H : array-like
+        d8H : NDArray
             Eighth derivative of the basis function matrix.
         """
         return self._Hjax(x, d=8, full=full)
@@ -275,17 +286,19 @@ class utfc:
         # Create primitives
         H_p = core.Primitive("H")
 
-        def Hjax(x, d=0, full=False):
-            return H_p.bind(x, d=d, full=full)
+        def Hjax(x: JaxOrNumpyArray, d: uint = 0, full: bool = False) -> npt.NDArray:
+            return cast(npt.NDArray, H_p.bind(x, d=d, full=full))
 
         # Implicit translation
-        def H_impl(x, d=0, full=False):
+        def H_impl(x: npt.NDArray, d: uint = 0, full=False) -> npt.NDArray:
             return self.basisClass.H(x, d, full)
 
         H_p.def_impl(H_impl)
 
         # Abstract evaluation
-        def H_abstract_eval(x, d=0, full=False):
+        def H_abstract_eval(
+            x: npt.NDArray, d: uint = 0, full: bool = False
+        ) -> abstract_arrays.ShapedArray:
             if full:
                 dim1 = self.basisClass.m
             else:
@@ -300,7 +313,7 @@ class utfc:
 
         if self._backend == "C++":
             # XLA compilation
-            def H_xla(c, x, d=0, full=False):
+            def H_xla(c, x, d: uint = 0, full: bool = False):
                 c = _unpack_builder(c)
                 x_shape = c.get_shape(x)
                 dims = x_shape.dimensions()
@@ -327,13 +340,13 @@ class utfc:
             xla.backend_specific_translations["cpu"][H_p] = H_xla
 
         # Define batching translation
-        def H_batch(vec, batch, d=0, full=False):
+        def H_batch(vec, batch, d: uint = 0, full: bool = False):
             return Hjax(*vec, d=d, full=full), batch[0]
 
         batching.primitive_batchers[H_p] = H_batch
 
         # Define jacobain vector product
-        def H_jvp(arg_vals, arg_tans, d=0, full=False):
+        def H_jvp(arg_vals, arg_tans, d: uint = 0, full: bool = False):
             x = arg_vals[0]
             dx = arg_tans[0]
             if not (dx is ad.Zero):
@@ -386,13 +399,13 @@ class HybridUtfc:
             TFCPrint.Error("Not all TFC classes provided have the same number of points.")
         self._tfcClasses = tfcClasses
 
-    def H(self, x, full=False):
+    def H(self, x: JaxOrNumpyArray, full: bool = False) -> npt.NDArray:
         """
         This function computes the basis function matrix for the points specified by x.
 
         Parameters
         ----------
-        x : array-like
+        x : JaxOrNumpyArray
             Points to calculate the basis functions at.
 
         full : bool, optional
@@ -400,18 +413,21 @@ class HybridUtfc:
 
         Returns
         -------
-        H : array-like
+        H : NDArray
             Basis function matrix.
         """
-        return np.hstack([k._Hjax(x, d=0, full=full) for j, k in enumerate(self._tfcClasses)])
+        return cast(
+            npt.NDArray,
+            np.hstack([k._Hjax(x, d=0, full=full) for j, k in enumerate(self._tfcClasses)]),
+        )
 
-    def dH(self, x, full=False):
+    def dH(self, x: JaxOrNumpyArray, full: bool = False) -> npt.NDArray:
         """
         This function computes the derivative of the basis function matrix for the points specified by x.
 
         Parameters
         ----------
-        x : array-like
+        x : JaxOrNumpyArray
             Points to calculate the basis functions at.
 
         full : bool, optional
@@ -419,18 +435,21 @@ class HybridUtfc:
 
         Returns
         -------
-        dH : array-like
+        dH : NDArray
             Derivative of the basis function matrix.
         """
-        return np.hstack([k._Hjax(x, d=1, full=full) for j, k in enumerate(self._tfcClasses)])
+        return cast(
+            npt.NDArray,
+            np.hstack([k._Hjax(x, d=1, full=full) for j, k in enumerate(self._tfcClasses)]),
+        )
 
-    def d2H(self, x, full=False):
+    def d2H(self, x: JaxOrNumpyArray, full: bool = False) -> npt.NDArray:
         """
         This function computes the second derivative of the basis function matrix for the points specified by x.
 
         Parameters
         ----------
-        x : array-like
+        x : JaxOrNumpyArray
             Points to calculate the basis functions at.
 
         full : bool, optional
@@ -438,18 +457,21 @@ class HybridUtfc:
 
         Returns
         -------
-        d2H : array-like
+        d2H : NDArray
             Second derivative of the basis function matrix.
         """
-        return np.hstack([k._Hjax(x, d=2, full=full) for j, k in enumerate(self._tfcClasses)])
+        return cast(
+            npt.NDArray,
+            np.hstack([k._Hjax(x, d=2, full=full) for j, k in enumerate(self._tfcClasses)]),
+        )
 
-    def d3H(self, x, full=False):
+    def d3H(self, x: JaxOrNumpyArray, full: bool = False) -> npt.NDArray:
         """
         This function computes the third derivative of the basis function matrix for the points specified by x.
 
         Parameters
         ----------
-        x : array-like
+        x : JaxOrNumpyArray
             Points to calculate the basis functions at.
 
         full : bool, optional
@@ -457,18 +479,21 @@ class HybridUtfc:
 
         Returns
         -------
-        d3H : array-like
+        d3H : NDArray
             Third derivative of the basis function matrix.
         """
-        return np.hstack([k._Hjax(x, d=3, full=full) for j, k in enumerate(self._tfcClasses)])
+        return cast(
+            npt.NDArray,
+            np.hstack([k._Hjax(x, d=3, full=full) for j, k in enumerate(self._tfcClasses)]),
+        )
 
-    def d4H(self, x, full=False):
+    def d4H(self, x: JaxOrNumpyArray, full: bool = False) -> npt.NDArray:
         """
         This function computes the fourth derivative of the basis function matrix for the points specified by x.
 
         Parameters
         ----------
-        x : array-like
+        x : JaxOrNumpyArray
             Points to calculate the basis functions at.
 
         full : bool, optional
@@ -476,18 +501,21 @@ class HybridUtfc:
 
         Returns
         -------
-        d4H : array-like
+        d4H : NDArray
             Fourth derivative of the basis function matrix.
         """
-        return np.hstack([k._Hjax(x, d=4, full=full) for j, k in enumerate(self._tfcClasses)])
+        return cast(
+            npt.NDArray,
+            np.hstack([k._Hjax(x, d=4, full=full) for j, k in enumerate(self._tfcClasses)]),
+        )
 
-    def d8H(self, x, full=False):
+    def d8H(self, x: JaxOrNumpyArray, full: bool = False) -> npt.NDArray:
         """
         This function computes the eighth derivative of the basis function matrix for the points specified by x.
 
         Parameters
         ----------
-        x : array-like
+        x : JaxOrNumpyArray
             Points to calculate the basis functions at.
 
         full : bool, optional
@@ -495,7 +523,10 @@ class HybridUtfc:
 
         Returns
         -------
-        d8H : array-like
+        d8H : NDArray
             Eighth derivative of the basis function matrix.
         """
-        return np.hstack([k._Hjax(x, d=8, full=full) for j, k in enumerate(self._tfcClasses)])
+        return cast(
+            npt.NDArray,
+            np.hstack([k._Hjax(x, d=8, full=full) for j, k in enumerate(self._tfcClasses)]),
+        )
