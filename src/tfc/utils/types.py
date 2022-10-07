@@ -39,11 +39,30 @@ uint = Annotated[int, Ge(0)]
 # General number type
 Number = Union[int, float, complex]
 
-# Array-like of strings
 from numpy._typing._array_like import _ArrayLikeStr_co, _ArrayLikeInt_co
 
+# Array-like of strings
 StrArrayLike = _ArrayLikeStr_co
+
+# Array-like of integers
 IntArrayLike = _ArrayLikeInt_co
+
+# List or array like
+NumberListOrArray = Union[Tuple[Number], List[Number], npt.NDArray[Any]]
+
+# List or array of integers
+IntListOrArray = Union[
+    Tuple[int],
+    List[int],
+    npt.NDArray[np.int32],
+    npt.NDArray[np.int64],
+    npt.NDArray[np.int16],
+    npt.NDArray[np.int8],
+]
 
 # JAX array or numpy array
 JaxOrNumpyArray = Union[npt.NDArray, jnp.ndarray]
+
+# Tuple or list of array
+TupleOrListOfArray = Union[Tuple[JaxOrNumpyArray], List[JaxOrNumpyArray]]
+TupleOrListOfNumpyArray = Union[Tuple[npt.NDArray], List[npt.NDArray]]
