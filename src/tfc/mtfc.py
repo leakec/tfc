@@ -15,7 +15,7 @@ from .utils.types import (
     NumberListOrArray,
     TupleOrListOfArray,
     TupleOrListOfNumpyArray,
-    IntArrayLike
+    IntArrayLike,
 )
 from jax import core, abstract_arrays
 from jax.interpreters import ad, batching, xla
@@ -192,7 +192,9 @@ class mtfc:
                 )
         else:
             if isinstance(nC, int):
-                TFCPrint.Error("Cannot use type int for nC when specifying non-ELM type basis function.")
+                TFCPrint.Error(
+                    "Cannot use type int for nC when specifying non-ELM type basis function."
+                )
             # Using explicit type casts here to keep LSPs happy. At this point, we know nC is not a regular integer.
             if isinstance(nC, np.ndarray) and len(nC.shape) > 1:
                 if not nC.shape[0] == self.dim:
@@ -207,20 +209,20 @@ class mtfc:
             else:
                 if isinstance(nC, np.ndarray):
                     nC = nC.tolist()
-                if not len(cast(IntListOrArray,nC)) == dim:
+                if not len(cast(IntListOrArray, nC)) == dim:
                     TFCPrint.Error(
                         "nC has length "
-                        + str(len(cast(IntListOrArray,nC)))
+                        + str(len(cast(IntListOrArray, nC)))
                         + ", but it should be equal to the number of dimensions, "
                         + str(dim)
                         + "."
                     )
                 nCmax = 0
                 for k in range(dim):
-                    if isinstance(cast(IntListOrArray,nC)[k], np.ndarray):
-                        nCk = np.array(cast(IntListOrArray,nC)[k]).flatten()
+                    if isinstance(cast(IntListOrArray, nC)[k], np.ndarray):
+                        nCk = np.array(cast(IntListOrArray, nC)[k]).flatten()
                     else:
-                        nCk = np.array([cast(IntListOrArray,nC)[k]]).flatten()
+                        nCk = np.array([cast(IntListOrArray, nC)[k]]).flatten()
                     if nCk.shape[0] == 1:
                         maxk = nCk[0]
                     else:
@@ -235,10 +237,10 @@ class mtfc:
 
                 onC = onp.zeros((dim, nCmax))
                 for k in range(dim):
-                    if isinstance(cast(IntListOrArray,nC)[k], np.ndarray):
-                        nCk = np.array(cast(IntListOrArray,nC)[k]).flatten()
+                    if isinstance(cast(IntListOrArray, nC)[k], np.ndarray):
+                        nCk = np.array(cast(IntListOrArray, nC)[k]).flatten()
                     else:
-                        nCk = onp.array([cast(IntListOrArray,nC)[k]]).flatten()
+                        nCk = onp.array([cast(IntListOrArray, nC)[k]]).flatten()
                     j = nCk.shape[0]
                     if j == 1:
                         nCk = onp.arange(nCk[0])
