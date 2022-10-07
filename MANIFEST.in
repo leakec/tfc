@@ -1,2 +1,3 @@
 include src/tfc/utils/BF/BF.h
 include src/tfc/utils/BF/numpy.i
+include src/tfc/py.typed

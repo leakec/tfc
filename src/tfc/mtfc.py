@@ -15,6 +15,7 @@ from .utils.types import (
     NumberListOrArray,
     TupleOrListOfArray,
     TupleOrListOfNumpyArray,
+    IntArrayLike
 )
 from jax import core, abstract_arrays
 from jax.interpreters import ad, batching, xla
@@ -39,7 +40,7 @@ class mtfc:
     n : IntListOrArray
         Number of points to use per-dimension when discretizing the domain. List or array must be same length as number of dimensions.
 
-    nC : IntListOrArray
+    nC : IntArrayLike
         Number of functions to remove from the beginning of free function linear expansion. This variable is used to account for basis functions that are linearly dependent on support functions used in the construction of the constrained expressions. The constraints for each dimension can be expressed in 1 of 2 ways. Note that a value of -1 is used to indicate no constraints exist for a particular dimension.
 
         1. As an integer. When expressed as an integer, the first nC basis functions are removed from the free function.
@@ -67,7 +68,7 @@ class mtfc:
     def __init__(
         self,
         n: IntListOrArray,
-        nC: IntListOrArray,
+        nC: IntArrayLike,
         deg: uint,
         dim: pint = 2,
         basis: Literal[
@@ -190,6 +191,9 @@ class mtfc:
                     "To set nC to -1 (no constraints) either use nC = -1 or nC = 0 (i.e., use an integer not a list or array). Do not put only -1 in a list or array, this will cause issues in the C++ layer."
                 )
         else:
+            if isinstance(nC, int):
+                TFCPrint.Error("Cannot use type int for nC when specifying non-ELM type basis function.")
+            # Using explicit type casts here to keep LSPs happy. At this point, we know nC is not a regular integer.
             if isinstance(nC, np.ndarray) and len(nC.shape) > 1:
                 if not nC.shape[0] == self.dim:
                     TFCPrint.Error(
@@ -203,20 +207,20 @@ class mtfc:
             else:
                 if isinstance(nC, np.ndarray):
                     nC = nC.tolist()
-                if not len(nC) == dim:
+                if not len(cast(IntListOrArray,nC)) == dim:
                     TFCPrint.Error(
                         "nC has length "
-                        + str(len(nC))
+                        + str(len(cast(IntListOrArray,nC)))
                         + ", but it should be equal to the number of dimensions, "
                         + str(dim)
                         + "."
                     )
                 nCmax = 0
                 for k in range(dim):
-                    if isinstance(nC[k], np.ndarray):
-                        nCk = np.array(nC[k]).flatten()
+                    if isinstance(cast(IntListOrArray,nC)[k], np.ndarray):
+                        nCk = np.array(cast(IntListOrArray,nC)[k]).flatten()
                     else:
-                        nCk = np.array([nC[k]]).flatten()
+                        nCk = np.array([cast(IntListOrArray,nC)[k]]).flatten()
                     if nCk.shape[0] == 1:
                         maxk = nCk[0]
                     else:
@@ -231,10 +235,10 @@ class mtfc:
 
                 onC = onp.zeros((dim, nCmax))
                 for k in range(dim):
-                    if isinstance(nC[k], np.ndarray):
-                        nCk = np.array(nC[k]).flatten()
+                    if isinstance(cast(IntListOrArray,nC)[k], np.ndarray):
+                        nCk = np.array(cast(IntListOrArray,nC)[k]).flatten()
                     else:
-                        nCk = onp.array([nC[k]]).flatten()
+                        nCk = onp.array([cast(IntListOrArray,nC)[k]]).flatten()
                     j = nCk.shape[0]
                     if j == 1:
                         nCk = onp.arange(nCk[0])
