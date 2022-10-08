@@ -58,7 +58,7 @@ IntListOrArray = Union[
 ]
 
 # JAX array or numpy array
-JaxOrNumpyArray = Union[npt.NDArray, Any[Array, "..."]]
+JaxOrNumpyArray = Union[npt.NDArray, Array]
 
 # Tuple or list of array
 TupleOrListOfArray = Union[Tuple[JaxOrNumpyArray, ...], List[JaxOrNumpyArray]]

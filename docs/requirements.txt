@@ -8,6 +8,7 @@ ipykernel
 numpy
 jax
 jaxlib
+jaxtyping
 matplotlib
 colorama
 graphviz
