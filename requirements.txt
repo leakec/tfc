@@ -11,6 +11,8 @@ Pillow
 colorama
 graphviz
 yattag
+tqdm
+pandas
 
 # Optional
 # pdfCropMargins # Used to crop pdfs in PlotlyMakePlot
