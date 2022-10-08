@@ -1,4 +1,4 @@
-from jax.config import config
+from jax._src.config import config
 
 config.update("jax_enable_x64", True)
 
@@ -13,9 +13,10 @@ from .utils.types import (
     IntListOrArray,
     pint,
     NumberListOrArray,
-    TupleOrListOfArray,
-    TupleOrListOfNumpyArray,
+    JaxOrNumpyArray,
     IntArrayLike,
+    Array,
+    Tuple,
 )
 from jax import core, abstract_arrays
 from jax.interpreters import ad, batching, xla
@@ -330,18 +331,20 @@ class mtfc:
                 self.z[k, :] = onp.array([dark] * nStack).flatten()
                 x[k][:] = (self.z[k, :] - z0) / self.c[k] + self.x0[k]
 
-        self.z = np.array(self.z.tolist())
-        self.x = tuple([np.array(x[k].tolist()) for k in range(self.dim)])
+        self.z: Array = cast(Array, np.array(self.z.tolist()))
+        self.x: Tuple[Array, ...] = tuple(
+            [cast(Array, np.array(x[k].tolist())) for k in range(self.dim)]
+        )
 
         self.SetupJAX()
 
-    def H(self, *x: TupleOrListOfArray, full: bool = False) -> npt.NDArray:
+    def H(self, *x: JaxOrNumpyArray, full: bool = False) -> npt.NDArray:
         """
         This function computes the basis function matrix for the points specified by *x.
 
         Parameters
         ----------
-        *x : TupleOrListOfArray
+        *x : JaxOrNumpyArray
             Points to calculate the basis functions at.
 
         full : bool, optional
@@ -355,13 +358,13 @@ class mtfc:
         d = onp.zeros(self.dim, dtype=np.int32)
         return self._Hjax(*x, d=d, full=full)
 
-    def Hx(self, *x: TupleOrListOfArray, full: bool = False) -> npt.NDArray:
+    def Hx(self, *x: JaxOrNumpyArray, full: bool = False) -> npt.NDArray:
         """
         This function computes the derivative of the basis function matrix for the points specified by *x with respect to the first variable.
 
         Parameters
         ----------
-        *x : TupleOrListOfArray
+        *x : JaxOrNumpyArray
             Points to calculate the basis functions at.
 
         full : bool, optional
@@ -376,13 +379,13 @@ class mtfc:
         d[0] = 1
         return self._Hjax(*x, d=d, full=full)
 
-    def Hx2(self, *x: TupleOrListOfArray, full: bool = False) -> npt.NDArray:
+    def Hx2(self, *x: JaxOrNumpyArray, full: bool = False) -> npt.NDArray:
         """
         This function computes the second derivative of the basis function matrix for the points specified by *x with respect to the first variable.
 
         Parameters
         ----------
-        *x : TupleOrListOfArray
+        *x : JaxOrNumpyArray
             Points to calculate the basis functions at.
 
         full : bool, optional
@@ -397,13 +400,13 @@ class mtfc:
         d[0] = 2
         return self._Hjax(*x, d=d, full=full)
 
-    def Hy2(self, *x: TupleOrListOfArray, full: bool = False) -> npt.NDArray:
+    def Hy2(self, *x: JaxOrNumpyArray, full: bool = False) -> npt.NDArray:
         """
         This function computes the second derivative of the basis function matrix for the points specified by *x with respect to the second variable.
 
         Parameters
         ----------
-        *x : TupleOrListOfArray
+        *x : JaxOrNumpyArray
             Points to calculate the basis functions at.
 
         full : bool, optional
@@ -418,14 +421,14 @@ class mtfc:
         d[1] = 2
         return self._Hjax(*x, d=d, full=full)
 
-    def Hx2y(self, *x: TupleOrListOfArray, full: bool = False) -> npt.NDArray:
+    def Hx2y(self, *x: JaxOrNumpyArray, full: bool = False) -> npt.NDArray:
         """
         This function computes the mixed derivative (second order derivative with respect to the first variable and first order with respect
         to the second variable) of the basis function matrix for the points specified by *x.
 
         Parameters
         ----------
-        *x : TupleOrListOfArray
+        *x : JaxOrNumpyArray
             Points to calculate the basis functions at.
 
         full : bool, optional
@@ -441,13 +444,13 @@ class mtfc:
         d[1] = 1
         return self._Hjax(*x, d=d, full=full)
 
-    def Hy(self, *x: TupleOrListOfArray, full: bool = False) -> npt.NDArray:
+    def Hy(self, *x: JaxOrNumpyArray, full: bool = False) -> npt.NDArray:
         """
         This function computes the derivative of the basis function matrix for the points specified by *x with respect to the second variable.
 
         Parameters
         ----------
-        *x : TupleOrListOfArray
+        *x : JaxOrNumpyArray
             Points to calculate the basis functions at.
 
         full : bool, optional
@@ -462,14 +465,14 @@ class mtfc:
         d[1] = 1
         return self._Hjax(*x, d=d, full=full)
 
-    def Hxy(self, *x: TupleOrListOfArray, full: bool = False) -> npt.NDArray:
+    def Hxy(self, *x: JaxOrNumpyArray, full: bool = False) -> npt.NDArray:
         """
         This function computes the mixed derivative (first order derivative with respect to the first variable and first order with respect
         to the second variable) of the basis function matrix for the points specified by *x.
 
         Parameters
         ----------
-        *x : TupleOrListOfArray
+        *x : JaxOrNumpyArray
             Points to calculate the basis functions at.
 
         full : bool, optional
@@ -485,13 +488,13 @@ class mtfc:
         d[1] = 1
         return self._Hjax(*x, d=d, full=full)
 
-    def Hz(self, *x: TupleOrListOfArray, full: bool = False) -> npt.NDArray:
+    def Hz(self, *x: JaxOrNumpyArray, full: bool = False) -> npt.NDArray:
         """
         This function computes the derivative of the basis function matrix for the points specified by *x with respect to the third variable.
 
         Parameters
         ----------
-        *x : TupleOrListOfArray
+        *x : JaxOrNumpyArray
             Points to calculate the basis functions at.
 
         full : bool, optional
@@ -535,11 +538,11 @@ class mtfc:
         # Create Primitives
         H_p = core.Primitive("H")
 
-        def Hjax(*x: TupleOrListOfArray, d: npt.NDArray[onp.int32] = d0, full: bool = False):
+        def Hjax(*x: JaxOrNumpyArray, d: npt.NDArray[onp.int32] = d0, full: bool = False):
             return cast(npt.NDArray, H_p.bind(*x, d=d, full=full))
 
         # Implicit translations
-        def H_impl(*x: TupleOrListOfNumpyArray, d: npt.NDArray[onp.int32] = d0, full: bool = False):
+        def H_impl(*x: npt.NDArray, d: npt.NDArray[onp.int32] = d0, full: bool = False):
             return self.basisClass.H(np.array(x), d, full)
 
         H_p.def_impl(H_impl)

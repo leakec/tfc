@@ -3,15 +3,12 @@ from typing import Union, Any
 import numpy as np
 import numpy.typing as npt
 import jax.numpy as jnp
+from jaxtyping import Array
 
 if sys.version_info >= (3, 8):
-    from typing import Literal
-
-    Literal = Literal
+    from typing import Literal, Protocol, TypedDict
 else:
-    from typing_extensions import Literal
-
-    Literal = Literal
+    from typing_extensions import Literal, Protocol, TypedDict
 
 if sys.version_info >= (3, 9):
     from typing import Annotated
@@ -48,11 +45,11 @@ StrArrayLike = _ArrayLikeStr_co
 IntArrayLike = _ArrayLikeInt_co
 
 # List or array like
-NumberListOrArray = Union[Tuple[Number], List[Number], npt.NDArray[Any]]
+NumberListOrArray = Union[Tuple[Number, ...], List[Number], npt.NDArray[Any], Array]
 
 # List or array of integers
 IntListOrArray = Union[
-    Tuple[int],
+    Tuple[int, ...],
     List[int],
     npt.NDArray[np.int32],
     npt.NDArray[np.int64],
@@ -61,8 +58,8 @@ IntListOrArray = Union[
 ]
 
 # JAX array or numpy array
-JaxOrNumpyArray = Union[npt.NDArray, jnp.ndarray]
+JaxOrNumpyArray = Union[npt.NDArray, Any[Array, "..."]]
 
 # Tuple or list of array
-TupleOrListOfArray = Union[Tuple[JaxOrNumpyArray], List[JaxOrNumpyArray]]
-TupleOrListOfNumpyArray = Union[Tuple[npt.NDArray], List[npt.NDArray]]
+TupleOrListOfArray = Union[Tuple[JaxOrNumpyArray, ...], List[JaxOrNumpyArray]]
+TupleOrListOfNumpyArray = Union[Tuple[npt.NDArray, ...], List[npt.NDArray]]
