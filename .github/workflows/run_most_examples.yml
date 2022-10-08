@@ -16,7 +16,6 @@ jobs:
       - run: python setup.py bdist_wheel
       - run: pip install ./dist/*.whl
       - run: pip install -r ./requirements.txt
-      - run: "cd tests"
 
       - name: run all examples
-        run: "./test_all -j 5"
+        run: "cd tests; ./test_all -j 5"
