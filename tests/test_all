@@ -23,7 +23,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Collect all of the test cases
-ALL_TESTS=`find ./temp -name "*.py" | xargs grep -Li tensorflow`
+ALL_TESTS=`find ../examples -name "*.py" | xargs grep -Li tensorflow`
 CD=`pwd`
 
 # Function to run a test
