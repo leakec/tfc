@@ -1,0 +1,52 @@
+#!/bin/bash
+
+# This script runs all of the non-machine learning cases in examples
+
+# Get number of processes to run in parallel
+num_procs=1
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -j)
+      num_procs="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -*|--*)
+      echo "Unknown option $1"
+      exit 1
+      ;;
+    *)
+      echo "Unknown option $1"
+      exit 1
+      ;;
+  esac
+done
+
+# Collect all of the test cases
+ALL_TESTS=`find ./temp -name "*.py" | xargs grep -Li tensorflow`
+CD=`pwd`
+
+# Function to run a test
+run_test ()
+{
+	TEST=$1
+	DIR="$(dirname "${TEST}")" ; FILE="$(basename "${TEST}")"
+	cd $DIR
+	if ! python $FILE 2> stderr.txt; then
+		echo $TEST failed!
+		cat stderr.txt
+		echo 
+	fi
+}
+
+# Variable to store the number of running jobs
+num_jobs="\j"
+
+# Run all of the jobs
+for TEST in ${ALL_TESTS[@]}; do
+	while (( ${num_jobs@P} >= num_procs )); do
+    	wait -n
+    done
+	run_test $TEST &
+done
+wait
