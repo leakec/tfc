@@ -36,7 +36,7 @@ uint = Annotated[int, Ge(0)]
 # General number type
 Number = Union[int, float, complex]
 
-if sys.version_info >= (3, 7):
+if sys.version_info >= (3, 8):
     from numpy._typing._array_like import _ArrayLikeStr_co, _ArrayLikeInt_co
 
     # Array-like of strings
