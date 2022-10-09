@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DISPLAY: :0
-      QT_DEBUG_PLUGINS: 1
+      # QT_DEBUG_PLUGINS: 1 # Uncomment if you run into trouble with QT. This will give better logs.
     steps:
 
       - uses: actions/checkout@v2
