@@ -9,6 +9,7 @@ numpy
 jax
 jaxlib
 jaxtyping
+annotated_types
 matplotlib
 colorama
 graphviz
