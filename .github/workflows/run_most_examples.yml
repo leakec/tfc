@@ -6,6 +6,8 @@ on:
 jobs:
   run_examples:
     runs-on: ubuntu-latest
+    env:
+      DISPLAY: :0
     steps:
 
       - uses: actions/checkout@v2
@@ -16,6 +18,12 @@ jobs:
       - run: python setup.py bdist_wheel
       - run: pip install ./dist/*.whl
       - run: pip install -r ./requirements.txt
+
+      - name: Setup xvfb (Linux)
+        run: |
+              sudo apt-get install -y xvfb libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xinput0 libxcb-xfixes0
+              # start xvfb on (default) display :0
+              sudo /usr/bin/Xvfb $DISPLAY -screen 0 1280x1024x24 &
 
       - name: run all examples
         run: "cd tests; ./test_all -j 5"
