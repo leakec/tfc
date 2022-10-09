@@ -27,4 +27,4 @@ jobs:
               sudo /usr/bin/Xvfb $DISPLAY -screen 0 1280x1024x24 &
 
       - name: run all examples
-        run: "cd tests; ./test_all -j 5"
+        run: "cd tests; ./test_all -j 2"
