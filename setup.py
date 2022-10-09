@@ -1,3 +1,4 @@
+import sys
 from os import path
 import numpy
 from setuptools import setup, Extension, find_packages
@@ -40,6 +41,11 @@ class build_py(_build_py):
         self.run_command("build_ext")
         super(build_py, self).run()
 
+if sys.version_info >= (3, 7):
+    numpy_version = "numpy>=1.23.0"
+else:
+    numpy_version = "numpy>=1.21.0"
+
 # Setup
 setup(
     name="tfc",
@@ -57,7 +63,7 @@ setup(
     include_package_data=True,
     ext_modules=[BF],
     install_requires=[
-        "numpy>=1.21.0",
+        numpy_version,
         "jax",
         "jaxlib",
         "jaxtyping",
