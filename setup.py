@@ -57,7 +57,7 @@ setup(
     include_package_data=True,
     ext_modules=[BF],
     install_requires=[
-        "numpy>=1.23.0",
+        "numpy>=1.21.0",
         "jax",
         "jaxlib",
         "jaxtyping",
