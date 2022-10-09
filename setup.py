@@ -15,6 +15,12 @@ try:
 except AttributeError:
     numpy_include = numpy.get_numpy_include()
 
+# Get version info
+version_dict = {}
+with open('src/tfc/version.py') as f:
+  exec(f.read(), version_dict)
+  version = version_dict["__version__"]
+
 # In the future, can add -DHAS_CUDA to this to enable GPU support
 cxxFlags = ["-O3", "-std=c++17", "-Wall", "-Wextra", "-Wno-unused-parameter", "-fPIC"]
 
@@ -37,7 +43,7 @@ class build_py(_build_py):
 # Setup
 setup(
     name="tfc",
-    version="0.1.10",
+    version=version,
     author="Carl Leake and Hunter Johnston",
     author_email="leakec57@gmail.com",
     description="Theory of Functional Connections (TFC): A functional interpolation framework with applications in differential equations.",
@@ -51,7 +57,7 @@ setup(
     include_package_data=True,
     ext_modules=[BF],
     install_requires=[
-        "numpy",
+        "numpy>=1.23.0",
         "jax",
         "jaxlib",
         "jaxtyping",
