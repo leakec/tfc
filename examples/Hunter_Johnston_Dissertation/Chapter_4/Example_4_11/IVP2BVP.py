@@ -46,9 +46,9 @@ def IVP2BVP(N, m, gamma, basis, iterMax, tol):
 
     H = tfc.H
     dH = tfc.dH
-    H0 = H(tfc.z[0])
-    Hf = H(tfc.z[-1])
-    H0p = dH(tfc.z[0])
+    H0 = H(tfc.z[0:1])
+    Hf = H(tfc.z[-1:])
+    H0p = dH(tfc.z[0:1])
 
     ## DEFINE THE ASSUMED SOLUTION: *************************************
     phi1 = lambda a: 1./(1. + 4.*gamma - gamma**2) * ( (1. + gamma) - 2.*gamma*a )
