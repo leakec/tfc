@@ -41,7 +41,7 @@ class build_py(_build_py):
         self.run_command("build_ext")
         super(build_py, self).run()
 
-if sys.version_info >= (3, 7):
+if sys.version_info >= (3, 8):
     numpy_version = "numpy>=1.23.0"
 else:
     numpy_version = "numpy>=1.21.0"
