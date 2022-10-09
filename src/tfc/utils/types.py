@@ -36,13 +36,18 @@ uint = Annotated[int, Ge(0)]
 # General number type
 Number = Union[int, float, complex]
 
-from numpy._typing._array_like import _ArrayLikeStr_co, _ArrayLikeInt_co
+if sys.version_info >= (3, 7):
+    from numpy._typing._array_like import _ArrayLikeStr_co, _ArrayLikeInt_co
 
-# Array-like of strings
-StrArrayLike = _ArrayLikeStr_co
+    # Array-like of strings
+    StrArrayLike = _ArrayLikeStr_co
 
-# Array-like of integers
-IntArrayLike = _ArrayLikeInt_co
+    # Array-like of integers
+    IntArrayLike = _ArrayLikeInt_co
+else:
+    # Hacks to keep things working for Python 3.7
+    StrArrayLike = Any
+    IntArrayLike = Any
 
 # List or array like
 NumberListOrArray = Union[Tuple[Number, ...], List[Number], npt.NDArray[Any], Array]
