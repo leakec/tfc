@@ -13,6 +13,7 @@ graphviz
 yattag
 tqdm
 pandas
+openpyxl
 
 # Optional
 # pdfCropMargins # Used to crop pdfs in PlotlyMakePlot
