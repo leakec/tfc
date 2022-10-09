@@ -57,10 +57,10 @@ xs1 = tfc1.x
 Hs1 = tfc1.H
 dHs1 = tfc1.dH
 
-H0s1 = Hs1(tfc1.x[0])
-Hfs1 = Hs1(tfc1.x[-1])
+H0s1 = Hs1(tfc1.x[0:1])
+Hfs1 = Hs1(tfc1.x[-1:])
 
-Hfps1 = dHs1(tfc1.x[-1])
+Hfps1 = dHs1(tfc1.x[-1:])
 
 # Second segment
 tfc2 = utfc(N,nC,m,basis = basis, x0 = x1, xf = xf)
@@ -69,10 +69,10 @@ xs2 = tfc2.x
 Hs2 = tfc2.H
 dHs2 = tfc2.dH
 
-H0s2 = Hs2(tfc2.x[0])
-Hfs2 = Hs2(tfc2.x[-1])
+H0s2 = Hs2(tfc2.x[0:1])
+Hfs2 = Hs2(tfc2.x[-1:])
 
-H0ps2 = dHs2(tfc2.x[0])
+H0ps2 = dHs2(tfc2.x[0:1])
 
 
 ## DEFINE THE ASSUMED SOLUTION: ************************************************

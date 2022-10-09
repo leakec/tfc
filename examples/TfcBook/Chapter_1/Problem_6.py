@@ -35,8 +35,8 @@ tfc = utfc(N, nC, m, basis = basis, x0=tspan[0], xf=tspan[-1])
 
 t = tfc.x
 H = tfc.H
-H0 = H(t[0])
-Hf = H(t[-1])
+H0 = H(t[0:1])
+Hf = H(t[-1:])
 
 ## define tfc constrained expression: **************************************************************
 # switching function

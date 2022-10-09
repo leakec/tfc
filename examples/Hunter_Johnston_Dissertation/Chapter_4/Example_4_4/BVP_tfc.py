@@ -46,8 +46,8 @@ def BVP_tfc(N, m, basis, iterMax, tol):
     x = tfc.x
 
     H = tfc.H
-    H0 = H(tfc.x[0])
-    Hf = H(tfc.x[-1])
+    H0 = H(tfc.x[0:1])
+    Hf = H(tfc.x[-1:])
 
     ## DEFINE THE ASSUMED SOLUTION: *************************************
     phi1 = lambda x: (np.pi - x)/np.pi

@@ -40,8 +40,8 @@ xtfc = utfc(N,nCx,m,basis='CP', x0 = -1, xf = 1.)
 utfc = utfc(N,nCu,m,basis='CP', x0 = -1, xf = 1.)
 
 Hx  = xtfc.H
-Hx0 = Hx(xtfc.z[0])
-Hxf = Hx(xtfc.z[-1])
+Hx0 = Hx(xtfc.z[0:1])
+Hxf = Hx(xtfc.z[-1:])
 
 Hu  = utfc.H
 

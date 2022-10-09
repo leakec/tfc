@@ -70,8 +70,8 @@ def laneEmden_tfc(N, m, type, xspan, basis, iterMax, tol):
 
     H = tfc.H
     dH = tfc.dH
-    H0 = H(x[0])
-    H0p = dH(x[0])
+    H0 = H(x[0:1])
+    H0p = dH(x[0:1])
 
     ## DEFINE THE ASSUMED SOLUTION: *************************************
     phi1 = lambda x: np.ones_like(x)

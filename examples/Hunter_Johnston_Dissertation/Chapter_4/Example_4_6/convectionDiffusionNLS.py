@@ -43,10 +43,10 @@ tfc = utfc(N,nC,m,basis='CP',x0=-1,xf=1)
 # Get the Chebyshev polynomials
 H = tfc.H
 dH = tfc.dH
-H0 = H(tfc.z[0])
-Hf = H(tfc.z[-1])
-Hd0 = dH(tfc.z[0])
-Hdf = dH(tfc.z[-1],)
+H0 = H(tfc.z[0:1])
+Hf = H(tfc.z[-1:])
+Hd0 = dH(tfc.z[0:1])
+Hdf = dH(tfc.z[-1:],)
 
 # Create the constraint expression and its derivatives
 z = tfc.z

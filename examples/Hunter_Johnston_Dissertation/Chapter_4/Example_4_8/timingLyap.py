@@ -38,11 +38,11 @@ tfc  = utfc(N,4,m, basis=basis,      x0=-1.,xf=1.)
 H = tfc.H
 pH = tfc.dH
 
-H0 = H(tfc.z[0])
-Hf = H(tfc.z[-1])
+H0 = H(tfc.z[0:1])
+Hf = H(tfc.z[-1:])
 
-Hp0 = pH(tfc.z[0])
-Hpf = pH(tfc.z[-1])
+Hp0 = pH(tfc.z[0:1])
+Hpf = pH(tfc.z[-1:])
 
 ## DEFINE THE ASSUMED SOLUTION: *****************************************************************************
 z = tfc.z

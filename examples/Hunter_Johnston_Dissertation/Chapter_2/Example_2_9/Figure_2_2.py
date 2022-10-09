@@ -35,9 +35,9 @@ m   = 15
 tfc = utfc(N,nC,m,basis = basis, x0 = x0, xf = xf)
 x = tfc.x
 
-x1 = tfc.x[200]
-x2 = tfc.x[500]
-x3 = tfc.x[-200]
+x1 = tfc.x[200:201]
+x2 = tfc.x[500:501]
+x3 = tfc.x[-200:-199]
 
 phi1 = lambda x: (x2*x3)/((x1-x2)*(x1-x3)) - x*(x2+x3)/((x1-x2)*(x1-x3)) + x**2/((x1-x2)*(x1-x3))
 

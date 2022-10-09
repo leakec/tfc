@@ -46,10 +46,10 @@ tfc = utfc(N,nC,m,basis='CP',x0=-1,xf=1.)
 # Get the Chebyshev polynomials
 H = tfc.H
 dH = tfc.dH
-H0 = H(tfc.z[0])
-Hf = H(tfc.z[-1])
-Hd0 = dH(tfc.z[0])
-Hdf = dH(tfc.z[-1])
+H0 = H(tfc.z[0:1])
+Hf = H(tfc.z[-1:])
+Hd0 = dH(tfc.z[0:1])
+Hdf = dH(tfc.z[-1:])
 
 # Create the constraint expression and its derivatives
 z = tfc.z
@@ -91,12 +91,16 @@ ydd2 = lambda z,xi,xp: yddz2(z,xi,xp)*c2(xp)**2
 L1 = lambda z,xi,xp: ydd1(z,xi,xp)-Pe*yd1(z,xi,xp)
 L2 = lambda z,xi,xp: ydd2(z,xi,xp)-Pe*yd2(z,xi,xp)
 
-L = jit(lambda z,xi,xp: np.hstack(( L1(z,xi,xp), L2(z,xi,xp) )), static_argnums=[0,])
+L = jit(lambda z,xi,xp: np.hstack(( L1(z,xi,xp), L2(z,xi,xp) ))) #, static_argnums=[0,])
+# Removed static_argnums = [0,] on 2022-10-08, since JAX arrays cannot be hashed, so this
+# now raises an error.
 
 def Jdark(x,xi,xp):
     jacob = jacfwd(L,1)(z,xi,xp)
     return np.hstack((jacob[k] for k in xi.keys()))
-J = jit(lambda z,xi,xp: Jdark(z,xi,xp),static_argnums=[0,])
+J = jit(lambda z,xi,xp: Jdark(z,xi,xp)) #, static_argnums=[0,])
+# Removed static_argnums = [0,] on 2022-10-08, since JAX arrays cannot be hashed, so this
+# now raises an error.
 
 
 # Create the residual and jacobians
