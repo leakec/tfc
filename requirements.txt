@@ -1,6 +1,7 @@
 numpy
 jax
 jaxlib
+jaxtyping
 annotated-types
 matplotlib
 plotly
@@ -10,6 +11,9 @@ Pillow
 colorama
 graphviz
 yattag
+tqdm
+pandas
+openpyxl
 
 # Optional
 # pdfCropMargins # Used to crop pdfs in PlotlyMakePlot

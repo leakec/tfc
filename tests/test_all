@@ -23,7 +23,10 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Collect all of the test cases
-ALL_TESTS=`find ./temp -name "*.py" | xargs grep -Li tensorflow`
+# SKIP_TESTS are test cases that don't have tensorflow in their imports, but
+# use files that do.
+ALL_TESTS=`find ../examples -name "*.py" | xargs grep -Li tensorflow`
+SKIP_TESTS=("../examples/Carl_Leake_Dissertation/Chapter_3/Example_3_4.py"
 CD=`pwd`
 
 # Function to run a test
@@ -44,9 +47,13 @@ num_jobs="\j"
 
 # Run all of the jobs
 for TEST in ${ALL_TESTS[@]}; do
-	while (( ${num_jobs@P} >= num_procs )); do
-    	wait -n
-    done
-	run_test $TEST &
+	if [[ " ${SKIP_TESTS[*]} " =~ " ${TEST} " ]]; then
+		echo Skipping $TEST
+	else
+		while (( ${num_jobs@P} >= num_procs )); do
+			wait -n
+		done
+		run_test $TEST &
+	fi
 done
 wait

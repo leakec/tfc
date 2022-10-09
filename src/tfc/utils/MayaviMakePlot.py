@@ -1,13 +1,19 @@
 import numpy as np
+import numpy.typing as npt
+import mayavi
 from mayavi import mlab
 from matplotlib import colors as mcolors
+from .types import Dict, Tuple, Path, Ge, Le, Annotated, Literal
+from typing import Optional, Any, Union, Generator, Callable
+
+Color = Union[str, Tuple[float, float, float, float], npt.NDArray[np.float64]]
 
 
 class MakePlot:
     """MakePlot class for Mayavi."""
 
     @staticmethod
-    def _str_to_rgb(color):
+    def _str_to_rgb(color: str) -> Tuple[float, float, float]:
         """Call matplotlib's colorConverter.to_rgb on input string.
 
         Parameters
@@ -15,16 +21,15 @@ class MakePlot:
         color : str
             Color string
 
-
         Returns
         -------
-        color_rgb : tuple
+        color_rgb : Tuple[float, float, float]
             3-tuple of the RGB for the color
         """
         return mcolors.colorConverter.to_rgb(color)
 
     @staticmethod
-    def _str_to_rgba(color, alpha=None):
+    def _str_to_rgba(color, alpha: Optional[float] = None) -> Tuple[float, float, float, float]:
         """Call matplotlib's colorConverter.to_rgba on input string.
 
         Parameters
@@ -37,23 +42,23 @@ class MakePlot:
 
         Returns
         -------
-        color_rgba : tuple
+        color_rgba : Tuple[float, float, float, float]
             4-tuple of the RGB for the color
         """
-        return mcolors.colorConverter.to_rgba(color, alpha=None)
+        return mcolors.colorConverter.to_rgba(color, alpha=alpha)
 
     @staticmethod
-    def _ProcessKwargs(**kwargs):
+    def _ProcessKwargs(**kwargs: Any) -> Dict[str, Any]:
         """This function effectively extends common mlab keywords.
 
         Parameters
         ----------
-        **kwargs : dict
+        **kwargs : Any
             keyword arguments
 
         Returns
         -------
-        kwargs : dict
+        kwargs : Dict[str, any]
             Same as input keyword arguments but color has been transformed to an RGB if it was a string.
         """
         # Process color argument if it exists
@@ -64,54 +69,62 @@ class MakePlot:
         return kwargs
 
     @staticmethod
-    def ColormapGradient(c1, c2):
+    def ColormapGradient(c1: Color, c2: Color) -> npt.NDArray[np.uint8]:
         """Returns a Mayavi LUT for a gradient that linearly transforms from c1 to c2.
 
         Parameters
         ----------
-        c1 : str or list
+        c1 : Color
             Input color as a string or 4-element RGBA list.
 
-        c2 : str or list
+        c2 : Color
             Input color as a string or 4-element RGBA list.
 
         Returns
         -------
-        lut : array-like
+        lut : npt.NDArray[np.uint8]
             Mayavi LUT for a gradient that linearly transforms from c1 to c2.
-
         """
         if isinstance(c1, str):
             c1 = np.array(MakePlot._str_to_rgba(c1))
         if isinstance(c2, str):
             c2 = np.array(MakePlot._str_to_rgba(c2))
+        if not isinstance(c1, np.ndarray):
+            c1 = np.array(c1)
+        if not isinstance(c2, np.ndarray):
+            c2 = np.array(c2)
         c1 = c1 * 255
         c2 = c2 * 255
         return np.linspace(c1, c2, 256, dtype=np.uint8)
 
     @staticmethod
-    def SetColormapGradient(obj, c1, c2):
-        """Applies a linear, gradient colormap to the object. The colors in the gradient are c1 and c2.
+    def SetColormapGradient(obj: Any, c1: Color, c2: Color):
+        """
+        Applies a linear, gradient colormap to the object. The colors in the gradient are c1 and c2.
 
         Parameters
         ----------
-        obj : mlab object
+        obj : Any
             mlab object to apply the colormap gradient to.
-
-        c1 : str or list
+        c1 : Color
             Input color as a string or 4-element RGBA list.
-
-        c2 : str or list
+        c2 : Color
             Input color as a string or 4-element RGBA list.
         """
         obj.module_manager.scalar_lut_manager.lut.table = MakePlot.ColormapGradient(c1, c2)
 
     def __init__(self):
+        """
+        This function initializes the plot.
+        """
+
         self.fig = mlab.figure(bgcolor=(1.0, 1.0, 1.0))
         self.scene = self.fig.scene
 
     def FullScreen(self):
-        """This function makes the plot fullscreen."""
+        """
+        This function makes the plot fullscreen.
+        """
 
         # Get screensize
         import tkinter as tk
@@ -124,7 +137,7 @@ class MakePlot:
         dpi = float(self.fig.get_dpi())
         mlab.figure(self.fig, size=(width / dpi, height / dpi))
 
-    def PartScreen(self, width, height):
+    def PartScreen(self, width: float, height: float):
         """This function makes the plot width x height inches.
 
         Parameters
@@ -137,29 +150,34 @@ class MakePlot:
         """
         mlab.figure(self.fig, size=(width, height))
 
-    def animate(self, animFunc, outDir="MyMovie", fileName="images", save=True, delay=10):
+    IntRange = Annotated[int, Ge(10), Le(100000)]
+
+    def animate(
+        self,
+        animFunc: Callable[[], Generator[None, None, None]],
+        outDir: Path = "MyMovie",
+        fileName: str = "images",
+        save: bool = True,
+        delay: IntRange = 10,
+    ) -> Optional[mayavi.tools.animator.Animator]:
         """
 
         Parameters
         ----------
-        animFunc : function generator
+        animFunc : Callable[[], Generator[None, None, None]]
             Function that modifies what is displayed on the plot
-
-        outDir : str, optional
-             Directory to save frames in: only used if save = True. (Default value = "MyMovie")
-
+        outDir : Path, optional
+            Directory to save frames in: only used if save = True. (Default value = "MyMovie")
         fileName : str, optional
-             Filename for the frames: only used if save = True. (Default value = "images")
-
+            Filename for the frames: only used if save = True. (Default value = "images")
         save : bool, optional
-             Controls whether the function saves the frames of the animation or not. (Default value = True)
-
-        delay: int in [10,100000], optional
-             Controls the delay used by mlab.animate. (Default value = 10)
+            Controls whether the function saves the frames of the animation or not. (Default value = True)
+        delay: IntRange in [10,100000], optional
+            Controls the delay used by mlab.animate. (Default value = 10)
 
         Returns
         -------
-        animator : mayavi.tools.animator.Animator
+        animator : Optional[mayavi.tools.animator.Animator]
             Returns an animator object only if save = False. Otherwise, there is no return value.
         """
         if save:
@@ -183,15 +201,35 @@ class MakePlot:
         else:
             return mlab.animate(func=animFunc, delay=delay)()
 
-    def save(self, fileName, fileType="pdf"):
-        """This function saves the figure.
+    def save(
+        self,
+        fileName: Path,
+        fileType: Literal[
+            "png",
+            "jpg",
+            "bmp",
+            "tiff",
+            "ps",
+            "eps",
+            "pdf",
+            "rib",
+            "oogl",
+            "iv",
+            "wrl",
+            "vrml",
+            "obj",
+            "x3d",
+            "pov",
+        ] = "pdf",
+    ):
+        """
+        This function saves the figure.
 
         Parameters
         ----------
-        fileName : str
+        fileName : Path
             Filename where the figure should be saved. Note, this should not include the file extension.
-
-        fileType : str, optional
+        fileType : Literal["png", "jpg", "bmp", "tiff", "ps", "eps", "pdf", "rib", "oogl", "iv", "wrl", "vrml", "obj", "x3d", "pov"], optional
             File exension to use. (Default value = "pdf")
         """
         mlab.savefig(fileName + "." + fileType, figure=self.fig)
@@ -202,113 +240,143 @@ class MakePlot:
 
     @property
     def show_axes(self):
-        """Axes indicator."""
+        """
+        Adds axes indicator.
+        """
         return self.scene.show_axes
 
     @show_axes.setter
-    def show_axes(self, val):
-        """Set axes indicator.
+    def show_axes(self, val: bool):
+        """
+        Set axes indicator.
 
         Parameters
         ----------
         val : bool
-            True turn on the axes indicator, and False turns off the axes indicator.
+            True turns on the axes indicator and False turns off the axes indicator.
         """
         self.scene.show_axes = val
 
-    def view(self, *args, **kwargs):
-        """Call mlab's view on the class's figure.
+    def view(self, *args: Any, **kwargs: Any):
+        """
+        Call mlab's view on the class's figure.
 
         Parameters
         ----------
-        *args : iterable
+        *args : Any
             args passed on to view
-
-        **kwargs : dict
+        **kwargs : Any
             kwargs passed on to view
         """
         return mlab.view(*args, figure=self.fig, **kwargs)
 
-    def points3d(self, *args, **kwargs):
-        """Call mlab's points3d on the class's figure.
+    def points3d(self, *args: Any, **kwargs: Any) -> mayavi.modules.glyph.Glyph:
+        """
+        Call mlab's points3d on the class's figure.
 
         Parameters
         ----------
-        *args : iterable
+        *args : Any
             args passed on to points3d
-
-        **kwargs : dict
+        **kwargs : Any
             kwargs passed on to points3d after being processed by _ProcessKwargs.
+
+        Returns:
+        --------
+        points3d : mayavi.modules.glyph.Glyph
+            Glyphs corresponding to the points.
         """
         kwargs = MakePlot._ProcessKwargs(**kwargs)
         return mlab.points3d(*args, figure=self.fig, **kwargs)
 
-    def plot3d(self, *args, **kwargs):
+    def plot3d(self, *args: Any, **kwargs: Any) -> mayavi.modules.surface.Surface:
         """Call mlab's plot3d on the class's figure.
 
         Parameters
         ----------
-        *args : iterable
+        *args : Any
             args passed on to plot3d
-
-        **kwargs : dict
+        **kwargs : Any
             kwargs passed on to plot3d after being processed by _ProcessKwargs.
+
+        Returns:
+        --------
+        surf : mayavi.modules.surface.Surface
+            Line as a Mayavi surface.
         """
         kwargs = MakePlot._ProcessKwargs(**kwargs)
         return mlab.plot3d(*args, figure=self.fig, **kwargs)
 
-    def surf(self, *args, **kwargs):
+    def surf(self, *args: Any, **kwargs: Any) -> mayavi.modules.surface.Surface:
         """Call mlab's surf on the class's figure.
 
         Parameters
         ----------
-        *args : iterable
+        *args : Any
             args passed on to surf
-
-        **kwargs : dict
+        **kwargs : Any
             kwargs passed on to surf after being processed by _ProcessKwargs.
+
+        Returns:
+        --------
+        surf : mayavi.modules.surface.Surface
+            Surface.
         """
         kwargs = MakePlot._ProcessKwargs(**kwargs)
         return mlab.surf(*args, figure=self.fig, **kwargs)
 
-    def quiver3d(self, *args, **kwargs):
-        """Call mlab's quiver3d on the class's figure.
+    def quiver3d(self, *args: Any, **kwargs: Any) -> mayavi.modules.vectors.Vectors:
+        """
+        Call mlab's quiver3d on the class's figure.
 
         Parameters
         ----------
-        *args : iterable
+        *args : Any
             args passed on to quiver3d
-
-        **kwargs : dict
+        **kwargs : Any
             kwargs passed on to quiver3d after being processed by _ProcessKwargs.
+
+        Returns:
+        --------
+        vectors : mayavi.modules.vectors.Vectors
+            Vectors associated with the quiver3d plot.
         """
         kwargs = MakePlot._ProcessKwargs(**kwargs)
         return mlab.quiver3d(*args, figure=self.fig, **kwargs)
 
-    def mesh(self, *args, **kwargs):
+    def mesh(self, *args: Any, **kwargs: Any) -> mayavi.modules.surface.Surface:
         """Call mlab's mesh on the class's figure.
 
         Parameters
         ----------
-        *args : iterable
+        *args : Any
             args passed on to mesh
-
-        **kwargs : dict
+        **kwargs : Any
             kwargs passed on to mesh after being processed by _ProcessKwargs.
+
+        Returns:
+        --------
+        mesh : mayavi.modules.surface.Surface
+            Mesh as a mayavi surface.
         """
         kwargs = MakePlot._ProcessKwargs(**kwargs)
         return mlab.mesh(*args, figure=self.fig, **kwargs)
 
-    def contour3d(self, *args, **kwargs):
-        """Call mlab's contour3d on the class's figure.
+    def contour3d(self, *args: Any, **kwargs: Any) -> mayavi.modules.iso_surface.IsoSurface:
+        """
+        Call mlab's contour3d on the class's figure.
 
         Parameters
         ----------
-        *args : iterable
+        *args : Any
             args passed on to contour3d
-
-        **kwargs : dict
+        **kwargs : Any
             kwargs passed on to mesh after being processed by _ProcessKwargs.
+
+        Returns:
+        --------
+        contour : mayavi.modules.iso_surface.IsoSurface
+            Coutour.
         """
         kwargs = MakePlot._ProcessKwargs(**kwargs)
         return mlab.contour3d(*args, figure=self.fig, **kwargs)

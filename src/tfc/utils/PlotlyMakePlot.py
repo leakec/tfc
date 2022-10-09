@@ -1,27 +1,16 @@
 import numpy as np
+import plotly
 import plotly.graph_objects as go
 
 from .TFCUtils import TFCPrint
+from .types import StrArrayLike, uint, Path, Literal, List
+from typing import Optional
 
 
 class MakePlot:
     """
     A MakePlot class for Plotly.
     This class wraps common Plotly functions to ease figure creation.
-
-    Parameters
-    ----------
-    xlabs: list or array-like
-        The x-axes labels of for the plots
-
-    ylabs: list or array-like
-        The y-axes labels of for the plots
-
-    zlabs: list or array-like, optional
-        The z-axes labels of for the plots. Setting this forces subplots to be 3D. (Default value = None)
-
-    titles: list or array-like, optional
-        The titles for the plots. (Default value = None)
     """
 
     _template = {
@@ -87,7 +76,27 @@ class MakePlot:
     _backgroundColor = "rgba(0,0,0,0)"
     _gridColor = "rgb(176, 176, 176)"
 
-    def __init__(self, xlabs, ylabs, titles=None, zlabs=None):
+    def __init__(
+        self,
+        xlabs: StrArrayLike,
+        ylabs: StrArrayLike,
+        titles: Optional[StrArrayLike] = None,
+        zlabs: Optional[StrArrayLike] = None,
+    ):
+        """
+        This function initializes the plot/subplots based on the inputs provided.
+
+        Parameters
+        ----------
+        xlabs: StrArrayLike
+            The x-axes labels for the plots
+        ylabs: StrArrayLike
+            The y-axes labels for the plots
+        titles: StrArrayLike, optional
+            The titles for the plots. (Default value = None)
+        zlabs: StrArrayLike, optional
+            The z-axes labels of for the plots. Setting this forces subplots to be 3D. (Default value = None)
+        """
 
         # View distance used by the view method
         self.viewDistance = 2.5
@@ -280,59 +289,65 @@ class MakePlot:
             template=self._template,
         )
 
-    def Surface(self, row=None, col=None, **kwargs):
+    def Surface(
+        self, row: Optional[uint] = None, col: Optional[uint] = None, **kwargs
+    ) -> plotly.graph_objects.Surface:
         """
         Creates a plotly surface on the subplot specified by row and col or on
         the main figure if not using subplots.
 
         Parameters
         ----------
-        row : int, optional
-             subplot row (Default value = None)
-        col : int, optional
-             subplot column (Default value = None)
+        row : Optional[uint]
+            Subplot row (Default value = None)
+        col : Optional[uint]
+            Subplot column (Default value = None)
         **kwargs : dict, optional
-            keyword arguments passed on to plotly.graphic_objects.Surface
+            Keyword arguments passed on to plotly.graphic_objects.Surface
 
         Returns
         -------
-        surf : plotly.graphic_objects.Surface
+        surf : plotly.graph_objects.Surface
         """
         return self.fig.add_trace(go.Surface(**kwargs), row=row, col=col)
 
-    def Scatter3d(self, row=None, col=None, **kwargs):
+    def Scatter3d(
+        self, row: Optional[uint] = None, col: Optional[uint] = None, **kwargs
+    ) -> plotly.graph_objects.Scatter3d:
         """
         Creates a 3d plotly scatter on the subplot specified by row and col or on
         the main figure if not using subplots.
 
         Parameters
         ----------
-        row : int, optional
-             subplot row (Default value = None)
-        col : int, optional
-             subplot column (Default value = None)
+        row : Optional[uint]
+             Subplot row (Default value = None)
+        col : Optional[uint]
+             Subplot column (Default value = None)
         **kwargs : dict, optional
             keyword arguments passed on to plotly.graphic_objects.Scatter3d
 
         Returns
         -------
-        scatter : plotly.graphic_objects.Scatter3d
+        scatter : plotly.graph_objects.Scatter3d
         """
         return self.fig.add_trace(go.Scatter3d(**kwargs), row=row, col=col)
 
-    def Scatter(self, row=None, col=None, **kwargs):
+    def Scatter(
+        self, row: Optional[uint] = None, col: Optional[uint] = None, **kwargs
+    ) -> plotly.graph_objects.Scatter:
         """
         Creates a plotly scatter on the subplot specified by row and col or on
         the main figure if not using subplots.
 
         Parameters
         ----------
-        row : int, optional
-             subplot row (Default value = None)
-        col : int, optional
-             subplot column (Default value = None)
+        row : Optional[uint]
+             Subplot row (Default value = None)
+        col : Optional[uint]
+             Subplot column (Default value = None)
         **kwargs : dict, optional
-            keyword arguments passed on to plotly.graphic_objects.Scatter
+            keyword arguments passed on to plotly.graph_objects.Scatter
 
         Returns
         -------
@@ -340,19 +355,21 @@ class MakePlot:
         """
         return self.fig.add_trace(go.Scatter(**kwargs), row=row, col=col)
 
-    def Histogram(self, row=None, col=None, **kwargs):
+    def Histogram(
+        self, row: Optional[uint] = None, col: Optional[uint] = None, **kwargs
+    ) -> plotly.graph_objects.Histogram:
         """
         Creates a plotly histogram on the subplot specified by row and col or on
         the main figure if not using subplots.
 
         Parameters
         ----------
-        row : int, optional
-             subplot row (Default value = None)
-        col : int, optional
-             subplot column (Default value = None)
+        row : Optional[uint]
+             Subplot row (Default value = None)
+        col : Optional[uint]
+             Subplot column (Default value = None)
         **kwargs : dict, optional
-            keyword arguments passed on to plotly.graphic_objects.Histogram
+            keyword arguments passed on to plotly.graph_objects.Histogram
 
         Returns
         -------
@@ -360,39 +377,43 @@ class MakePlot:
         """
         return self.fig.add_trace(go.Histogram(**kwargs), row=row, col=col)
 
-    def Contour(self, row=None, col=None, **kwargs):
+    def Contour(
+        self, row: Optional[uint] = None, col: Optional[uint] = None, **kwargs
+    ) -> plotly.graph_objects.Contour:
         """
         Creates a plotly contour on the subplot specified by row and col or on
         the main figure if not using subplots.
 
         Parameters
         ----------
-        row : int, optional
-             subplot row (Default value = None)
-        col : int, optional
-             subplot column (Default value = None)
+        row : Optional[uint]
+             Subplot row (Default value = None)
+        col : Optional[uint]
+             Subplot column (Default value = None)
         **kwargs : dict, optional
             keyword arguments passed on to plotly.graphic_objects.Contour
 
         Returns
         -------
-        contour : plotly.graphic_objects.Contour
+        contour : plotly.graph_objects.Contour
         """
         return self.fig.add_trace(go.Contour(**kwargs), row=row, col=col)
 
-    def Box(self, row=None, col=None, **kwargs):
+    def Box(
+        self, row: Optional[uint] = None, col: Optional[uint] = None, **kwargs
+    ) -> plotly.graph_objects.Box:
         """
         Creates a plotly box on the subplot specified by row and col or on
         the main figure if not using subplots.
 
         Parameters
         ----------
-        row : int, optional
-             subplot row (Default value = None)
-        col : int, optional
-             subplot column (Default value = None)
+        row : Optional[uint]
+             Subplot row (Default value = None)
+        col : Optional[uint]
+             Subplot column (Default value = None)
         **kwargs : dict, optional
-            keyword arguments passed on to plotly.graphic_objects.Box
+            keyword arguments passed on to plotly.graph_objects.Box
 
         Returns
         -------
@@ -400,19 +421,21 @@ class MakePlot:
         """
         return self.fig.add_trace(go.Box(**kwargs), row=row, col=col)
 
-    def Violin(self, row=None, col=None, **kwargs):
+    def Violin(
+        self, row: Optional[uint] = None, col: Optional[uint] = None, **kwargs
+    ) -> plotly.graph_objects.Violin:
         """
         Creates a plotly violin on the subplot specified by row and col or on
         the main figure if not using subplots.
 
         Parameters
         ----------
-        row : int
-             subplot row (Default value = None)
-        col : int
-             subplot column (Default value = None)
+        row : Optional[uint]
+             Subplot row (Default value = None)
+        col : Optional[uint]
+             Subplot column (Default value = None)
         **kwargs : dict, optional
-            keyword arguments passed on to plotly.graphic_objects.Violin
+            keyword arguments passed on to plotly.graph_objects.Violin
 
         Returns
         -------
@@ -420,19 +443,21 @@ class MakePlot:
         """
         return self.fig.add_trace(go.Violin(**kwargs), row=row, col=col)
 
-    def Volume(self, row=None, col=None, **kwargs):
+    def Volume(
+        self, row: Optional[uint] = None, col: Optional[uint] = None, **kwargs
+    ) -> plotly.graph_objects.Volume:
         """
         Creates a plotly volume on the subplot specified by row and col or on
         the main figure if not using subplots.
 
         Parameters
         ----------
-        row : int
-             subplot row (Default value = None)
-        col : int
-             subplot column (Default value = None)
+        row : Optional[uint]
+             Subplot row (Default value = None)
+        col : Optional[uint]
+             Subplot column (Default value = None)
         **kwargs : dict, optional
-            keyword arguments passed on to plotly.graphic_objects.Volume
+            keyword arguments passed on to plotly.graph_objects.Volume
 
         Returns
         -------
@@ -442,7 +467,7 @@ class MakePlot:
 
     def show(self, **kwargs):
         """
-        Calls the figures show method.
+        Calls the figure's show method.
 
         Parameters
         ----------
@@ -451,20 +476,24 @@ class MakePlot:
         """
         self.fig.show(**kwargs)
 
-    def save(self, fileName, tight=True, fileType="png", **kwargs):
+    def save(
+        self,
+        fileName: Path,
+        tight: bool = True,
+        fileType: Literal["pdf", "jpg", "png", "svg", "eps", "html"] = "png",
+        **kwargs,
+    ):
         """
         Saves the figure using the type specified. If HTML is specified, the figure will
         be saved as a dynamic html file. All other file types are static.
 
         Parameters
         ----------
-        fileName : str
+        fileName : Path
             Name of the save file minus the file type (e.g., MyFigure not MyFigure.pdf).
-
         tight : boolean, optional
-            If the fileType is pdf or png and this value is true, then a tool is used to eliminate whitespace.
-            pdfCropMargins is used for PDFs and PIL is used for png's. (Default value = True)
-        fileType : {"pdf","jpg","png","svg","eps","html"}, optional
+            If the fileType is pdf or png and this value is true, then a tool is used to eliminate whitespace. pdfCropMargins is used for PDFs and PIL is used for png's. (Default value = True)
+        fileType : Literal["pdf","jpg","png","svg","eps","html"], optional
             Type of file to save the figure as. (Default value = "png")
         **kwargs : dict, optional
             Keyword arguments passed onto fig.write_image or fig.write_html, depending on fileType.
@@ -496,7 +525,7 @@ class MakePlot:
 
                 crop(["-p", "0", fileNameFull])
 
-    def UploadToPlotly(self, username, apiKey, fileName, autoOpen=False):
+    def UploadToPlotly(self, username: str, apiKey: str, fileName: str, autoOpen: bool = False):
         """
         Upload your plot to Plotly.
 
@@ -504,13 +533,10 @@ class MakePlot:
         ----------
         username : str
             Plotly username
-
         apiKey : str
             Plotly api_key
-
         fileName : str
             Name of the file to save the plot as.
-
         autoOpen : bool, optional
             If true, plot will open in browser after saving. (Default value = False)
         """
@@ -520,7 +546,14 @@ class MakePlot:
         chart_studio.tools.set_credentials_file(username=username, api_key=apiKey)
         return chart_studio.plotly.plot(self.fig, filename=fileName, auto_open=autoOpen)
 
-    def view(self, azimuth, elevation, row=None, col=None, viewDistance=None):
+    def view(
+        self,
+        azimuth: float,
+        elevation: float,
+        row: Optional[uint] = None,
+        col: Optional[uint] = None,
+        viewDistance: Optional[float] = None,
+    ):
         """
         Change the view on the subplot specified by row and col or on
         the main figure if not using subplots.
@@ -531,12 +564,11 @@ class MakePlot:
             Azimuth value in degrees
         elevation : float
             Elevation value in degrees
-
-        row : int, optional
-            subplot row (Default value = None)
-        col : int, optional
-            subplot column (Default value = None)
-        viewDistance : float, optional
+        row : Optional[uint]
+             Subplot row (Default value = None)
+        col : Optional[uint]
+             Subplot column (Default value = None)
+        viewDistance : Optional[float]
             Distance from camera to plot. (Default value = self.viewDistance)
         """
 
@@ -569,7 +601,9 @@ class MakePlot:
             self.fig["layout"]["scene"]["camera"].eye = dict(x=dark[0], y=dark[1], z=dark[2])
 
     def FullScreen(self):
-        """Make the plot full screen."""
+        """
+        Make the plot full screen.
+        """
         import tkinter as tk
 
         root = tk.Tk()
@@ -579,7 +613,7 @@ class MakePlot:
 
         self.fig.update_layout(width=width, height=height)
 
-    def PartScreen(self, width, height, units="in"):
+    def PartScreen(self, width: float, height: float, units: Literal["in", "mm", "px"] = "in"):
         """
         Make the plot size equal to width x height.
 
@@ -589,8 +623,7 @@ class MakePlot:
             Width of the plot
         height : float
             Height of the plot
-
-        units : {"in","mm","px"}, optional
+        units : Literal["in","mm","px"], optional
             Units width and height are given in. (Default value = inches)
         """
         if units != "px":
@@ -612,7 +645,13 @@ class MakePlot:
         else:
             self.fig.update_layout(width=width, height=height)
 
-    def NormalizeColorScale(self, types=[], data=None, cmax=None, cmin=None):
+    def NormalizeColorScale(
+        self,
+        types: List[str] = [],
+        data: Optional[str] = None,
+        cmax: Optional[float] = None,
+        cmin: Optional[float] = None,
+    ):
         """
         Normalizes the color scale for the plots whose type is in the types list.
 
@@ -625,15 +664,13 @@ class MakePlot:
 
         Parameters
         ----------
-        types: list of str
+        types: List[str]
             Plot types to set cmax and cmin for.
-
-        data: str, optional
-            Data type to use to calculate cmax and cmin if not already specified.
-            (Default value = None)
-        cmax: float, optional
+        data: Optional[str]
+            Data type to use to calculate cmax and cmin if not already specified. (Default value = None)
+        cmax: Optional[float]
             cmax value to use when setting the colorscale
-        cmin: float, optional
+        cmin: Optional[float]
             cmin value to use when setting the colorscale
         """
 
