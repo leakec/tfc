@@ -26,7 +26,7 @@ done
 # SKIP_TESTS are test cases that don't have tensorflow in their imports, but
 # use files that do.
 ALL_TESTS=`find ../examples -name "*.py" | xargs grep -Li tensorflow`
-SKIP_TESTS=("../examples/Carl_Leake_Dissertation/Chapter_3/Example_3_4.py"
+SKIP_TESTS=("../examples/Carl_Leake_Dissertation/Chapter_3/Example_3_4.py")
 CD=`pwd`
 
 # Function to run a test
@@ -35,9 +35,10 @@ run_test ()
 	TEST=$1
 	DIR="$(dirname "${TEST}")" ; FILE="$(basename "${TEST}")"
 	cd $DIR
-	if ! python $FILE 2> stderr.txt; then
+	TEMPFILE=`mktemp`
+	if ! python $FILE 2> $TEMPFILE; then
 		echo $TEST failed!
-		cat stderr.txt
+		cat $TEMPFILE
 		echo 
 	fi
 }
