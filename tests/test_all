@@ -26,7 +26,9 @@ done
 # SKIP_TESTS are test cases that don't have tensorflow in their imports, but
 # use files that do.
 ALL_TESTS=`find ../examples -name "*.py" | xargs grep -Li tensorflow`
+HIGH_MEM=("../examples/Carl_Leake_Dissertation/Chapter_4/WaveEquation/WaveEquation2D.py")
 SKIP_TESTS=("../examples/Carl_Leake_Dissertation/Chapter_3/Example_3_4.py")
+SKIP_TESTS+=(${HIGH_MEM[@]})
 CD=`pwd`
 
 # Function to run a test
@@ -58,3 +60,6 @@ for TEST in ${ALL_TESTS[@]}; do
 	fi
 done
 wait
+for TEST in ${HIGH_MEM[@]}; do
+	run_test $TEST
+done
