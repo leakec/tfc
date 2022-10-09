@@ -8,6 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DISPLAY: :0
+      QT_DEBUG_PLUGINS: 1
     steps:
 
       - uses: actions/checkout@v2
