@@ -5,7 +5,7 @@ if sys.version_info >= (3, 9):
 else:
     from typing import Tuple
 
-__version__ = "0.1.11"
+__version__ = "1.0.0"
 
 
 def _version_as_tuple(version_str: str) -> Tuple[int, ...]:
