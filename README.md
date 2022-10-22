@@ -21,7 +21,7 @@ TFC is a functional interpolation framework centered around the concept of the c
 y(x,g(x)) = g(x) + 3 - g(0),
 </p>
 
-where g(x) is any function defined at the constraint point; by changing g(x) you get different outputs, but all of these outputs satisfy the constraint regardless of how you choose g(x). In this way, you maintain a completly unrestricted functiton, g(x), which we will call the free function, but always satsify the constraint. Neat huh?
+where g(x) is any function defined at the constraint point; by changing g(x) you get different outputs, but all of these outputs satisfy the constraint regardless of how you choose g(x). In this way, you maintain a completly unrestricted functiton, g(x), which we will call the free function, but always satsify the constraint. Neat, huh?
 
 While developing the constrained expression for our example above was trivial, as you introduce more complex constraints in *n*-dimensions, trying to derive these constrained expression by-eye, i.e., without a step-by-step framework, becomes extremely difficult. Luckily, TFC comes equiped with a straightfowrward, step-by-step process for developing constrained expressions. For more information on this process, see the [Mathematical documentation](#mathematical-documentation).
 
@@ -31,7 +31,7 @@ Since the constrained expressions effectively translate the set of all functions
 y<sub>x</sub> = 2y, &nbsp;&nbsp; where &nbsp;&nbsp; y(0) = 3.
 </p>
 
-This differential equation can be viewed as an optimization problem where we seek to minimize the residual of the differential equation, i.e., minimize J where J = y<sub>x</sub> - 2y. Classicly, we would have to minimize J using y(x) subject to the constraint y(0) = 3. However, with TFC we can minimize J using g(x) where y(x,g(x)) = g(x) + 3 - 0, and g(x) is not subject to any constraints. Thus, TFC has translated our differential equation from a constrained optimization problem to an unconstrained optimization problem! The benefits doing so include:
+This differential equation can be viewed as an optimization problem where we seek to minimize the residual of the differential equation, i.e., minimize J where J = y<sub>x</sub> - 2y. Classicly, we would have to minimize J using y(x) subject to the constraint y(0) = 3. However, with TFC we can minimize J using g(x) where y(x,g(x)) = g(x) + 3 - 0, and g(x) is not subject to any constraints. Thus, TFC has translated our differential equation from a constrained optimization problem to an unconstrained optimization problem! The benefits of doing so include:
 
 * More accurate solutions
 * Faster solutions
