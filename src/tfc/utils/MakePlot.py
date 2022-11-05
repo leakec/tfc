@@ -233,7 +233,7 @@ class MakePlot:
         self,
         fileName: Path,
         transparent: bool = True,
-        fileType: Literal["png", "pdf", "ps", "eps", "svg"] = "pdf",
+        fileType: Literal["png", "pdf", "ps", "eps", "svg", None] = None,
     ):
         """
         This function crops and saves the figure.
@@ -241,14 +241,28 @@ class MakePlot:
         Parameters
         ----------
         fileName : Path
-            Filename where the figure should be saved. Note, this should not include the file extension.
+            Filename where the figure should be saved.
         transparent : bool, optional
             Whether to save the plot with transparency or not. (Default value = True)
-        fileType : Literal["png", "pdf", "ps", "eps", "svg"], optional
-            File exension to use. (Default value = "pdf")
+        fileType : Literal["png", "pdf", "ps", "eps", "svg", None], optional
+            File suffix to use. If None, then the suffix will inferred from the suffix of the fileName. (Default value = None)
         """
+        if not fileType:
+            from pathlib import Path
+
+            suffix = Path(fileName).suffix[1:]
+            if suffix in ["png", "pdf", "ps", "eps", "svg"]:
+                fileType = suffix
+            else:
+                fileType = "pdf"
+                TFCPrint.Warning(
+                    f"Warning, file type could not be inferred from {fileName}. The file type has been set to pdf."
+                )
+        else:
+            fileName += "." + fileType
+
         self.fig.savefig(
-            fileName + "." + fileType,
+            fileName,
             bbox_inches="tight",
             pad_inches=0.05,
             dpi=300,
@@ -262,26 +276,26 @@ class MakePlot:
         Parameters
         ----------
         fileName : Path
-            Filename where the figure should be saved. Note, this should not include the file extension.
+            Filename where the figure should be saved. Note, this should not include the file suffix.
         """
-        pickle.dump(self.fig, open(fileName + ".pickle", "wb"))
+        pickle.dump(self, open(fileName + ".pickle", "wb"))
 
     def saveAll(
         self,
         fileName: Path,
         transparent: bool = True,
-        fileType: Literal["png", "pdf", "ps", "eps", "svg"] = "pdf",
+        fileType: Literal["png", "pdf", "ps", "eps", "svg", None] = None,
     ):
         """This function invokes the save and savePickle functions.
 
         Parameters
         ----------
         fileName : Path
-            Filename where the figure should be saved. Note, this should not include the file extension.
+            Filename where the figure should be saved.
         transparent : bool, optional
             Whether to save the plot with transparency or not. (Default value = True)
-        fileType : Literal["png", "pdf", "ps", "eps", "svg"], optional
-            File exension to use. (Default value = "pdf")
+        fileType : Literal["png", "pdf", "ps", "eps", "svg", None], optional
+            File suffix to use. If None, then the suffix will be inferred from the suffix of the fileName. (Default value = None)
         """
         self.save(fileName, transparent=transparent, fileType=fileType)
         self.savePickle(fileName)

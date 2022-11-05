@@ -5,8 +5,10 @@ from mayavi import mlab
 from matplotlib import colors as mcolors
 from .types import Dict, Tuple, Path, Ge, Le, Annotated, Literal
 from typing import Optional, Any, Union, Generator, Callable
+from .TFCUtils import TFCPrint
 
 Color = Union[str, Tuple[float, float, float, float], npt.NDArray[np.float64]]
+TFCPrint()
 
 
 class MakePlot:
@@ -220,7 +222,8 @@ class MakePlot:
             "obj",
             "x3d",
             "pov",
-        ] = "pdf",
+            None,
+        ] = None,
     ):
         """
         This function saves the figure.
@@ -228,11 +231,41 @@ class MakePlot:
         Parameters
         ----------
         fileName : Path
-            Filename where the figure should be saved. Note, this should not include the file extension.
-        fileType : Literal["png", "jpg", "bmp", "tiff", "ps", "eps", "pdf", "rib", "oogl", "iv", "wrl", "vrml", "obj", "x3d", "pov"], optional
-            File exension to use. (Default value = "pdf")
+            Filename where the figure should be saved.
+        fileType : Literal["png", "jpg", "bmp", "tiff", "ps", "eps", "pdf", "rib", "oogl", "iv", "wrl", "vrml", "obj", "x3d", "pov", None], optional
+            File suffix to use. If None, then the suffix will be inferred from the file name. (Default value = None)
         """
-        mlab.savefig(fileName + "." + fileType, figure=self.fig)
+        if not fileType:
+            from pathlib import Path
+
+            suffix = Path(fileName).suffix[1:]
+            if suffix in [
+                "png",
+                "jpg",
+                "bmp",
+                "tiff",
+                "ps",
+                "eps",
+                "pdf",
+                "rib",
+                "oogl",
+                "iv",
+                "wrl",
+                "vrml",
+                "obj",
+                "x3d",
+                "pov",
+            ]:
+                fileType = suffix
+            else:
+                fileType = "pdf"
+                TFCPrint.Warning(
+                    f"Warning, file type could not be inferred from {fileName}. The file type has been set to pdf."
+                )
+                fileName += "." + fileType
+        else:
+            fileName += "." + fileType
+        mlab.savefig(fileName, figure=self.fig)
 
     def show(self):
         """Re-draw the class's figure."""

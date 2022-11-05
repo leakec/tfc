@@ -6,6 +6,8 @@ from .TFCUtils import TFCPrint
 from .types import StrArrayLike, uint, Path, Literal, List
 from typing import Optional
 
+TFCPrint()
+
 
 class MakePlot:
     """
@@ -480,7 +482,7 @@ class MakePlot:
         self,
         fileName: Path,
         tight: bool = True,
-        fileType: Literal["pdf", "jpg", "png", "svg", "eps", "html"] = "png",
+        fileType: Literal["pdf", "jpg", "png", "svg", "eps", "html", None] = None,
         **kwargs,
     ):
         """
@@ -490,15 +492,29 @@ class MakePlot:
         Parameters
         ----------
         fileName : Path
-            Name of the save file minus the file type (e.g., MyFigure not MyFigure.pdf).
+            File name to save the figure as.
         tight : boolean, optional
             If the fileType is pdf or png and this value is true, then a tool is used to eliminate whitespace. pdfCropMargins is used for PDFs and PIL is used for png's. (Default value = True)
-        fileType : Literal["pdf","jpg","png","svg","eps","html"], optional
-            Type of file to save the figure as. (Default value = "png")
+        fileType : Literal["pdf","jpg","png","svg","eps","html",None], optional
+            File suffix to use. If None, then the suffix will be inferred from the suffix of the fileName. (Default value = None)
         **kwargs : dict, optional
             Keyword arguments passed onto fig.write_image or fig.write_html, depending on fileType.
         """
-        fileNameFull = fileName + "." + fileType
+        if not fileType:
+            from pathlib import Path
+
+            suffix = Path(fileName).suffix[1:]
+            if suffix in ["pdf", "jpg", "png", "svg", "eps", "html"]:
+                fileType = suffix
+            else:
+                fileType = "png"
+                TFCPrint.Warning(
+                    f"Warning, file type could not be inferred from {fileName}. The file type has been set to png."
+                )
+                fileName += "." + fileType
+            fileNameFull = fileName
+        else:
+            fileNameFull = fileName + "." + fileType
         if fileType == "html":
             self.fig.write_html(fileNameFull, **kwargs)
         elif fileType == "png" and tight == True:
