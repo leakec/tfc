@@ -13,15 +13,19 @@ line-length = 100
 target-version = ['py37','py38','py39']
 
 [tool.cibuildwheel]
-before-all-linux = "yum install -y swig"
-before-all-macos = "brew install swig"
 before-build = "pip install setuptools wheel numpy"
 skip = "pp*"
 archs-linux = "x86_64"
 archs-macos = "x86_64"
 manylinux-x86_64-image = "manylinux2014"
-test-requires = "pytest"
+test-requires = ["pytest"]
 test-command = "pytest {package}/tests"
+
+[tool.cibuildwheel.linux]
+before-all = "yum install -y swig"
+
+[tool.cibuildwheel.macos]
+before-all = "brew install swig"
 
 [[tool.cibuildwheel.overrides]]
 select = "*-musllinux*"
