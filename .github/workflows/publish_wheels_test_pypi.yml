@@ -47,20 +47,10 @@ jobs:
       - uses: actions/setup-python@v2
   
       - name: Install cibuildwheel
-        run: python -m pip install cibuildwheel==2.11.2
+        run: python -m pip install cibuildwheel
   
       - name: Build wheels
         run: python -m cibuildwheel --output-dir dist
-        env:
-          CIBW_BEFORE_ALL_LINUX: yum install -y swig
-          CIBW_BEFORE_ALL_MACOS: brew install swig
-          CIBW_BEFORE_BUILD: pip install setuptools wheel numpy
-          CIBW_SKIP: pp*
-          CIBW_ARCHS_LINUX: x86_64
-          CIBW_ARCHS_MACOS: x86_64
-          CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
-          CIBW_TEST_REQUIRES: pytest
-          CIBW_TEST_COMMAND: pytest {package}/tests
   
       - name: Upload binary wheels
         uses: actions/upload-artifact@v2
