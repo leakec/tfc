@@ -106,10 +106,18 @@ class utfc:
         else:
             self.x0 = x0
 
+        if isinstance(self.x0, int):
+            self.x0 = float(self.x0)
+            TFCPrint.Warning("x0 is an integer. Converting to float to avoid errors down the line.")
+
         if xf is None:
             self.xf = 0.0
         else:
             self.xf = xf
+
+        if isinstance(self.xf, int):
+            self.xf = float(self.xf)
+            TFCPrint.Warning("xf is an integer. Converting to float to avoid errors down the line.")
 
         # Setup the basis function
         if backend == "C++":

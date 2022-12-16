@@ -86,6 +86,8 @@ class mtfc:
         self.dim = dim
         self._backend = backend
 
+        _int_types = [onp.int0, onp.int8, onp.int16, onp.int32, onp.int64]
+
         # Set N based on user input
         if isinstance(n, np.ndarray):
             if not n.flatten().shape[0] == dim:
@@ -144,6 +146,12 @@ class mtfc:
                         + "."
                     )
 
+        if self.x0.dtype in _int_types:
+            self.x0 = onp.array(self.x0, dtype=onp.float64)
+            TFCPrint.Warning(
+                "x0 is an integer type. Converting to float64 to avoid errors down the line."
+            )
+
         # Set xf based on user input
         if xf is None:
             self.xf = onp.zeros(dim)
@@ -176,6 +184,11 @@ class mtfc:
                         + str(dim)
                         + "."
                     )
+        if self.xf.dtype in _int_types:
+            self.xf = onp.array(self.xf, dtype=onp.float64)
+            TFCPrint.Warning(
+                "xf is an integer type. Converting to float64 to avoid errors down the line."
+            )
 
         # Create nC matrix based on user input
         if basis in self._elm_classes:
