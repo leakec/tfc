@@ -67,23 +67,23 @@ jobs:
     needs: [build_source_wheel, build_binary_wheels]
     steps: 
 
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: source_wheel
           path: ./dist
 
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: ubuntu-latest_binary_wheels
           path: ./dist
 
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: macOS-latest_binary_wheels
           path: ./dist
 
       - name: Publish package to PyPI test
-        uses: pypa/gh-action-pypi-publish@master
+        uses: pypa/gh-action-pypi-publish@release/v1
         with:
           user: __token__
           password: ${{ secrets.PYPI_API_TOKEN }}
