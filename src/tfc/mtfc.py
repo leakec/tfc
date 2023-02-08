@@ -79,7 +79,6 @@ class mtfc:
         xf: NumberListOrArray = [],
         backend: Literal["C++", "Python"] = "C++",
     ):
-
         # Store givens
         self._elm_classes = ["ELMSigmoid", "ELMTanh", "ELMSin", "ELMSwish", "ELMReLU"]
         self.deg = deg
