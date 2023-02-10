@@ -1,9 +1,11 @@
 import sys
-from typing import Union, Any
+from typing import Union, Any, Callable
 import numpy as np
 import numpy.typing as npt
 import jax.numpy as jnp
 from jaxtyping import Array
+from sympy.core.function import AppliedUndef
+from sympy import Expr
 
 if sys.version_info >= (3, 8):
     from typing import Literal, Protocol, TypedDict
@@ -68,3 +70,12 @@ JaxOrNumpyArray = Union[npt.NDArray, Array]
 # Tuple or list of array
 TupleOrListOfArray = Union[Tuple[JaxOrNumpyArray, ...], List[JaxOrNumpyArray]]
 TupleOrListOfNumpyArray = Union[Tuple[npt.NDArray, ...], List[npt.NDArray]]
+
+# Sympy constraint operator
+# Adding in Any here since sympy types are a bit funky at the moment
+ConstraintOperator = Callable[[Union[AppliedUndef, Expr, Any]], Union[AppliedUndef, Any]]
+ConstraintOperators = Union[List[ConstraintOperator], Tuple[ConstraintOperator, ...]]
+
+# List or tuple of sympy expressions
+# Adding in Any here since sympy types are a bit funky at the moment
+Exprs = Union[List[Union[Expr, Any]], Tuple[Union[Expr, Any], ...]]
