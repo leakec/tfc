@@ -85,7 +85,7 @@ class mtfc:
         self.dim = dim
         self._backend = backend
 
-        _int_types = [onp.int0, onp.int8, onp.int16, onp.int32, onp.int64]
+        _int_types = [onp.intp, onp.int8, onp.int16, onp.int32, onp.int64]
 
         # Set N based on user input
         if isinstance(n, np.ndarray):
