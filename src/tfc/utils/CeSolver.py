@@ -1,5 +1,7 @@
 import sympy as sp
+from sympy import Expr
 from sympy.core.function import AppliedUndef
+from sympy.printing.pycode import PythonCodePrinter
 from .types import ConstraintOperators, Exprs, Union, Any
 from .TFCUtils import TFCPrint
 
@@ -265,4 +267,133 @@ class CeSolver:
                     f"Expected result to be {self._K[k]}, but got {self._C[k](self.ce)}."
                 )
                 ret = False
+        return ret
+
+
+class TfcPrinter(PythonCodePrinter):
+    def __init__(self, settings=None):
+        # Switch math to numpy
+        for k, v in self._kf.items():
+            if "math" in v:
+                self._kf[k] = v.replace("math", "np")
+        for k, v in self._kc.items():
+            if "math" in v:
+                self._kc[k] = v.replace("math", "np")
+
+        super().__init__(settings=settings)
+
+    def _hprint_Pow(self, expr: Expr, rational: bool = False, sqrt: str = "np.sqrt"):
+        """
+        Override _hprint_Pow to use np.sqrt rather than math.sqrt
+
+        Parameters
+        ----------
+        expr : Expr
+            Expression to print.
+        rational : bool
+            Whether the expression is rational.
+        sqrt : str
+            String to print for the sqrt.
+
+        Returns
+        -------
+        str
+            String to print.
+        """
+
+        return super()._hprint_Pow(expr, rational=rational, sqrt=sqrt)
+
+    def _print_Symbol(self, expr: Expr) -> str:
+        """
+        Add in Symbol printing function.
+
+        Parameters
+        ----------
+        expr : Expr
+            Symbol to print.
+
+        Returns
+        -------
+        str
+            String to print.
+        """
+        return self._print(str(expr))
+
+    def _print_Function(self, expr: Expr) -> str:
+        """
+        Add in Function printing function.
+
+        Parameters
+        ----------
+        expr : Expr
+            Function to print.
+
+        Returns
+        -------
+        str
+            String to print.
+        """
+        return self._print(str(expr))
+
+    def _print_Subs(self, subs: Expr) -> str:
+        """
+        Substitute values.
+
+        Parameters
+        ----------
+        subs : Expr
+            Substitution(s).
+
+        Returns
+        -------
+        str
+            String to print.
+        """
+        expr, old, new = subs.args
+        expr = self._print(expr)
+        for k in range(len(old)):
+            expr = expr.replace(self._print(old[k]), self._print(new[k]))
+        return expr
+
+    def _print_Derivative(self, expr: Expr) -> str:
+        """
+        Add in derivative printing function that uses egrad.
+
+        Parameters
+        ----------
+        expr : Expr
+            Expression to print.
+
+        Returns
+        -------
+        str
+            String to print.
+        """
+        # Function will be the full function, e.g., g(x,y)
+        # vars will be the derivative symbol and order.
+        # For example, dg/dx will have vars [(x,1)]
+        function, *vars = expr.args
+
+        # Find position for each derivative
+        function_vars = function.args
+        position_vars = []
+        for var in vars:
+            ind = function_vars.index(var[0])
+            position_vars.append((ind, var[1]))
+
+        # If you want the printer to work correctly for nested
+        # expressions then use self._print() instead of str() or latex().
+        # See the example of nested modulo below in the custom printing
+        # method section.
+        name = function.func.__name__
+        parenthesis_counter = 0
+        ret = ""
+        for pv in position_vars:
+            for _ in range(pv[1]):
+                ret += self._print("egrad(" + name + "," + str(pv[0]))
+                parenthesis_counter += 1
+        for _ in range(parenthesis_counter):
+            ret += self._print(")")
+        ret += "(" + "".join(self._print(i[0]) for i in vars) + ")"
+
         return ret
