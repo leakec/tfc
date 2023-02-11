@@ -72,6 +72,7 @@ setup(
         "colorama",
         "graphviz",
         "yattag",
+        "sympy",
     ],
     classifiers=[
         "Development Status :: 4 - Beta",
