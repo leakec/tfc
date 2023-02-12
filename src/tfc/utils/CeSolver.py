@@ -137,6 +137,19 @@ class CeSolver:
             self._phi_stale = False
         return self._phi
 
+    @phi.setter
+    def phi(self, phi: Any):
+        """
+        Set the switching functions.
+
+        Parameters
+        ----------
+        phi : Any
+            The switching functions.
+        """
+        self._phi = phi
+        self._phi_stale = False
+
     @property
     def rho(self) -> Any:
         """
@@ -280,7 +293,7 @@ class CeSolver:
         bool:
             Returns True if the constraint expression satisfies the constraints and false otherwise.
         """
-        checks = [c(self.ce) == k for c, k in zip(self._C, self._K)]
+        checks = [sp.simplify(c(self.ce)) == sp.simplify(k) for c, k in zip(self._C, self._K)]
         ret = True
         for k, check in enumerate(checks):
             if not check:
