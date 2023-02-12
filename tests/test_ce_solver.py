@@ -55,3 +55,20 @@ def test_multivariate():
 
     assert(csx.checkCe())
     assert(csy.checkCe())
+
+def test_printer():
+    # Test that the printers work
+
+    # Solve for the cosntrained expression.
+    C = [lambda u: u.subs(x, 0), lambda u: sp.diff(u, x).subs(x, 2)]
+    K = [sp.re(2), sp.re(1)]
+    s = [sp.re(1), x]
+    cs = CeSolver(C, K, s, g(x))
+
+    cs.print_type = "tfc"
+    print(cs.ce)
+    cs.print_type = "pretty"
+    print(cs.ce)
+    cs.print_type = "str"
+    print(cs.ce)
+
