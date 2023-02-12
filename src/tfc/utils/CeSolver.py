@@ -2,7 +2,7 @@ import sympy as sp
 from sympy import Expr
 from sympy.core.function import AppliedUndef
 from sympy.printing.pycode import PythonCodePrinter
-from .types import ConstraintOperators, Exprs, Union, Any
+from .types import ConstraintOperators, Exprs, Union, Any, Literal
 from .TFCUtils import TFCPrint
 
 
@@ -69,6 +69,27 @@ class CeSolver:
         self._ce_stale: bool = True
         self._phi_stale: bool = True
         self._rho_stale: bool = True
+
+    @property
+    def print_type(self) -> Literal["tfc", "str", "pretty"]:
+        return self._print_type
+
+    @print_type.setter
+    def print_type(self, print_type: Literal["tfc", "str", "pretty"]) -> None:
+        from sympy import init_printing
+
+        self._print_type = print_type
+        if self._print_type == "tfc":
+            tfc_printer = TfcPrinter()
+            init_printing(pretty_print=True, pretty_printer=tfc_printer.doprint)
+        elif self._print_type == "str":
+            init_printing(pretty_print=False)
+        elif self._print_type == "pretty":
+            init_printing()
+        else:
+            TFCPrint.Error(
+                f'print_type was specified as {print_type} but only "tfc", "str", and "pretty" are accepted.'
+            )
 
     @property
     def ce(self) -> Any:
@@ -263,7 +284,7 @@ class CeSolver:
         ret = True
         for k, check in enumerate(checks):
             if not check:
-                TFCPrint.Error(
+                TFCPrint.Warning(
                     f"Expected result to be {self._K[k]}, but got {self._C[k](self.ce)}."
                 )
                 ret = False
