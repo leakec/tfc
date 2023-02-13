@@ -302,7 +302,7 @@ class CeSolver:
         for k, check in enumerate(checks):
             if not check:
                 TFCPrint.Warning(
-                    f"Expected result to be {self._K[k]}, but got {self._C[k](self.ce)}."
+                    f"Expected result of constraint {k+1} to be {self._K[k]}, but got {self._C[k](self.ce)}."
                 )
                 ret = False
         return ret
