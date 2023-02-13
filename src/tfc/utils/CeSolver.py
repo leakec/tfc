@@ -72,11 +72,11 @@ class CeSolver:
         self._rho_stale: bool = True
 
     @property
-    def print_type(self) -> Literal["tfc", "pretty","latex", "str"]:
+    def print_type(self) -> Literal["tfc", "pretty", "latex", "str"]:
         return self._print_type
 
     @print_type.setter
-    def print_type(self, print_type: Literal["tfc", "pretty","latex", "str"]) -> None:
+    def print_type(self, print_type: Literal["tfc", "pretty", "latex", "str"]) -> None:
         from sympy import init_printing
 
         self._print_type = print_type
@@ -89,6 +89,7 @@ class CeSolver:
             init_printing()
         elif self._print_type == "latex":
             from sympy import latex
+
             init_printing(pretty_print=True, pretty_printer=latex)
         else:
             TFCPrint.Error(
