@@ -69,6 +69,8 @@ def test_printer():
     print(cs.ce)
     cs.print_type = "pretty"
     print(cs.ce)
+    cs.print_type = "latex"
+    print(cs.ce)
     cs.print_type = "str"
     print(cs.ce)
 
