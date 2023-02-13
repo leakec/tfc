@@ -4,6 +4,7 @@ from sympy.core.function import AppliedUndef
 from sympy.printing.pycode import PythonCodePrinter
 from .types import ConstraintOperators, Exprs, Union, Any, Literal
 from .TFCUtils import TFCPrint
+from sympy import latex
 
 
 class CeSolver:
@@ -71,11 +72,11 @@ class CeSolver:
         self._rho_stale: bool = True
 
     @property
-    def print_type(self) -> Literal["tfc", "str", "pretty"]:
+    def print_type(self) -> Literal["tfc", "pretty","latex", "str"]:
         return self._print_type
 
     @print_type.setter
-    def print_type(self, print_type: Literal["tfc", "str", "pretty"]) -> None:
+    def print_type(self, print_type: Literal["tfc", "pretty","latex", "str"]) -> None:
         from sympy import init_printing
 
         self._print_type = print_type
@@ -86,9 +87,12 @@ class CeSolver:
             init_printing(pretty_print=False)
         elif self._print_type == "pretty":
             init_printing()
+        elif self._print_type == "latex":
+            from sympy import latex
+            init_printing(pretty_print=True, pretty_printer=latex)
         else:
             TFCPrint.Error(
-                f'print_type was specified as {print_type} but only "tfc", "str", and "pretty" are accepted.'
+                f'print_type was specified as {print_type} but only "tfc", "pretty", "latex", and "str" are accepted.'
             )
 
     @property
