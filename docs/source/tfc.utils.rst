@@ -4,6 +4,14 @@ tfc.utils package
 Submodules
 ----------
 
+tfc.utils.CeSolver module
+---------------------
+
+.. automodule:: tfc.utils.CeSolver
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 tfc.utils.Html module
 ---------------------
 
