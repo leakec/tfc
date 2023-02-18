@@ -135,6 +135,7 @@ class CeSolver:
             Switching functions.
         """
         from sympy.simplify.simplify import nc_simplify
+
         def _applyC(c, s) -> Any:
             """
             Apply the constraint operator to the switching function.
@@ -149,7 +150,7 @@ class CeSolver:
             Returns
             -------
             Any
-                c(s), which is a number on the field over which the 
+                c(s), which is a number on the field over which the
                 constrained expression is defined.
             """
 
@@ -159,7 +160,7 @@ class CeSolver:
             return dark
 
         if self._phi_stale:
-            S = sp.Matrix([[_applyC(c,s) for s in self._s] for c in self._C])
+            S = sp.Matrix([[_applyC(c, s) for s in self._s] for c in self._C])
             alpha = S.inv()
             s_vec = sp.Matrix([s for s in self._s])
             self._phi = s_vec.transpose() * alpha
@@ -190,7 +191,9 @@ class CeSolver:
             Projection functionals.
         """
         if self._rho_stale:
-            self._rho = sp.Matrix([sp.Add(kappa, - self._C[k](self._g)) for k, kappa in enumerate(self._K)])
+            self._rho = sp.Matrix(
+                [sp.Add(kappa, -self._C[k](self._g)) for k, kappa in enumerate(self._K)]
+            )
         return self._rho
 
     @property
@@ -311,7 +314,7 @@ class CeSolver:
         """
         Solves the constrained expression and stores it in self.ce
         """
-        self._ce = sp.Add(self.g,(self.phi * self.rho)[0])
+        self._ce = sp.Add(self.g, (self.phi * self.rho)[0])
 
     def checkCe(self) -> bool:
         """
