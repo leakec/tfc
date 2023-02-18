@@ -2,7 +2,7 @@ import sympy as sp
 from sympy import Expr
 from sympy.core.function import AppliedUndef
 from sympy.printing.pycode import PythonCodePrinter
-from .types import ConstraintOperators, Exprs, Union, Any, Literal
+from .types import ConstraintOperators, Exprs, Union, Any, Literal, ConstraintOperator
 from .TFCUtils import TFCPrint
 from sympy import latex
 
@@ -134,8 +134,32 @@ class CeSolver:
         Any
             Switching functions.
         """
+        from sympy.simplify.simplify import nc_simplify
+        def _applyC(c, s) -> Any:
+            """
+            Apply the constraint operator to the switching function.
+
+            Parameters
+            ----------
+            c : ConstraintOperator
+                Constraint operator.
+            s : Expr
+                Switching function.
+
+            Returns
+            -------
+            Any
+                c(s), which is a number on the field over which the 
+                constrained expression is defined.
+            """
+
+            dark = c(s)
+            if isinstance(dark, sp.Matrix) or isinstance(dark, sp.MatMul):
+                dark = nc_simplify(dark)[0]
+            return dark
+
         if self._phi_stale:
-            S = sp.Matrix([[c(s) for s in self._s] for c in self._C])
+            S = sp.Matrix([[_applyC(c,s) for s in self._s] for c in self._C])
             alpha = S.inv()
             s_vec = sp.Matrix([s for s in self._s])
             self._phi = s_vec.transpose() * alpha
@@ -166,7 +190,7 @@ class CeSolver:
             Projection functionals.
         """
         if self._rho_stale:
-            self._rho = sp.Matrix([kappa - self._C[k](self._g) for k, kappa in enumerate(self._K)])
+            self._rho = sp.Matrix([sp.Add(kappa, - self._C[k](self._g)) for k, kappa in enumerate(self._K)])
         return self._rho
 
     @property
@@ -287,7 +311,7 @@ class CeSolver:
         """
         Solves the constrained expression and stores it in self.ce
         """
-        self._ce = self.g + (self.phi * self.rho)[0]
+        self._ce = sp.Add(self.g,(self.phi * self.rho)[0])
 
     def checkCe(self) -> bool:
         """
