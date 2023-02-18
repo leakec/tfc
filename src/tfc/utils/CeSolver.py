@@ -2,6 +2,7 @@ import sympy as sp
 from sympy import Expr
 from sympy.core.function import AppliedUndef
 from sympy.printing.pycode import PythonCodePrinter
+from sympy.simplify.simplify import nc_simplify
 from .types import ConstraintOperators, Exprs, Union, Any, Literal, ConstraintOperator
 from .TFCUtils import TFCPrint
 from sympy import latex
@@ -68,6 +69,8 @@ class CeSolver:
         self._s = s
         self._g = g
         self._ce_stale: bool = True
+        self._S_stale: bool = True
+        self._alpha_stale: bool = True
         self._phi_stale: bool = True
         self._rho_stale: bool = True
 
@@ -134,7 +137,50 @@ class CeSolver:
         Any
             Switching functions.
         """
-        from sympy.simplify.simplify import nc_simplify
+        if self._phi_stale:
+            s_vec = sp.Matrix([s for s in self._s])
+            self._phi = s_vec.transpose() * self.alpha
+            self._phi_stale = False
+        return self._phi
+
+    @phi.setter
+    def phi(self, phi: Any):
+        """
+        Set the switching functions.
+
+        Parameters
+        ----------
+        phi : Any
+            The switching functions.
+        """
+        self._phi = phi
+        self._phi_stale = False
+
+    @property
+    def alpha(self) -> sp.Matrix:
+        """
+        Alpha matrix (inverse of the support matrix)
+
+        Returns
+        sp.Matrix
+            alpha matrix. The elements are on the field over which
+            the constrained expression is defined.
+        """
+        if self._alpha_stale:
+            self._alpha = self.S.inv()
+            self._alpha_stale = False
+        return self._alpha
+
+    @property
+    def S(self) -> sp.Matrix:
+        """
+        Support matrix.
+
+        Returns
+        sp.Matrix
+            Support matrix. The elements are on the field over which
+            the constrained expression is defined.
+        """
 
         def _applyC(c, s) -> Any:
             """
@@ -159,26 +205,10 @@ class CeSolver:
                 dark = nc_simplify(dark)[0]
             return dark
 
-        if self._phi_stale:
-            S = sp.Matrix([[_applyC(c, s) for s in self._s] for c in self._C])
-            alpha = S.inv()
-            s_vec = sp.Matrix([s for s in self._s])
-            self._phi = s_vec.transpose() * alpha
-            self._phi_stale = False
-        return self._phi
-
-    @phi.setter
-    def phi(self, phi: Any):
-        """
-        Set the switching functions.
-
-        Parameters
-        ----------
-        phi : Any
-            The switching functions.
-        """
-        self._phi = phi
-        self._phi_stale = False
+        if self._S_stale:
+            self._S = sp.Matrix([[_applyC(c, s) for s in self._s] for c in self._C])
+            self._S_stale = False
+        return self._S
 
     @property
     def rho(self) -> Any:
@@ -222,6 +252,8 @@ class CeSolver:
             use sympy.re(1) in this iterable.
         """
         self._s = s
+        self._S_stale = True
+        self._alpha_stale = True
         self._phi_stale = True
         self._ce_stale = True
 
@@ -279,6 +311,8 @@ class CeSolver:
             `lambda u: = u.subs(x,3)`.
         """
         self._C = C
+        self._S_stale = True
+        self._alpha_stale = True
         self._phi_stale = True
         self._rho_stale = True
         self._ce_stale = True
