@@ -2,8 +2,7 @@ import sys
 from typing import Union, Any, Callable
 import numpy as np
 import numpy.typing as npt
-import jax.numpy as jnp
-from jaxtyping import Array
+from jax import Array
 from sympy.core.function import AppliedUndef
 from sympy import Expr
 
