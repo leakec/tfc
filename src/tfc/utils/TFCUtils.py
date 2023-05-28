@@ -1722,12 +1722,12 @@ def criuCheckpoint(dir: str = "criu_checkpoint", user_mode: bool = False):
             f"(criu dump --unpriviledged -t {pid} -D {str(path.absolute())} --shell-job --leave-running &) &"
         )
         print(
-            f'Creating a checkpoint. To restart run: "sudo criu restore -D {str(path.absolute())} --shell-job'
+            f"Creating a checkpoint. To restart run: sudo criu restore -D {str(path.absolute())} --shell-job"
         )
     else:
         os.system(
             f"(sudo criu dump -t {pid} -D {str(path.absolute())} --shell-job --leave-running &) &"
         )
         print(
-            f'Creating a checkpoint. To restart run: "sudo criu restore -D {str(path.absolute())} --shell-job'
+            f"Creating a checkpoint. To restart run: sudo criu restore -D {str(path.absolute())} --shell-job"
         )
