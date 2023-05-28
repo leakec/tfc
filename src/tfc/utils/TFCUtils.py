@@ -1689,3 +1689,45 @@ def step(x: np.ndarray) -> np.ndarray:
         step(x)
     """
     return np.heaviside(x, 0)
+
+
+def criuCheckpoint(dir: str = "criu_checkpoint", user_mode: bool = False):
+    """
+    Use CRIU to create a checkpoint of your program.
+    WARNING: You must ensure no external sockets are used, i.e., via matplotlib.
+    WARNING: GPU memory cannot be mapped for all GPUs.
+    WARNING: user_mode is a work in progress and is not full featured yet.
+
+    Parameters
+    ----------
+    dir : str
+        Directory where the CRIU checkpoint will be created.
+    user_mode : bool
+        Whether to use user mode or not. (Default value = False)
+    """
+
+    import os
+    from pathlib import Path
+
+    path = Path(dir)
+    pid = os.getpid()
+
+    # Create path if it does not exist
+    if not os.path.exists(path):
+        os.mkdir(path)
+
+    # Run the command and print how to restart
+    if user_mode:
+        os.system(
+            f"(criu dump --unpriviledged -t {pid} -D {str(path.absolute())} --shell-job --leave-running &) &"
+        )
+        print(
+            f'Creating a checkpoint. To restart run: "sudo criu restore -D {str(path.absolute())} --shell-job'
+        )
+    else:
+        os.system(
+            f"(sudo criu dump -t {pid} -D {str(path.absolute())} --shell-job --leave-running &) &"
+        )
+        print(
+            f'Creating a checkpoint. To restart run: "sudo criu restore -D {str(path.absolute())} --shell-job'
+        )
