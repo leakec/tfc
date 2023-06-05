@@ -23,7 +23,7 @@ from jax.interpreters.partial_eval import trace_to_jaxpr_nounits, PartialVal
 from jax.experimental.host_callback import id_tap
 from typing import Any, Callable, Optional, Union, cast
 from .types import uint, List, Literal, Tuple, TypedDict, Path, Dict
-from jaxtyping.pytree_type import PyTree
+from jaxtyping import PyTree
 from typing import cast
 
 # Types that can be added to a TFCDict
