@@ -18,7 +18,7 @@ from .utils.types import (
     Array,
     Tuple,
 )
-from jax import core, abstract_arrays
+from jax import core
 from jax.interpreters import ad, batching, xla
 from jax.lib import xla_client
 
@@ -562,7 +562,7 @@ class mtfc:
         # Define abstract evaluation
         def H_abstract_eval(
             *x, d: npt.NDArray[onp.int32] = d0, full: bool = False
-        ) -> abstract_arrays.ShapedArray:
+        ) -> core.ShapedArray:
             if full:
                 dim1 = self.basisClass.numBasisFuncFull
             else:
@@ -571,7 +571,7 @@ class mtfc:
                 dims = (dim1,)
             else:
                 dims = (x[0].shape[0], dim1)
-            return abstract_arrays.ShapedArray(dims, x[0].dtype)
+            return core.ShapedArray(dims, x[0].dtype)
 
         H_p.def_abstract_eval(H_abstract_eval)
 

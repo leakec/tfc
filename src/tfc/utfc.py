@@ -7,7 +7,7 @@ import jax.numpy as np
 import numpy.typing as npt
 from typing import Optional, cast
 from .utils.types import Literal, uint, IntArrayLike, JaxOrNumpyArray
-from jax import core, abstract_arrays
+from jax import core 
 from jax.interpreters import ad, batching, xla
 from jax.lib import xla_client
 
@@ -304,7 +304,7 @@ class utfc:
         H_p.def_impl(H_impl)
 
         # Abstract evaluation
-        def H_abstract_eval(x, d: uint = 0, full: bool = False) -> abstract_arrays.ShapedArray:
+        def H_abstract_eval(x, d: uint = 0, full: bool = False) -> core.ShapedArray:
             if full:
                 dim1 = self.basisClass.m
             else:
@@ -313,7 +313,7 @@ class utfc:
                 dims = (dim1,)
             else:
                 dims = (x.shape[0], dim1)
-            return abstract_arrays.ShapedArray(dims, x.dtype)
+            return core.ShapedArray(dims, x.dtype)
 
         H_p.def_abstract_eval(H_abstract_eval)
 
