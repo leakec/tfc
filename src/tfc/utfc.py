@@ -7,7 +7,7 @@ import jax.numpy as np
 import numpy.typing as npt
 from typing import Optional, cast
 from .utils.types import Literal, uint, IntArrayLike, JaxOrNumpyArray
-from jax import core 
+from jax import core
 from jax.interpreters import ad, batching, xla
 from jax.lib import xla_client
 
