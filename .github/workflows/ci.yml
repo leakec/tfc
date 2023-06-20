@@ -5,6 +5,7 @@ on:
     paths: 
       - 'src/tfc/**'
       - 'tests/**'
+      - 'setup.py'
   
   workflow_dispatch:
 
