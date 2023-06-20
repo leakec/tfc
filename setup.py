@@ -30,7 +30,7 @@ BF = Extension(
     "tfc.utils.BF._BF",
     sources=["src/tfc/utils/BF/BF.i","src/tfc/utils/BF/BF.cxx"],
     include_dirs=["src/tfc/utils/BF", numpy_include],
-    swig_opts=["-c++"],
+    swig_opts=["-c++", "-doxygen", "-O", "-olddefs"],
     extra_compile_args=cxxFlags,
     extra_link_args=cxxFlags,
 )
