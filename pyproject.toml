@@ -27,6 +27,10 @@ archs = ["x86_64"]
 before-all = "brew install swig"
 archs = ["x86_64"]
 
+[tool.cibuildwheel.windows]
+before-all = "brew install swig"
+archs = ["AMD64"]
+
 [[tool.cibuildwheel.overrides]]
 select = "*-musllinux*"
 before-all = "apk add swig"
