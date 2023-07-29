@@ -12,12 +12,6 @@ jobs:
         os: [windows-latest]
   
     steps:
-      - name: Fix symbolic Windows link issues
-        run: git config --global core.symlinks true
-
-      - name: Ingore file paths that Windows will complain about
-        run: git config --global core.protectNTFS false
-
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v3
   
