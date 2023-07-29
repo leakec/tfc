@@ -1,5 +1,5 @@
 import sys
-from os import path
+from os import path, name
 import numpy
 from setuptools import setup, Extension, find_packages
 from setuptools.command.build_py import build_py as _build_py
@@ -23,7 +23,11 @@ with open('src/tfc/version.py') as f:
   version = version_dict["__version__"]
 
 # In the future, can add -DHAS_CUDA to this to enable GPU support
-cxxFlags = ["-O3", "-std=c++17", "-Wall", "-Wextra", "-Wno-unused-parameter", "-fPIC"]
+if name == 'nt':
+    # Windows compile flags
+    cxxFlags = ["-O3", "-std=c++17", "-Wall", "-Wno-unused-parameter", "-fPIC"]
+else:
+    cxxFlags = ["-O3", "-std=c++17", "-Wall", "-Wextra", "-Wno-unused-parameter", "-fPIC"]
 
 # Create basis function c++ extension
 BF = Extension(
