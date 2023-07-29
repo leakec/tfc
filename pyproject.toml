@@ -28,7 +28,6 @@ before-all = "brew install swig"
 archs = ["x86_64"]
 
 [tool.cibuildwheel.windows]
-before-all = "brew install swig"
 archs = ["AMD64"]
 
 [[tool.cibuildwheel.overrides]]
