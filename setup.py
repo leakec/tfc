@@ -29,6 +29,11 @@ if name == 'nt':
 else:
     cxxFlags = ["-O3", "-std=c++17", "-Wall", "-Wextra", "-Wno-unused-parameter", "-fPIC"]
 
+if sys.version_info >= (3, 8):	
+    numpy_version = "numpy>=1.23.0"	
+else:	
+    numpy_version = "numpy>=1.21.0"	
+
 # Create basis function c++ extension
 BF = Extension(
     "tfc.utils.BF._BF",
