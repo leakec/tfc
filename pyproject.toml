@@ -1,6 +1,7 @@
 [project]
 requires-python = ">=3.9"
 name = "tfc"
+version = "1.0.5"
 
 [build-system]
 requires = ["setuptools>=42", 
