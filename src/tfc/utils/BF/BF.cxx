@@ -1,3 +1,4 @@
+#define _USE_MATH_DEFINES // Needed by Windows
 #include <iostream>
 #include <vector>
 #include <math.h>
