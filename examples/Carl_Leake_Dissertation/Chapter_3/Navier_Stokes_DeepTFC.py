@@ -6,7 +6,7 @@ from tfc.utils import MakePlot
 
 # Import the model from the auxillary folder
 import sys
-sys.path.append("aux")
+sys.path.append("auxillary")
 from Navier_Stokes_DeepTFC_aux import myModel
 
 # Set CPU as available physical device
