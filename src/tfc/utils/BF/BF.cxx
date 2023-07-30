@@ -971,7 +971,7 @@ nBasisFunc::nBasisFunc(double* x0in, int x0Dim0, double* xf, int xfDim0, int* nC
 	numBasisFunc = 0; numBasisFuncFull = 0;
 
 #ifdef WINDOWS_MSVC
-	int* vec = int[dim];
+	int* vec = int[size_t(dim)];
 	NumBasisFunc(dim-1, vec, numBasisFunc, false);
 	NumBasisFunc(dim-1, vec, numBasisFuncFull, true);
 	delete[] vec;
@@ -1060,7 +1060,7 @@ void nBasisFunc::nHint(double* x, int n, const int* d, int dDim0, int numBasis, 
 	int count = 0;
 
 #ifdef WINDOWS_MSVC
-	int* vec = int[dim];
+	int* vec = int[size_t(dim)];
 	RecurseBasis(dim-1, vec, count, full, n, numBasis, &T[0], F);
 	delete[] vec;
 #else
