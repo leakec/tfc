@@ -40,7 +40,7 @@ This differential equation can be viewed as an optimization problem where we see
 For more information on the appliation of TFC to differential equations and its benefits see the [Mathematical documentation](#mathematical-documentation).
 
 ## Installation:
-The following instructions can be used to install a source distribution via pip or build TFC directly from source. Currently, we support building TFC navitely on Linux or macOS, but Windows users can still use TFC via the Windows Subsystem for Linux.
+The following instructions can be used to install a source distribution via pip or build TFC directly from source. 
 
 To install via pip run:
 ```bash
