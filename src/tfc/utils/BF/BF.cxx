@@ -968,10 +968,19 @@ nBasisFunc::nBasisFunc(double* x0in, int x0Dim0, double* xf, int xfDim0, int* nC
 		c[k] = (zf-z0)/(xf[k]-x0[k]);
 
 	// Calculate the number of basis functions
+#ifdef WINDOWS_MSVC
+	int* vec = int[dim];
+#else
 	int vec[dim];
+#endif
+
 	numBasisFunc = 0; numBasisFuncFull = 0;
 	NumBasisFunc(dim-1, &vec[0], numBasisFunc, false);
 	NumBasisFunc(dim-1, &vec[0], numBasisFuncFull, true);
+
+#ifdef WINDOWS_MSVC
+	delete[] vec;
+#endif
 
 	// Track this instance of BasisFunc 
 	BasisFuncContainer.push_back(this);
