@@ -25,7 +25,7 @@ with open('src/tfc/version.py') as f:
 # In the future, can add -DHAS_CUDA to this to enable GPU support
 if name == 'nt':
     # Windows compile flags
-    cxxFlags = ["/O3", "/std=c++17", "/Wall", "/fPIC"]
+    cxxFlags = ["/O2", "/std:c++17", "/Wall", "/DWINDOWS_MSVC"]
 else:
     cxxFlags = ["-O3", "-std=c++17", "-Wall", "-Wextra", "-Wno-unused-parameter", "-fPIC"]
 

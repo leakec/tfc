@@ -858,7 +858,12 @@ void ELMSin::Hint(const int d, const double* x, const int nOut, double* dark){
 
 void ELMSwish::Hint(const int d, const double* x, const int nOut, double* dark){
 	int j,k;
+#ifdef WINDOWS_MSVC
+    double* sig = new double[nOut*m];
+    double* zint = new double[nOut*m];
+#else
 	double sig[nOut*m], zint[nOut*m];
+#endif
 
 	if (d == 0){
 		for (j=0;j<nOut;j++){
@@ -933,6 +938,12 @@ void ELMSwish::Hint(const int d, const double* x, const int nOut, double* dark){
 		    }
 		}
 	}
+
+#ifdef WINDOWS_MSVC
+    delete[] sig;
+    delete[] zint;
+#endif
+
 	return;
 };
 
