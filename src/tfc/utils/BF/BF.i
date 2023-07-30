@@ -15,6 +15,8 @@
 #include "BF.h"
 %}
 
+%feature("python:annotations", "c");
+
 %include "numpy.i"
 %include <typemaps.i>
 %include <attribute.i>
