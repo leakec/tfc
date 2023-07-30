@@ -1,14 +1,3 @@
-#define _USE_MATH_DEFINES // Needed by Windows
-#include <iostream>
-#include <vector>
-#include <math.h>
-#include <float.h>
-#include <Python.h>
-#ifdef HAS_CUDA
-	#include <cuda.h>
-	#include <cuda_runtime.h>
-	#include <cuda_runtime_api.h>
-#endif
 #include "BF.h"
 
 // Initialize static BasisFunc variables
