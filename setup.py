@@ -1,5 +1,5 @@
 import sys
-from os import path
+from os import path, name
 import numpy
 from setuptools import setup, Extension, find_packages
 from setuptools.command.build_py import build_py as _build_py
@@ -23,7 +23,16 @@ with open('src/tfc/version.py') as f:
   version = version_dict["__version__"]
 
 # In the future, can add -DHAS_CUDA to this to enable GPU support
-cxxFlags = ["-O3", "-std=c++17", "-Wall", "-Wextra", "-Wno-unused-parameter", "-fPIC"]
+if name == 'nt':
+    # Windows compile flags
+    cxxFlags = ["/O2", "/std:c++17", "/Wall", "/DWINDOWS_MSVC"]
+else:
+    cxxFlags = ["-O3", "-std=c++17", "-Wall", "-Wextra", "-Wno-unused-parameter", "-fPIC"]
+
+if sys.version_info >= (3, 8):	
+    numpy_version = "numpy>=1.23.0"	
+else:	
+    numpy_version = "numpy>=1.21.0"	
 
 # Create basis function c++ extension
 BF = Extension(
@@ -40,11 +49,6 @@ class build_py(_build_py):
     def run(self):
         self.run_command("build_ext")
         super(build_py, self).run()
-
-if sys.version_info >= (3, 8):
-    numpy_version = "numpy>=1.23.0"
-else:
-    numpy_version = "numpy>=1.21.0"
 
 # Setup
 setup(

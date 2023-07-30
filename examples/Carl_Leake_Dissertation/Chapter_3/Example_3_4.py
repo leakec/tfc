@@ -2,7 +2,7 @@ import numpy as np
 
 # Import the model from the auxillary folder
 import sys
-sys.path.append("aux")
+sys.path.append("auxillary")
 from Example_3_4_aux import myModel
 
 np.random.seed(1)

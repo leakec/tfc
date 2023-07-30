@@ -1,13 +1,3 @@
-#include <iostream>
-#include <vector>
-#include <math.h>
-#include <float.h>
-#include <Python.h>
-#ifdef HAS_CUDA
-	#include <cuda.h>
-	#include <cuda_runtime.h>
-	#include <cuda_runtime_api.h>
-#endif
 #include "BF.h"
 
 // Initialize static BasisFunc variables
@@ -857,7 +847,12 @@ void ELMSin::Hint(const int d, const double* x, const int nOut, double* dark){
 
 void ELMSwish::Hint(const int d, const double* x, const int nOut, double* dark){
 	int j,k;
+#ifdef WINDOWS_MSVC
+    double* sig = new double[nOut*m];
+    double* zint = new double[nOut*m];
+#else
 	double sig[nOut*m], zint[nOut*m];
+#endif
 
 	if (d == 0){
 		for (j=0;j<nOut;j++){
@@ -932,6 +927,12 @@ void ELMSwish::Hint(const int d, const double* x, const int nOut, double* dark){
 		    }
 		}
 	}
+
+#ifdef WINDOWS_MSVC
+    delete[] sig;
+    delete[] zint;
+#endif
+
 	return;
 };
 
@@ -956,10 +957,21 @@ nBasisFunc::nBasisFunc(double* x0in, int x0Dim0, double* xf, int xfDim0, int* nC
 		c[k] = (zf-z0)/(xf[k]-x0[k]);
 
 	// Calculate the number of basis functions
-	int vec[dim];
 	numBasisFunc = 0; numBasisFuncFull = 0;
+
+#ifdef WINDOWS_MSVC
+	int* vec = new int[dim];
+#else
+	int vec[dim];
+#endif
+
 	NumBasisFunc(dim-1, &vec[0], numBasisFunc, false);
 	NumBasisFunc(dim-1, &vec[0], numBasisFuncFull, true);
+
+#ifdef WINDOWS_MSVC
+	delete[] vec;
+#endif
+
 
 	// Track this instance of BasisFunc 
 	BasisFuncContainer.push_back(this);
@@ -1037,8 +1049,19 @@ void nBasisFunc::nHint(double* x, int n, const int* d, int dDim0, int numBasis, 
 		F[k] = 1.;
 
 	int count = 0;
+
+#ifdef WINDOWS_MSVC
+	int* vec = new int[dim];
+#else
 	int vec[dim];
-	RecurseBasis(dim-1, &vec[0], count, full, n, numBasis, &T[0], F);
+#endif
+
+	RecurseBasis(dim-1, vec, count, full, n, numBasis, &T[0], F);
+
+#ifdef WINDOWS_MSVC
+	delete[] vec;
+#endif
+
 	delete[] dark; delete[] T; delete[] z;
 };
 
