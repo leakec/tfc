@@ -1058,8 +1058,19 @@ void nBasisFunc::nHint(double* x, int n, const int* d, int dDim0, int numBasis, 
 		F[k] = 1.;
 
 	int count = 0;
+
+#ifdef WINDOWS_MSVC
+	int* vec = int[dim];
+#else
 	int vec[dim];
+#endif
+
 	RecurseBasis(dim-1, &vec[0], count, full, n, numBasis, &T[0], F);
+
+#ifdef WINDOWS_MSVC
+	delete[] vec;
+#endif
+
 	delete[] dark; delete[] T; delete[] z;
 };
 
