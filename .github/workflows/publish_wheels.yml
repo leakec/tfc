@@ -82,6 +82,11 @@ jobs:
           name: macOS-latest_binary_wheels
           path: ./dist
 
+      - uses: actions/download-artifact@v3
+        with:
+          name: windows-latest_binary_wheels
+          path: ./dist
+
       - name: Publish package to PyPI test
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
