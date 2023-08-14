@@ -1,16 +1,18 @@
 sphinx >=3, < 4 
 sphinx_rtd_theme
 sphinx-copybutton
+numpy
+scipy
+pandas
+matplotlib
 breathe
 exhale
 nbsphinx
 ipykernel
-numpy
 jax
 jaxlib
 jaxtyping
 annotated_types
-matplotlib
 colorama
 graphviz
 yattag
