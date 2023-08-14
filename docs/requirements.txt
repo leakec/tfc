@@ -1,4 +1,4 @@
-sphinx >=3, < 4 
+sphinx
 sphinx_rtd_theme
 sphinx-copybutton
 numpy
