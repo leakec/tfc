@@ -8,7 +8,7 @@ import numpy.typing as npt
 from typing import Optional, cast
 from .utils.types import Literal, uint, IntArrayLike, JaxOrNumpyArray
 from jax import core
-from jax.interpreters import ad, batching, xla
+from jax.interpreters import ad, batching, mlir
 from jax.lib import xla_client
 
 from .utils.TFCUtils import TFCPrint
@@ -343,7 +343,7 @@ class utfc:
                     xla_client.Shape.array_shape(dtype, (dim0, dim1)),
                 )
 
-            xla.backend_specific_translations["cpu"][H_p] = H_xla
+            mlir.register_lowering(H_p, H_xla, platform="cpu")
 
         # Define batching translation
         def H_batch(vec, batch, d: uint = 0, full: bool = False):

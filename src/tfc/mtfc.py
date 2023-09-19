@@ -19,7 +19,7 @@ from .utils.types import (
     Tuple,
 )
 from jax import core
-from jax.interpreters import ad, batching, xla
+from jax.interpreters import ad, batching, mlir
 from jax.lib import xla_client
 
 from .utils.TFCUtils import TFCPrint
@@ -602,7 +602,7 @@ class mtfc:
                     xla_client.Shape.array_shape(dtype, (dim0, dim1)),
                 )
 
-            xla.backend_specific_translations["cpu"][H_p] = H_xla
+            mlir.register_lowering(H_p, H_xla, platform="cpu")
 
         # Batching translation
         def H_batch(vec, batch, d: npt.NDArray[onp.int32] = d0, full: bool = False):

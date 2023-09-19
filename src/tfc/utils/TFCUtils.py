@@ -13,7 +13,7 @@ import numpy as onp
 import numpy.typing as npt
 import jax.numpy as np
 from jax import jvp, jit, lax, jacfwd, tree_map
-from jax import linear_util as lu
+from jax.extend import linear_util as lu
 from jax.util import safe_zip
 from jax.tree_util import register_pytree_node, tree_map
 from jax._src.api_util import flatten_fun
