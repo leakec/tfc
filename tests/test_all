@@ -42,6 +42,9 @@ run_test ()
 		echo $TEST failed!
 		cat $TEMPFILE
 		echo 
+    else
+        echo $TEST success!
+        echo
 	fi
 }
 
