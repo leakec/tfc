@@ -21,6 +21,8 @@ from .utils.types import (
 from jax import core
 from jax.interpreters import ad, batching, mlir
 from jax.lib import xla_client
+from jaxlib import hlo_helpers
+import jaxlib.mlir.ir as ir
 
 from .utils.TFCUtils import TFCPrint
 
@@ -524,27 +526,14 @@ class mtfc:
     def SetupJAX(self):
         """This function is used internally by TFC to setup autograd primatives and create desired behavior when taking derivatives of TFC constrained expressions."""
 
-        # Helper functions
-        def _constant_bool(c, a):
-            return xla_client.ops.Constant(c, bool(a))
-
-        def _constant_s32_scalar(c, a):
-            return xla_client.ops.Constant(c, int(a))
-
-        def _constant_array(c, a):
-            return xla_client.ops.Constant(c, a)
-
-        def _unpack_builder(c):
-            # If `c` is a ComputationBuilder object, extracts the underlying XlaBuilder.
-            return getattr(c, "_builder", c)
-
+        # Helper variables
         d0 = onp.zeros(self.dim, dtype=np.int32)
 
         # Regiser XLA function
         if self._backend == "C++":
             obj = self.basisClass.xlaCapsule
-            xlaName = "BasisFunc" + str(self.basisClass.identifier)
-            xlaName = xlaName.encode("utf-8")
+            xlaName_str = "BasisFunc" + str(self.basisClass.identifier)
+            xlaName = xlaName_str.encode("utf-8")
             xla_client.register_custom_call_target(xlaName, obj, platform="cpu")
 
         # Create Primitives
@@ -577,30 +566,34 @@ class mtfc:
 
         if self._backend == "C++":
             # XLA compilation
-            def H_xla(c, *x, d: npt.NDArray[onp.int32] = d0, full: bool = False):
-                c = _unpack_builder(c)
-                x_shape = c.get_shape(x[0])
-                dims = x_shape.dimensions()
-                dtype = x_shape.element_type()
+            def default_layout(shape):
+                return tuple(range(len(shape) - 1, -1, -1))
+            def H_xla(ctx, *x, d: uint = 0, full: bool = False):
+                x_type = ir.RankedTensorType(x[0].type)
+                dims = x_type.shape
                 dim0 = dims[0]
                 if full:
                     dim1 = self.basisClass.numBasisFuncFull
                 else:
                     dim1 = self.basisClass.numBasisFunc
-                return xla_client.ops.CustomCall(
-                    c,
-                    xlaName,
-                    (
-                        _constant_s32_scalar(c, self.basisClass.identifier),
-                        xla_client.ops.ConcatInDim(c, x, 0),
-                        _constant_array(c, d),
-                        _constant_s32_scalar(c, self.dim),
-                        _constant_bool(c, full),
-                        _constant_s32_scalar(c, dim0),
-                        _constant_s32_scalar(c, dim1),
-                    ),
-                    xla_client.Shape.array_shape(dtype, (dim0, dim1)),
-                )
+                res_types, res_shapes = hlo_helpers.mk_result_types_and_shapes([((dim0,dim1), x_type.element_type)])
+                return hlo_helpers.custom_call(
+                    xlaName_str,
+                    result_types=res_types,
+                    result_shapes=res_shapes,
+                    operands=
+                    [
+                        hlo_helpers.hlo_s32(self.basisClass.identifier),
+                        hlo_helpers.hlo.ConcatenateOp(x,0).result, # NEED TO CONCATInDIM
+                        hlo_helpers.hlo_s32(d),
+                        hlo_helpers.hlo_s32(self.dim),
+                        mlir.ir_constant(full),
+                        hlo_helpers.hlo_s32(dim0),
+                        hlo_helpers.hlo_s32(dim1),
+                    ],
+                    operand_layouts=[(), default_layout((dim0*len(x),)), default_layout((len(d),)), (), (), (), ()],
+                    result_layouts=[default_layout((dim0,dim1)),],
+                ).results
 
             mlir.register_lowering(H_p, H_xla, platform="cpu")
 
