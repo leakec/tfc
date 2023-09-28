@@ -312,6 +312,7 @@ class utfc:
             # XLA compilation
             def default_layout(shape):
                 return tuple(range(len(shape) - 1, -1, -1))
+
             def H_xla(ctx, x, d: uint = 0, full: bool = False):
                 x_type = ir.RankedTensorType(x.type)
                 dims = x_type.shape
@@ -320,13 +321,14 @@ class utfc:
                     dim1 = self.basisClass.m
                 else:
                     dim1 = self.basisClass.m - self.basisClass.numC
-                res_types, res_shapes = hlo_helpers.mk_result_types_and_shapes([((dim0,dim1), x_type.element_type)])
+                res_types, res_shapes = hlo_helpers.mk_result_types_and_shapes(
+                    [((dim0, dim1), x_type.element_type)]
+                )
                 return hlo_helpers.custom_call(
                     xlaName_str,
                     result_types=res_types,
                     result_shapes=res_shapes,
-                    operands=
-                    [
+                    operands=[
                         hlo_helpers.hlo_s32(self.basisClass.identifier),
                         x,
                         hlo_helpers.hlo_s32(d),
@@ -335,7 +337,9 @@ class utfc:
                         hlo_helpers.hlo_s32(dim1),
                     ],
                     operand_layouts=[(), default_layout(dims), (), (), (), ()],
-                    result_layouts=[default_layout((dim0,dim1)),],
+                    result_layouts=[
+                        default_layout((dim0, dim1)),
+                    ],
                 ).results
 
             mlir.register_lowering(H_p, H_xla, platform="cpu")
