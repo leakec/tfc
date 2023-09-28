@@ -51,7 +51,7 @@ def de(t,y):
 
 ## Condition: ******************************************************************
 def func(yp0):
-    sol = solve_ivp(de, [0., xf], [y0, yp0], method='RK45', rtol=tol, atol=tol)
+    sol = solve_ivp(de, [0., xf], [y0, yp0[0]], method='RK45', rtol=tol, atol=tol)
     return sol.y[0,-1] - yf
 
 
@@ -61,7 +61,7 @@ yp0 = 7.5
 startTime = timer()
 yp0 = fsolve(func, yp0, xtol=tol)
 
-sol = solve_ivp(de, [0., xf], [y0, yp0], method='RK45', rtol=tol, atol=tol)
+sol = solve_ivp(de, [0., xf], [y0, yp0[0]], method='RK45', rtol=tol, atol=tol)
 time = timer() - startTime
 
 x = sol.t
