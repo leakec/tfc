@@ -39,10 +39,10 @@ def test_PDE_Cpp():
     zyy = egrad(egrad(z,2),2)
     zy = egrad(z,2)
 
-    r = lambda xi,*x: zxx(xi,*x)+zyy(xi,*x)+z(xi,*x)*zy(xi,*x)-np.sin(np.pi*x[0])*(2.-np.pi**2*x[1]**2+2.*x[1]**3*np.sin(np.pi*x[0]))
+    r = lambda xi: zxx(xi,*x)+zyy(xi,*x)+z(xi,*x)*zy(xi,*x)-np.sin(np.pi*x[0])*(2.-np.pi**2*x[1]**2+2.*x[1]**3*np.sin(np.pi*x[0]))
     xi = np.zeros(H(*x).shape[1])
 
-    xi,it = NLLS(xi,r,*x,constant_arg_nums=[1,2])
+    xi,it = NLLS(xi,r)
 
     zr = real(x[0],x[1])
     ze = z(xi,*x)

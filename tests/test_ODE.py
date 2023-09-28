@@ -47,12 +47,12 @@ def test_ODE_Cpp():
     ydd = egrad(yd)
 
     # Create the residual and jacobians
-    r = lambda xi,t: ydd(t,xi)+f(t)*y(t,xi)*yd(t,xi)-f2(t)
+    r = lambda xi: ydd(t,xi)+f(t)*y(t,xi)*yd(t,xi)-f2(t)
     xi = np.zeros(H(t).shape[1])
 
-    xi,it = NLLS(xi,r,t,constant_arg_nums=[1])
+    xi,it = NLLS(xi,r)
 
-    assert(np.max(np.abs(r(xi,t))) < 1e-10)
+    assert(np.max(np.abs(r(xi))) < 1e-10)
 
 def test_ODE_Python():
     # This script will solve the non-linear differential equation 
