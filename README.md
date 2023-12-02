@@ -123,10 +123,5 @@ Dependencies:
   * graphviz
   * doxygen
   * python3-sphinx
-* Python Packages:
-  * sphinx
-  * sphinx\_rtd\_theme
-  * nbsphinx
-  * breathe
-  * exhale
+* Python Packages: see requirements.txt file in the docs directory.
   
