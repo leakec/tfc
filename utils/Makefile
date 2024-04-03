@@ -16,6 +16,7 @@ install: ../dist
 
 clean-python:
 	rm -f ../dist/*.whl
+	rm -rf ../build
 
 clean: clean-python
 
