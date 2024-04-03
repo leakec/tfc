@@ -12,7 +12,7 @@ config.update("jax_enable_x64", True)
 import numpy as onp
 import numpy.typing as npt
 import jax.numpy as np
-from jax import jvp, jit, lax, jacfwd, tree_map
+from jax import jvp, jit, lax, jacfwd
 from jax.extend import linear_util as lu
 from jax.util import safe_zip
 from jax.tree_util import register_pytree_node, tree_map
@@ -20,7 +20,7 @@ from jax._src.api_util import flatten_fun
 from jax._src.tree_util import tree_flatten
 from jax.core import get_aval, eval_jaxpr
 from jax.interpreters.partial_eval import trace_to_jaxpr_nounits, PartialVal
-from jax.experimental.host_callback import id_tap
+from jax.experimental import io_callback
 from typing import Any, Callable, Optional, Union, cast
 from .types import uint, List, Literal, Tuple, TypedDict, Path, Dict
 from jaxtyping import PyTree
@@ -1022,14 +1022,8 @@ class LsClass:
             return zXi
 
 
-def nlls_printout(arg: Any, transforms: Any, *, end: str = "\n", **kwargs: Any) -> None:
-    print("Iteration: {0}\tmax(abs(res)): {1}".format(*arg), end=end)
-    return
-
-
 def nlls_id_print(it: int, x, end: str = "\n"):
-    printer = partial(nlls_printout, end=end)
-    return id_tap(printer, (it, x))
+    print("Iteration: {0}\tmax(abs(res)): {1}".format(it, x), end=end)
 
 
 def NLLS(
@@ -1189,8 +1183,11 @@ def NLLS(
             def body(val):
                 val["dxi"] = LS(val["xi"], *val["args"])
                 val["xi"] -= val["dxi"]
-                nlls_id_print(
-                    val["it"], np.max(np.abs(res(val["xi"], *val["args"]))), end=printOutEnd
+                io_callback(
+                    partial(nlls_id_print, end=printOutEnd),
+                    None,
+                    val["it"],
+                    np.max(np.abs(res(val["xi"], *val["args"]))),
                 )
                 val["it"] += 1
                 return val
@@ -1385,8 +1382,11 @@ class NllsClass:
                 def body(val):
                     val["dxi"] = LS(val["xi"], *val["args"])
                     val["xi"] -= val["dxi"]
-                    nlls_id_print(
-                        val["it"], np.max(np.abs(res(val["xi"], *val["args"]))), end=printOutEnd
+                    io_callback(
+                        partial(nlls_id_print, end=printOutEnd),
+                        None,
+                        val["it"],
+                        np.max(np.abs(res(val["xi"], *val["args"]))),
                     )
                     val["it"] += 1
                     return val
