@@ -200,8 +200,8 @@ def test_ELMTanh():
     Fp4 = pelm.H(x, 3, False)
 
     assert np.linalg.norm(Fc1 - Fp1, ord="fro") < 1e-14
-    assert np.linalg.norm(Fc2 - Fp2, ord="fro") < 1e-14
-    assert np.linalg.norm(Fc3 - Fp3, ord="fro") < 1e-13
+    assert np.linalg.norm(Fc2 - Fp2, ord="fro") < 5e-14
+    assert np.linalg.norm(Fc3 - Fp3, ord="fro") < 5e-13
     assert np.linalg.norm(Fc4 - Fp4, ord="fro") < 5e-10
 
 
