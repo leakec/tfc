@@ -8,7 +8,7 @@ from jax import vmap, jacfwd, jit, lax
 import tqdm
 import pickle
 
-from scipy.integrate import simps
+from scipy.integrate import simpson
 from time import process_time as timer
 
 ## TEST PARAMETERS: ***************************************************
@@ -138,7 +138,7 @@ for i in range(0,len(t)):
     Ham[i] = 0.5*int[i] + np.dot(LamR[i,:],V[i,:]) + np.dot(LamV[i,:],IC['ag'] + Ac[i,:])
     a_mag[i] = np.linalg.norm(Ac[i,:])
 
-cost = IC['Gam']* t[-1] +  0.5 * simps(int,t)
+cost = IC['Gam']* t[-1] +  0.5 * simpson(int,x=t)
 
 ##: print final answers to screen
 print('\nFinal time [s]:\t' + str(t[-1]))

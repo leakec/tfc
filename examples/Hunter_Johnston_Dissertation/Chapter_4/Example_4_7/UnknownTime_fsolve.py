@@ -11,7 +11,7 @@ import tqdm
 from time import process_time as timer
 
 from scipy.optimize import fsolve
-from scipy.integrate import simps
+from scipy.integrate import simpson
 
 ## TEST PARAMETERS: ***************************************************
 tol = np.finfo(float).eps
@@ -109,7 +109,7 @@ for i in range(0,len(t)):
     int[i] = 0.5 * (X[i]**2 + U[i]**2)
     Ham[i] = int[i] + -U[i]/beta * (alfa*X[i] + beta*U[i])
 
-cost = simps(int,t)
+cost = simpson(int,x=t)
 
 print('{:.2e} & {:.2e} & {:.8f} & {:.5f} & {:d} & {:.2f}'.format(np.max(np.abs(L(xi,c))), np.max(np.abs(H(z,xi))), cost, tf, iter, time*1000 ))
 

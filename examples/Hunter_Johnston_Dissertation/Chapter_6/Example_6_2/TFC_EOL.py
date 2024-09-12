@@ -8,7 +8,7 @@ from jax import vmap, jacfwd, jit, lax
 import tqdm
 import pickle
 
-from scipy.integrate import simps
+from scipy.integrate import simpson
 from time import process_time as timer
 
 ## TEST PARAMETERS: ***************************************************

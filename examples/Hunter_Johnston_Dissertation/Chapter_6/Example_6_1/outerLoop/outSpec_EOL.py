@@ -9,7 +9,7 @@ import tqdm
 import pickle
 
 from scipy.optimize import fsolve
-from scipy.integrate import simps
+from scipy.integrate import simpson
 from time import process_time as timer
 
 ## TEST PARAMETERS: ***************************************************
@@ -155,7 +155,7 @@ for i in range(0,len(t)):
     Ham[i] = 0.5*int[i] + np.dot(LamR[i,:],V[i,:]) + np.dot(LamV[i,:],IC['ag'] + Ac[i,:])
     a_mag[i] = np.linalg.norm(Ac[i,:])
 
-cost = IC['Gam']* t[-1] +  0.5 * simps(int,t)
+cost = IC['Gam']* t[-1] +  0.5 * simpson(int,x=t)
 
 loss1 = np.max(np.abs(L(xi,IC)))
 loss2 = np.max(np.abs(Htf(xi,IC)))\
