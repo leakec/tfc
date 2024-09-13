@@ -149,7 +149,7 @@ for i in tqdm.trange(nStep):
     sol['res'][:,i]   = L(xi,C)
     sol['time'][i]    = time
     sol['iter'][i]    = it
-    sol['C'][i]       = C
+    sol['C'][i]       = C[0]
 
     print(np.max(L(xi,C)))
     ## Prepare for next Jacobi constant level

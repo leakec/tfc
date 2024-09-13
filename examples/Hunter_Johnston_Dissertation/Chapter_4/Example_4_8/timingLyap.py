@@ -104,7 +104,7 @@ L = jit(lambda xi, C: np.hstack([Ls(z,xi).flatten(), Jc(z,xi)-C]))
 
 def Jdark(xi,C):
      jacob = jacfwd(L,0)(xi,C)
-     return np.hstack((jacob[k].reshape(jacob[k].shape[0],onp.prod(onp.array(xi[k].shape))) for k in xi.keys() ))
+     return np.hstack([jacob[k].reshape(jacob[k].shape[0],onp.prod(onp.array(xi[k].shape))) for k in xi.keys() ])
 J = jit(lambda xi,C: Jdark(xi,C))
 
 LS = jit(lambda Jacob,Loss: -np.dot( np.linalg.pinv(Jacob), Loss) )
@@ -182,7 +182,7 @@ for i in range(nStep):
     sol['tLoss'][i]    = val['tLoss']
     sol['tJac'][i]    = val['tJac']
     sol['tLS'][i]     = val['tLS']
-    sol['C'][i]          = val['C']
+    sol['C'][i]          = val['C'][0]
 
 ## END ******************************************************************************************************
 # import pickle

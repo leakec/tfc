@@ -98,7 +98,7 @@ L = jit(lambda z,xi,xp: np.hstack(( L1(z,xi,xp), L2(z,xi,xp) ))) #, static_argnu
 
 def Jdark(x,xi,xp):
     jacob = jacfwd(L,1)(z,xi,xp)
-    return np.hstack((jacob[k] for k in xi.keys()))
+    return np.hstack([jacob[k] for k in xi.keys()])
 J = jit(lambda z,xi,xp: Jdark(z,xi,xp)) #, static_argnums=[0,])
 # Removed static_argnums = [0,] on 2022-10-08, since JAX arrays cannot be hashed, so this
 # now raises an error.
