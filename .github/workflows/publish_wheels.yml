@@ -57,7 +57,7 @@ jobs:
       - name: Jaxlib source
         run: |
           if [[ ${{ matrix.os }} == 'macOS-latest' ]]; then
-            pip install jaxlib --no-binary
+            pip install jaxlib --no-binary jaxlib
           fi
   
       - name: Build wheels
