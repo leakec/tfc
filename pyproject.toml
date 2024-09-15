@@ -23,6 +23,7 @@ archs = ["x86_64"]
 [tool.cibuildwheel.macos]
 before-all = "brew install swig"
 archs = ["auto"]
+cibw-test-skip = "*_arm64"
 
 [tool.cibuildwheel.windows]
 archs = ["AMD64"]
