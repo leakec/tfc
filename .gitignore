@@ -9,3 +9,4 @@ __pycache__
 src/tfc/utils/BF/BF.py
 src/tfc/utils/BF/BF_wrap.cpp
 *tags
+.venv
