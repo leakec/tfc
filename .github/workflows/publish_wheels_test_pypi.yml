@@ -76,7 +76,12 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: macOS-latest_binary_wheels
+          name: macos-latest_binary_wheels
+          path: ./dist
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: macos-13_binary_wheels
           path: ./dist
 
       - uses: actions/download-artifact@v4
