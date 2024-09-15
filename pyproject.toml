@@ -15,6 +15,7 @@ skip = "pp* *-musllinux*"
 manylinux-x86_64-image = "manylinux2014"
 test-requires = ["pytest"]
 test-command = "pytest {package}/tests"
+test-skip = "*-macosx_arm64"
 
 [tool.cibuildwheel.linux]
 before-all = "yum install -y swig"
@@ -23,7 +24,6 @@ archs = ["x86_64"]
 [tool.cibuildwheel.macos]
 before-all = "brew install swig"
 archs = ["auto"]
-cibw-test-skip = "*_arm64"
 
 [tool.cibuildwheel.windows]
 archs = ["AMD64"]
