@@ -4,6 +4,7 @@ requires = ["setuptools>=42",
             "numpy>=1.22",
 ]
 build-backend = "setuptools.build_meta"
+requires-python = ">=3.10,<3.13"
 
 [tool.black]
 line-length = 100
