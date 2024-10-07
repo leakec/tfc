@@ -1,4 +1,4 @@
-__version__ = "1.0.14"
+__version__ = "1.0.15"
 
 
 def _version_as_tuple(version_str: str) -> tuple[int, ...]:
