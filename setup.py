@@ -70,7 +70,7 @@ setup(
     packages=find_packages("src"),
     package_dir={"": "src"},
     package_data={"": ["src/tfc/py.typed"]},
-    python_requires=">=3.10,<3.13",
+    python_requires=">=3.10",
     include_package_data=True,
     ext_modules=[BF],
     install_requires=[
