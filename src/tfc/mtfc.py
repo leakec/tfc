@@ -20,7 +20,7 @@ from .utils.types import (
 )
 from jax import core
 from jax.interpreters import ad, batching, mlir
-from jax.lib import xla_client
+from jax.extend.ffi import register_ffi_target
 from jaxlib import hlo_helpers
 import jaxlib.mlir.ir as ir
 
@@ -532,9 +532,8 @@ class mtfc:
         # Regiser XLA function
         if self._backend == "C++":
             obj = self.basisClass.xlaCapsule
-            xlaName_str = "BasisFunc" + str(self.basisClass.identifier)
-            xlaName = xlaName_str.encode("utf-8")
-            xla_client.register_custom_call_target(xlaName, obj, platform="cpu")
+            xlaName = "BasisFunc" + str(self.basisClass.identifier)
+            register_ffi_target(xlaName, obj, platform="cpu", api_version=0)
 
         # Create Primitives
         H_p = core.Primitive("H")
@@ -581,7 +580,7 @@ class mtfc:
                     [((dim0, dim1), x_type.element_type)]
                 )
                 return hlo_helpers.custom_call(
-                    xlaName_str,
+                    xlaName,
                     result_types=res_types,
                     result_shapes=res_shapes,
                     operands=[
