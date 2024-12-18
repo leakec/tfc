@@ -8,6 +8,7 @@ import numpy.typing as npt
 from typing import Optional, cast
 from .utils.types import Literal, uint, IntArrayLike, JaxOrNumpyArray
 from jax import core
+from jax.extend.core import Primitive
 from jax.interpreters import ad, batching, mlir
 from jax.extend.ffi import register_ffi_target
 from jaxlib import hlo_helpers
@@ -282,7 +283,7 @@ class utfc:
             register_ffi_target(xlaName, obj, platform="cpu", api_version=0)
 
         # Create primitives
-        H_p = core.Primitive("H")
+        H_p = Primitive("H")
 
         def Hjax(x: JaxOrNumpyArray, d: uint = 0, full: bool = False) -> npt.NDArray:
             return cast(npt.NDArray, H_p.bind(x, d=d, full=full))
