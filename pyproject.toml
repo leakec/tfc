@@ -20,11 +20,11 @@ test-skip = "*-macosx_arm64"
 
 [tool.cibuildwheel.linux]
 before-all = "yum install -y swig"
-archs = ["x86_64"]
+archs = ["x86_64", "aarch64"]
 
 [tool.cibuildwheel.macos]
 before-all = "brew install swig"
-archs = ["auto"]
+archs = ["arm64"]
 
 [tool.cibuildwheel.windows]
 archs = ["AMD64"]

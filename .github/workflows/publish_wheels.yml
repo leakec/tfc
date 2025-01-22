@@ -43,7 +43,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest,macos-13,ubuntu-latest,windows-latest]
+        os: [macos-latest,ubuntu-latest,windows-latest]
   
     steps:
       - uses: actions/checkout@v4
@@ -80,11 +80,6 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: macos-latest_binary_wheels
-          path: ./dist
-
-      - uses: actions/download-artifact@v4
-        with:
-          name: macos-13_binary_wheels
           path: ./dist
 
       - uses: actions/download-artifact@v4
