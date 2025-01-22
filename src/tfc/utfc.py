@@ -10,7 +10,7 @@ from .utils.types import Literal, uint, IntArrayLike, JaxOrNumpyArray
 from jax import core
 from jax.extend.core import Primitive
 from jax.interpreters import ad, batching, mlir
-from jax.extend.ffi import register_ffi_target
+from jax.ffi import register_ffi_target
 from jaxlib import hlo_helpers
 import jaxlib.mlir.ir as ir
 
