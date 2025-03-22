@@ -15,6 +15,7 @@ import jax.numpy as np
 from jax import jvp, jit, lax, jacfwd
 from jax.extend import linear_util as lu
 from jax.util import safe_zip
+from jax.api_util import debug_info
 from jax.tree_util import register_pytree_node, tree_map
 from jax._src.api_util import flatten_fun
 from jax._src.tree_util import tree_flatten
@@ -276,7 +277,7 @@ def pe(*args: Any, constant_arg_nums: List[int] = []) -> Any:
             part_args = tuple(part_args)
 
             # Create jaxpr
-            wrap = lu.wrap_init(f)
+            wrap = lu.wrap_init(f, debug_info=debug_info(f.__name__, f, [], {}))
             _, in_tree = tree_flatten((dark, {}))
             wrap_flat, out_tree = flatten_fun(wrap, in_tree)
             jaxpr, _, const = trace_to_jaxpr_nounits(wrap_flat, part_args)
