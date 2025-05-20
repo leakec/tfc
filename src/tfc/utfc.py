@@ -11,7 +11,6 @@ from jax import core
 from jax.extend.core import Primitive
 from jax.interpreters import ad, batching, mlir
 from jax.ffi import register_ffi_target
-from jaxlib import hlo_helpers
 import jaxlib.mlir.ir as ir
 
 from .utils.TFCUtils import TFCPrint
@@ -310,37 +309,52 @@ class utfc:
 
         if self._backend == "C++":
             # XLA compilation
-            def default_layout(shape):
-                return tuple(range(len(shape) - 1, -1, -1))
 
             def H_xla(ctx, x, d: uint = 0, full: bool = False):
-                x_type = ir.RankedTensorType(x.type)
-                dims = x_type.shape
-                dim0 = dims[0]
+                x_ir_type = ir.RankedTensorType(x.type) # x.type is already an ir.Type
+                x_element_type = x_ir_type.element_type
+                x_dims = x_ir_type.shape # This is a list of integers
+
+                dim0 = x_dims[0]
                 if full:
                     dim1 = self.basisClass.m
                 else:
                     dim1 = self.basisClass.m - self.basisClass.numC
-                res_types, res_shapes = hlo_helpers.mk_result_types_and_shapes(
-                    [((dim0, dim1), x_type.element_type)]
+
+                # Define Result Types
+                # The result_types should be a list of ir.Type objects
+                result_shape = [dim0, dim1] # MLIR shapes are lists or tuples of ints
+                result_ir_type = ir.RankedTensorType.get(result_shape, x_element_type)
+                result_types = [result_ir_type]
+
+                # Prepare Operands
+                # Operands that are not already MLIR values need to be converted to constants.
+                # The types of these constants should match the C++ function.
+                identifier_operand = mlir.ir_constant(np.int32(self.basisClass.identifier))
+                d_operand = mlir.ir_constant(np.int32(d)) # Ensure d is convertible to int32
+                full_operand = mlir.ir_constant(bool(full)) # Converts to i1
+                dim0_operand = mlir.ir_constant(np.int32(dim0))
+                dim1_operand = mlir.ir_constant(np.int32(dim1))
+
+                operands = [
+                    identifier_operand,
+                    x, # This is already an MLIR value
+                    d_operand,
+                    full_operand,
+                    dim0_operand,
+                    dim1_operand,
+                ]
+
+                # Call mlir.custom_call
+                custom_call_op = mlir.custom_call(
+                    call_target_name=xlaName,
+                    result_types=result_types,
+                    operands=operands,
+                    has_side_effect=False,
+                    api_version=2,
                 )
-                return hlo_helpers.custom_call(
-                    xlaName,
-                    result_types=res_types,
-                    result_shapes=res_shapes,
-                    operands=[
-                        hlo_helpers.hlo_s32(self.basisClass.identifier),
-                        x,
-                        hlo_helpers.hlo_s32(d),
-                        mlir.ir_constant(full),
-                        hlo_helpers.hlo_s32(dim0),
-                        hlo_helpers.hlo_s32(dim1),
-                    ],
-                    operand_layouts=[(), default_layout(dims), (), (), (), ()],
-                    result_layouts=[
-                        default_layout((dim0, dim1)),
-                    ],
-                ).results
+
+                return custom_call_op.results
 
             mlir.register_lowering(H_p, H_xla, platform="cpu")
 
