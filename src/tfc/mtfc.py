@@ -22,8 +22,8 @@ from jax import core
 from jax.extend.core import Primitive
 from jax.interpreters import ad, batching, mlir
 from jax.ffi import register_ffi_target
-from jaxlib import hlo_helpers
 import jaxlib.mlir.ir as ir
+from jaxlib.mlir.dialects import stablehlo
 
 from .utils.TFCUtils import TFCPrint
 
@@ -577,21 +577,18 @@ class mtfc:
                     dim1 = self.basisClass.numBasisFuncFull
                 else:
                     dim1 = self.basisClass.numBasisFunc
-                res_types, res_shapes = hlo_helpers.mk_result_types_and_shapes(
-                    [((dim0, dim1), x_type.element_type)]
-                )
-                return hlo_helpers.custom_call(
-                    xlaName,
+                res_types = [ir.RankedTensorType.get((dim0, dim1), x_type.element_type)]
+                return mlir.custom_call(
+                    call_target_name=xlaName,
                     result_types=res_types,
-                    result_shapes=res_shapes,
                     operands=[
-                        hlo_helpers.hlo_s32(self.basisClass.identifier),
-                        hlo_helpers.hlo.ConcatenateOp(x, 0).result,
-                        hlo_helpers.hlo_s32(d),
-                        hlo_helpers.hlo_s32(self.dim),
-                        mlir.ir_constant(full),
-                        hlo_helpers.hlo_s32(dim0),
-                        hlo_helpers.hlo_s32(dim1),
+                        mlir.ir_constant(np.int32(self.basisClass.identifier)),
+                        stablehlo.ConcatenateOp(x, 0).result,
+                        mlir.ir_constant(np.int32(d)),
+                        mlir.ir_constant(np.int32(self.dim)),
+                        mlir.ir_constant(bool(full)),
+                        mlir.ir_constant(np.int32(dim0)),
+                        mlir.ir_constant(np.int32(dim1)),
                     ],
                     operand_layouts=[
                         (),
