@@ -311,9 +311,9 @@ class utfc:
             # XLA compilation
 
             def H_xla(ctx, x, d: uint = 0, full: bool = False):
-                x_ir_type = ir.RankedTensorType(x.type) # x.type is already an ir.Type
+                x_ir_type = ir.RankedTensorType(x.type)  # x.type is already an ir.Type
                 x_element_type = x_ir_type.element_type
-                x_dims = x_ir_type.shape # This is a list of integers
+                x_dims = x_ir_type.shape  # This is a list of integers
 
                 dim0 = x_dims[0]
                 if full:
@@ -323,7 +323,7 @@ class utfc:
 
                 # Define Result Types
                 # The result_types should be a list of ir.Type objects
-                result_shape = [dim0, dim1] # MLIR shapes are lists or tuples of ints
+                result_shape = [dim0, dim1]  # MLIR shapes are lists or tuples of ints
                 result_ir_type = ir.RankedTensorType.get(result_shape, x_element_type)
                 result_types = [result_ir_type]
 
@@ -331,14 +331,14 @@ class utfc:
                 # Operands that are not already MLIR values need to be converted to constants.
                 # The types of these constants should match the C++ function.
                 identifier_operand = mlir.ir_constant(np.int32(self.basisClass.identifier))
-                d_operand = mlir.ir_constant(np.int32(d)) # Ensure d is convertible to int32
-                full_operand = mlir.ir_constant(bool(full)) # Converts to i1
+                d_operand = mlir.ir_constant(np.int32(d))  # Ensure d is convertible to int32
+                full_operand = mlir.ir_constant(bool(full))  # Converts to i1
                 dim0_operand = mlir.ir_constant(np.int32(dim0))
                 dim1_operand = mlir.ir_constant(np.int32(dim1))
 
                 operands = [
                     identifier_operand,
-                    x, # This is already an MLIR value
+                    x,  # This is already an MLIR value
                     d_operand,
                     full_operand,
                     dim0_operand,
