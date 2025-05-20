@@ -13,6 +13,13 @@ from jax.interpreters import ad, batching, mlir
 from jax.ffi import register_ffi_target
 import jaxlib.mlir.ir as ir
 
+# This is not part of the public API. However, it is what JAX uses internally in the ffi
+# interface. We need this here, since we want to do very low-level things, like injecting
+# new operands that are not traced into the C++ code.
+# To switch to the new FFI interface, we would need to re-work all the C++ code to take
+# in arguments as a JSON string. This would make the C++ way more confusing than it needs to be.
+from jax._src.interpreters import mlir as mlir_int
+
 from .utils.TFCUtils import TFCPrint
 
 
@@ -325,7 +332,7 @@ class utfc:
                 result_types = [ir.RankedTensorType.get([dim0, dim1], x_element_type)]
 
                 # Call mlir.custom_call
-                custom_call_op = mlir.custom_call(
+                custom_call_op = mlir_int.custom_call(
                     call_target_name=xlaName,
                     result_types=result_types,
                     operands=[

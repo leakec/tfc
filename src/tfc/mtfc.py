@@ -25,6 +25,13 @@ from jax.ffi import register_ffi_target
 import jaxlib.mlir.ir as ir
 from jaxlib.mlir.dialects import stablehlo
 
+# This is not part of the public API. However, it is what JAX uses internally in the ffi
+# interface. We need this here, since we want to do very low-level things, like injecting
+# new operands that are not traced into the C++ code.
+# To switch to the new FFI interface, we would need to re-work all the C++ code to take
+# in arguments as a JSON string. This would make the C++ way more confusing than it needs to be.
+from jax._src.interpreters import mlir as mlir_int
+
 from .utils.TFCUtils import TFCPrint
 
 
@@ -578,7 +585,7 @@ class mtfc:
                 else:
                     dim1 = self.basisClass.numBasisFunc
                 res_types = [ir.RankedTensorType.get((dim0, dim1), x_type.element_type)]
-                return mlir.custom_call(
+                return mlir_int.custom_call(
                     call_target_name=xlaName,
                     result_types=res_types,
                     operands=[
