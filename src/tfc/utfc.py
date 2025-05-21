@@ -11,8 +11,14 @@ from jax import core
 from jax.extend.core import Primitive
 from jax.interpreters import ad, batching, mlir
 from jax.ffi import register_ffi_target
-from jaxlib import hlo_helpers
 import jaxlib.mlir.ir as ir
+
+# This is not part of the public API. However, it is what JAX uses internally in the ffi
+# interface. We need this here, since we want to do very low-level things, like injecting
+# new operands that are not traced into the C++ code.
+# To switch to the new FFI interface, we would need to re-work all the C++ code to take
+# in arguments as a JSON string. This would make the C++ way more confusing than it needs to be.
+from jax._src.interpreters import mlir as mlir_int
 
 from .utils.TFCUtils import TFCPrint
 
@@ -310,37 +316,38 @@ class utfc:
 
         if self._backend == "C++":
             # XLA compilation
-            def default_layout(shape):
-                return tuple(range(len(shape) - 1, -1, -1))
 
             def H_xla(ctx, x, d: uint = 0, full: bool = False):
-                x_type = ir.RankedTensorType(x.type)
-                dims = x_type.shape
-                dim0 = dims[0]
+                x_ir_type = ir.RankedTensorType(x.type)  # x.type is already an ir.Type
+                x_element_type = x_ir_type.element_type
+                x_dims = x_ir_type.shape  # This is a list of integers
+
+                dim0 = x_dims[0]
                 if full:
                     dim1 = self.basisClass.m
                 else:
                     dim1 = self.basisClass.m - self.basisClass.numC
-                res_types, res_shapes = hlo_helpers.mk_result_types_and_shapes(
-                    [((dim0, dim1), x_type.element_type)]
-                )
-                return hlo_helpers.custom_call(
-                    xlaName,
-                    result_types=res_types,
-                    result_shapes=res_shapes,
+
+                # Define Result Types
+                result_types = [ir.RankedTensorType.get([dim0, dim1], x_element_type)]
+
+                # Call mlir.custom_call
+                custom_call_op = mlir_int.custom_call(
+                    call_target_name=xlaName,
+                    result_types=result_types,
                     operands=[
-                        hlo_helpers.hlo_s32(self.basisClass.identifier),
+                        mlir.ir_constant(np.int32(self.basisClass.identifier)),
                         x,
-                        hlo_helpers.hlo_s32(d),
-                        mlir.ir_constant(full),
-                        hlo_helpers.hlo_s32(dim0),
-                        hlo_helpers.hlo_s32(dim1),
+                        mlir.ir_constant(np.int32(d)),
+                        mlir.ir_constant(bool(full)),
+                        mlir.ir_constant(np.int32(dim0)),
+                        mlir.ir_constant(np.int32(dim1)),
                     ],
-                    operand_layouts=[(), default_layout(dims), (), (), (), ()],
-                    result_layouts=[
-                        default_layout((dim0, dim1)),
-                    ],
-                ).results
+                    has_side_effect=False,
+                    api_version=2,
+                )
+
+                return custom_call_op.results
 
             mlir.register_lowering(H_p, H_xla, platform="cpu")
 

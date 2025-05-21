@@ -14,7 +14,6 @@ import numpy.typing as npt
 import jax.numpy as np
 from jax import jvp, jit, lax, jacfwd
 from jax.extend import linear_util as lu
-from jax.util import safe_zip
 from jax.api_util import debug_info
 from jax.tree_util import register_pytree_node, tree_map
 from jax._src.api_util import flatten_fun
@@ -532,7 +531,7 @@ class TFCDict(OrderedDict):
 register_pytree_node(
     TFCDict,
     lambda x: (list(x.values()), list(x.keys())),
-    lambda keys, values: TFCDict(safe_zip(keys, values)),
+    lambda keys, values: TFCDict(zip(keys, values)),
 )
 
 
@@ -739,7 +738,7 @@ class TFCDictRobust(OrderedDict):
 register_pytree_node(
     TFCDictRobust,
     lambda x: (list(x.values()), list(x.keys())),
-    lambda keys, values: TFCDictRobust(safe_zip(keys, values)),
+    lambda keys, values: TFCDictRobust(zip(keys, values)),
 )
 
 
