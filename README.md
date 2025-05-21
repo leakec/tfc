@@ -66,8 +66,8 @@ The authors of this repsitory and the associated theory have gone to lengths to 
     author = {Carl Leake and Hunter Johnston},
     title = {{TFC: A Functional Interpolation Framework}},
     url = {https://github.com/leakec/tfc},
-    version = {1.1.0},
-    year = {2024},
+    version = {1.2.0},
+    year = {2025},
 }
 @article{TFC, 
     title={The Multivariate Theory of Functional Connections: Theory, Proofs, and Application in Partial Differential Equations}, 
