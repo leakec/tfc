@@ -75,8 +75,8 @@ setup(
     ext_modules=[BF],
     install_requires=[
         numpy_version,
-        "jax",
-        "jaxlib",
+        "jax ~= 0.6.0",
+        "jaxlib ~= 0.6.0",
         "jaxtyping",
         "annotated-types",
         "matplotlib",
