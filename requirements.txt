@@ -1,7 +1,7 @@
 numpy >= 1.25
 scipy >= 1.11
-jax >= 0.6.0
-jaxlib >= 0.6.0
+jax ~= 0.6
+jaxlib ~= 0.6.0
 jaxtyping
 annotated-types
 matplotlib
