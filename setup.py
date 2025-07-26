@@ -1,9 +1,7 @@
 import sys
 import os
 from pathlib import Path
-import numpy
 from setuptools import setup, Extension, find_packages
-from setuptools.command.build_py import build_py as _build_py
 from setuptools.command.build_ext import build_ext
 from subprocess import check_call
 
