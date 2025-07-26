@@ -164,7 +164,7 @@ class CP: virtual public BasisFunc {
 class LeP: virtual public BasisFunc {
 	public:
 		/** LeP class constructor. Calls BasisFunc class constructor. See BasisFunc class for more details. */
-		LeP(double x0, double xf, int* nCin, int ncDim0, int min):
+		LeP(double x0, double xf, const int* nCin, int ncDim0, int min):
 		  BasisFunc(x0,xf,nCin,ncDim0,min,-1.,1.){};
 
 		/** Dummy LeP class constructor. Used only in n-dimensions. */
@@ -186,7 +186,7 @@ class LeP: virtual public BasisFunc {
 class LaP: public BasisFunc {
 	public:
 		/** LaP class constructor. Calls BasisFunc class constructor. See BasisFunc class for more details. */
-		LaP(double x0, double xf, int* nCin, int ncDim0, int min):
+		LaP(double x0, double xf, const int* nCin, int ncDim0, int min):
 		  BasisFunc(x0,xf,nCin,ncDim0,min){};
 		/** LaP class destructor.*/
 		~LaP(){};
@@ -204,7 +204,7 @@ class LaP: public BasisFunc {
 class HoPpro: public BasisFunc {
 	public:
 		/** HoPpro class constructor. Calls BasisFunc class constructor. See BasisFunc class for more details. */
-		HoPpro(double x0, double xf, int* nCin, int ncDim0, int min):
+		HoPpro(double x0, double xf, const int* nCin, int ncDim0, int min):
 		  BasisFunc(x0,xf,nCin,ncDim0,min){};
 		/** HoPpro class destructor.*/
 		~HoPpro(){};
@@ -222,7 +222,7 @@ class HoPpro: public BasisFunc {
 class HoPphy: public BasisFunc {
 	public:
 		/** HoPphy class constructor. Calls BasisFunc class constructor. See BasisFunc class for more details. */
-		HoPphy(double x0, double xf, int* nCin, int ncDim0, int min):
+		HoPphy(double x0, double xf, const int* nCin, int ncDim0, int min):
 		  BasisFunc(x0,xf,nCin,ncDim0,min){};
 		/** HoPphy class destructor.*/
 		~HoPphy(){};
@@ -240,7 +240,7 @@ class HoPphy: public BasisFunc {
 class FS: virtual public BasisFunc {
 	public:
 		/** FS class constructor. Calls BasisFunc class constructor. See BasisFunc class for more details. */
-		FS(double x0, double xf, int* nCin, int ncDim0, int min):
+		FS(double x0, double xf, const int* nCin, int ncDim0, int min):
 		  BasisFunc(x0,xf,nCin,ncDim0,min,-M_PI,M_PI){};
 
 		/** Dummy FS class constructor. Used only in n-dimensions. */

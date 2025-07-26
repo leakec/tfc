@@ -88,4 +88,19 @@ PYBIND11_MODULE(BF, m) {
 
     auto PyCP = py::class_<CP, BasisFunc> (m, "CP", py::multiple_inheritance());
     add1DInit<CP>(PyCP);
+
+    auto PyLeP = py::class_<LeP, BasisFunc> (m, "LeP", py::multiple_inheritance());
+    add1DInit<LeP>(PyLeP);
+
+    auto PyLaP = py::class_<LaP, BasisFunc> (m, "LaP", py::multiple_inheritance());
+    add1DInit<LaP>(PyLaP);
+
+    auto PyHoPpro = py::class_<HoPpro, BasisFunc> (m, "HoPpro", py::multiple_inheritance());
+    add1DInit<HoPpro>(PyHoPpro);
+
+    auto PyHoPphy = py::class_<HoPphy, BasisFunc> (m, "HoPphy", py::multiple_inheritance());
+    add1DInit<HoPphy>(PyHoPphy);
+
+    auto PyFS = py::class_<FS, BasisFunc> (m, "FS", py::multiple_inheritance());
+    add1DInit<FS>(PyFS);
 }
