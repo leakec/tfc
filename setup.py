@@ -46,10 +46,16 @@ class CMakeBuild(build_ext):
         extdir = Path(self.get_ext_fullpath(ext.name)).parents[0].absolute()
         bf_dir = extdir / "tfc" / "utils" / "BF"
 
+        import pybind11
+        dark = Path(pybind11.__file__).parents[0]
+        pybind11_dir = dark / "share" / "cmake" / "pybind11"
+
+
         cfg = "Debug" if self.debug else "Release"
         cmake_args = [
             f"-DCMAKE_BUILD_TYPE={cfg}",
             f"-DCMAKE_INSTALL_PREFIX={bf_dir}",
+            f"-Dpybind11_DIR={pybind11_dir}"
         ]
 
         # Optional: use Ninja if available
