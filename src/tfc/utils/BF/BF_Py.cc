@@ -1,0 +1,93 @@
+#include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
+#include "BF.h"
+
+namespace py = pybind11;
+
+template <typename T>
+void add1DInit(auto& c) {
+    c.def(py::init([](double x0, double xf, py::array_t<int> nC, int min){
+            return T(x0, xf, nC.data(), nC.size(), min);
+        }),
+        py::arg("x0"),
+        py::arg("xf"),
+        py::arg("nC"),
+        py::arg("min"),
+        R"(
+            BasisFunc constructor.
+
+            Parameters:
+            x0: Start of domain
+            xf: End of domain
+            nC: Array of indices to remove (1D numpy array)
+            min: Number of basis functions to use
+        )"
+    );
+}
+
+PYBIND11_MODULE(BF, m) {
+
+    py::class_<BasisFunc>(m, "BasisFunc")
+        .def_readwrite("z0", &BasisFunc::z0)
+        .def_readwrite("x0", &BasisFunc::x0)
+        .def_readwrite("c", &BasisFunc::c)
+        .def_readwrite("m", &BasisFunc::m)
+        .def_readwrite("numC", &BasisFunc::numC)
+        .def_readwrite("identifier", &BasisFunc::identifier)
+        .def_property_readonly("xlaCapsule", [](BasisFunc& self) {
+            py::object capsule = py::reinterpret_borrow<py::object>(self.xlaCapsule);
+            return capsule;
+        })
+        // GPU Capsule (only if available)
+        #ifdef HAS_CUDA
+        .def_property_readonly("xlaGpuCapsule", [](BasisFunc& self) {
+            return py::reinterpret_borrow<py::object>(self.xlaGpuCapsule);
+        })
+        #else
+        .def_property_readonly("xlaGpuCapsule", [](BasisFunc&) {
+            return "CUDA NOT FOUND, GPU NOT IMPLEMENTED.";
+        })
+        #endif
+        // Static members
+        .def_readonly_static("nIdentifier", &BasisFunc::nIdentifier)
+        .def_readonly_static("BasisFuncContainer", &BasisFunc::BasisFuncContainer)
+        // Methods
+        .def("H",
+            [](BasisFunc& self,
+               py::array_t<double, py::array::c_style | py::array::forcecast> x,
+               int d,
+               bool full) {
+                if (x.ndim() != 1) {
+                    throw py::value_error("The \"x\" input array must be 1-dimensional.");
+                }
+                int n = x.size();
+                int nOut = 0;
+                int mOut = 0;
+                double* F = nullptr;
+                self.H(x.data(), n, d, &nOut, &mOut, &F, full);
+
+                // Wrap data in a py::capsule to ensure it gets deleted
+                auto capsule = py::capsule(F, [](void* f) {
+                    double* d = reinterpret_cast<double*>(f);
+                    free(d);
+                });
+
+                return py::array_t<double>({mOut, nOut}, F, capsule);
+            },
+            py::arg("x"), py::arg("d"), py::arg("full"),
+            R"(
+                Compute basis function matrix.
+
+                Parameters:
+                x: Points (1D numpy array)
+                d: Derivative order
+                full: Whether to return full matrix (not removing nC columns)
+
+                Returns:
+                mOut x nOut NumPy array.
+            )"
+        );
+
+    auto PyCP = py::class_<CP, BasisFunc> (m, "CP");
+    add1DInit<CP>(PyCP);
+}

@@ -62,7 +62,7 @@ class BasisFunc{
 		 * 		- Stores variables based on user supplied givens
 		 * 		- Stores a pointer to itself using static variables
 		 * 		- Creates PyCapsule for xla function. */
-		BasisFunc(double x0in, double xf, int* nCin, int ncDim0, int min, double z0in=0., double zf=DBL_MAX);
+		BasisFunc(double x0in, double xf, const int* nCin, int ncDim0, int min, double z0in=0., double zf=DBL_MAX);
 
 		/** Dummy empty constructor allows derived classes without calling constructor explicitly. */
 		BasisFunc(){};
@@ -81,7 +81,7 @@ class BasisFunc{
 		 *  		- If true, uses the x values given
 		 *  		- If false, uses the z values from the class
 		 *  Note that this function is used to hook into Python, thus the extra arguments. */
-		virtual void H(double* x, int n, const int d, int* nOut, int* mOut, double** F,  bool full);
+		virtual void H(const double* x, int n, const int d, int* nOut, int* mOut, double** F,  bool full);
 
 		/** This function is an XLA version of the basis function. */
 		virtual void xla(void* out, void** in);
@@ -125,7 +125,7 @@ typedef void(*xlaFnType)(void*,void**);
 class CP: virtual public BasisFunc {
 	public:
 		/** CP class constructor. Calls BasisFunc class constructor. See BasisFunc class for more details. */
-		CP(double x0, double xf, int* nCin, int ncDim0, int min):
+		CP(double x0, double xf, const int* nCin, int ncDim0, int min):
 		  BasisFunc(x0,xf,nCin,ncDim0,min,-1.,1.){};
 
 		/** Dummy CP class constructor. Used only in n-dimensions. */
@@ -415,11 +415,18 @@ class nBasisFunc: virtual public BasisFunc{
 		/** n-D basis function class destructor. */
 		virtual ~nBasisFunc();
 
+        /**
+         * Including override of BasisFunc so we don't have issues with hidden virtual overloads. 
+         * However, this should never be called from nBasisFunc.
+         * If it is, it will throw an error.
+         */
+        void H(const double* x, int n, const int d, int* nOut, int* mOut, double** F,  bool full) override; 
+
 		/** This function is used to create a basis function matrix and its derivatives. */
 		void H(double* x, int in, int xDim1, int* d, int dDim0, int* nOut, int* mOut, double** F, const bool full);
 
 		/** This function is an XLA version of the basis function. */
-		void xla(void* out, void** in);
+		void xla(void* out, void** in) override;
 
 		/** Python hook to return domain mapping constants. */
 		void getC(double** arrOut, int* nOut);
@@ -435,10 +442,10 @@ class nBasisFunc: virtual public BasisFunc{
 		virtual void nHint(double* x, int in, const int* d, int dDim0, int numBasis, double*& F, const bool full);
 
 		/** Function used internally to create the basis function matrices. */
-		virtual void Hint(const int d, const double* x, const int nOut, double* dark) = 0;
+		virtual void Hint(const int d, const double* x, const int nOut, double* dark) override = 0;
 
 		/** Function used internally to create derivatives of the basis function matrices. */
-		virtual void RecurseDeriv(const int d, int dCurr, const double* x, const int nOut, double*& F, const int mOut) = 0;
+		virtual void RecurseDeriv(const int d, int dCurr, const double* x, const int nOut, double*& F, const int mOut) override = 0;
 
 };
 

@@ -22,7 +22,7 @@ void xlaWrapper(void* out, void** in){
 #endif
 
 // Parent basis function class: **********************************************************************
-BasisFunc::BasisFunc(double x0in, double xf, int* nCin, int ncDim0, int min, double z0in, double zf){
+BasisFunc::BasisFunc(double x0in, double xf, const int* nCin, int ncDim0, int min, double z0in, double zf){
 
 	// Initialize internal variables based on user givens
 	nC = new int[ncDim0];
@@ -55,7 +55,7 @@ BasisFunc::~BasisFunc(){
 	delete[] nC;
 };
 
-void BasisFunc::H(double* x, int n, const int d, int* nOut, int* mOut, double** F,  bool full){
+void BasisFunc::H(const double* x, int n, const int d, int* nOut, int* mOut, double** F,  bool full){
 	*nOut = n;
 	*mOut = full ? m : m-numC;
 
@@ -1004,6 +1004,10 @@ void nBasisFunc::H(double* x, int in, int xDim1, int* d, int dDim0, int* nOut, i
 	*F = (double*)malloc(numBasis*xDim1*sizeof(double));
 	nHint(x,xDim1,d,dDim0,numBasis,*F,full);
 };
+
+void nBasisFunc::H(const double* x, int n, const int d, int* nOut, int* mOut, double** F,  bool full) {
+    throw std::runtime_error("This version of \"H\" should never be called from an n-dimensional basis class.");
+}
 
 void nBasisFunc::xla(void* out, void** in){
 	double* out_buf = reinterpret_cast<double*>(out);
