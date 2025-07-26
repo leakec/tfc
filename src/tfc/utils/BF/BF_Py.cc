@@ -8,7 +8,7 @@ namespace py = pybind11;
 template <typename T>
 void add1DInit(auto& c) {
     c.def(py::init([](double x0, double xf, py::array_t<int> nC, int min){
-            return T(x0, xf, nC.data(), nC.size(), min);
+            return std::make_unique<T>(x0, xf, nC.data(), nC.size(), min);
         }),
         py::arg("x0"),
         py::arg("xf"),
@@ -49,9 +49,6 @@ PYBIND11_MODULE(BF, m) {
             return "CUDA NOT FOUND, GPU NOT IMPLEMENTED.";
         })
         #endif
-        // Static members
-        .def_readonly_static("nIdentifier", &BasisFunc::nIdentifier)
-        .def_readonly_static("BasisFuncContainer", &BasisFunc::BasisFuncContainer)
         // Methods
         .def("H",
             [](BasisFunc& self,
@@ -73,7 +70,7 @@ PYBIND11_MODULE(BF, m) {
                     free(d);
                 });
 
-                return py::array_t<double>({mOut, nOut}, F, capsule);
+                return py::array_t<double>({nOut, mOut}, F, capsule);
             },
             py::arg("x"), py::arg("d"), py::arg("full"),
             R"(
@@ -89,6 +86,6 @@ PYBIND11_MODULE(BF, m) {
             )"
         );
 
-    auto PyCP = py::class_<CP, BasisFunc> (m, "CP");
+    auto PyCP = py::class_<CP, BasisFunc> (m, "CP", py::multiple_inheritance());
     add1DInit<CP>(PyCP);
 }

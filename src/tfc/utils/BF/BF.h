@@ -64,11 +64,16 @@ class BasisFunc{
 		 * 		- Creates PyCapsule for xla function. */
 		BasisFunc(double x0in, double xf, const int* nCin, int ncDim0, int min, double z0in=0., double zf=DBL_MAX);
 
-		/** Dummy empty constructor allows derived classes without calling constructor explicitly. */
-		BasisFunc(){};
-
 		/** Basis function class destructor. Removes memory used by the basis function class. */
 		virtual ~BasisFunc();
+
+        // Prevent copying
+        BasisFunc(const BasisFunc&) = delete;
+        BasisFunc& operator=(const BasisFunc&) = delete;
+
+        // Prevent moving
+        BasisFunc(BasisFunc&&) = delete;
+        BasisFunc& operator=(BasisFunc&&) = delete;
 
 		/** Function is used to create a basis function matrix and its derivatives. This matrix is is an m x N matrix where:
 		 *  	- m is the number of basis functions
@@ -92,6 +97,9 @@ class BasisFunc{
 		#endif
 	
 	protected:
+		/** Dummy empty constructor allows derived classes without calling constructor explicitly. */
+		BasisFunc(){};
+
 		/** This function creates a PyCapsule object that wraps the XLA verison of the basis function. */
 		PyObject* GetXlaCapsule();
 
@@ -128,13 +136,22 @@ class CP: virtual public BasisFunc {
 		CP(double x0, double xf, const int* nCin, int ncDim0, int min):
 		  BasisFunc(x0,xf,nCin,ncDim0,min,-1.,1.){};
 
-		/** Dummy CP class constructor. Used only in n-dimensions. */
-		CP(){};
 
 		/** CP class destructor.*/
 		virtual ~CP(){};
 
+        // Prevent copying
+        CP(const CP&) = delete;
+        CP& operator=(const CP&) = delete;
+
+        // Prevent moving
+        CP(CP&&) = delete;
+        CP& operator=(CP&&) = delete;
+
 	protected:
+		/** Dummy CP class constructor. Used only in n-dimensions. */
+		CP(){};
+
 		/** Function used internally to create the basis function matrices. */
 		void Hint(const int d, const double* x, const int nOut, double* dark);
 
