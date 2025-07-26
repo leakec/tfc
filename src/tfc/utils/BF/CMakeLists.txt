@@ -6,7 +6,7 @@ project(tfc)
 add_compile_options(-Wall -Werror)
 
 # Contorl whether we build with shared libraries or static libraries
-option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
+option(BUILD_SHARED_LIBS "Build using shared libraries" OFF)
 
 # If not building with shared libs, set POSITION_INDEPENDENT_CODE 
 # so that -fPIC gets used. This will
@@ -42,4 +42,5 @@ target_link_libraries(bf PUBLIC Python3::Python)
 pybind11_add_module(BF BF_Py.cc)
 target_link_libraries(BF PRIVATE bf)
 
-# TODO: Stubgen
+install(TARGETS bf BF DESTINATION .)
+install(CODE [=[execute_process(COMMAND stubgen -m BF -o . --include-docstring WORKING_DIRECTORY $ENV{DESTDIR}${CMAKE_INSTALL_PREFIX})]=])

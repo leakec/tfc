@@ -1,24 +1,21 @@
 import sys
-from os import path, name
+import os
+from pathlib import Path
 import numpy
 from setuptools import setup, Extension, find_packages
 from setuptools.command.build_py import build_py as _build_py
+from setuptools.command.build_ext import build_ext
+from subprocess import check_call
 
 # Get long description
-this_directory = path.abspath(path.dirname(__file__))
-with open(path.join(this_directory, "README.md"), encoding="utf-8") as f:
+this_directory = os.path.abspath(os.path.dirname(__file__))
+with open(os.path.join(this_directory, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 long_description = long_description.replace(
     '<img src="https://github.com/leakec/tfc/blob/main/docs/Univariate_TFC_Animation.gif" width="600" height="467">',
     "",
     1,
 )
-
-# Get numpy directory
-try:
-    numpy_include = numpy.get_include()
-except AttributeError:
-    numpy_include = numpy.get_numpy_include()
 
 # Get version info
 version_dict = {}
@@ -27,7 +24,7 @@ with open("src/tfc/version.py") as f:
     version = version_dict["__version__"]
 
 # In the future, can add -DHAS_CUDA to this to enable GPU support
-if name == "nt":
+if os.name == "nt":
     # Windows compile flags
     cxxFlags = ["/O2", "/std:c++17", "/Wall", "/DWINDOWS_MSVC"]
 else:
@@ -38,22 +35,38 @@ if sys.version_info >= (3, 10):
 else:
     numpy_version = "numpy>=1.21.0"
 
-# Create basis function c++ extension
-BF = Extension(
-    "tfc.utils.BF._BF",
-    sources=["src/tfc/utils/BF/BF.i", "src/tfc/utils/BF/BF.cxx"],
-    include_dirs=["src/tfc/utils/BF", numpy_include],
-    swig_opts=["-c++", "-doxygen", "-O", "-olddefs"],
-    extra_compile_args=cxxFlags,
-    extra_link_args=cxxFlags,
-)
+class CMakeExtension(Extension):
+    def __init__(self, name, sourcedir=""):
+        super().__init__(name, sources=[])
+        self.sourcedir = str((Path(sourcedir) / "src" / "tfc" / "utils" / "BF").absolute())
 
 
-# Custom build options to include swig Python files
-class build_py(_build_py):
-    def run(self):
-        self.run_command("build_ext")
-        super(build_py, self).run()
+class CMakeBuild(build_ext):
+    def build_extension(self, ext):
+        extdir = Path(self.get_ext_fullpath(ext.name)).parents[0].absolute()
+        bf_dir = extdir / "tfc" / "utils" / "BF"
+
+        cfg = "Debug" if self.debug else "Release"
+        cmake_args = [
+            f"-DCMAKE_BUILD_TYPE={cfg}",
+            f"-DCMAKE_INSTALL_PREFIX={bf_dir}",
+        ]
+
+        # Optional: use Ninja if available
+        if "CMAKE_GENERATOR" not in os.environ:
+            cmake_args += ["-G", "Ninja"]
+
+        build_temp = Path(self.build_temp)
+        build_temp.mkdir(parents=True, exist_ok=True)
+
+        # Run CMake configuration
+        check_call(["cmake", ext.sourcedir] + cmake_args, cwd=build_temp)
+
+        # Run CMake build
+        check_call(["cmake", "--build", ".", "--config", cfg], cwd=build_temp)
+
+        # Run CMake install
+        check_call(["cmake", "--install", "."], cwd=build_temp)
 
 
 # Setup
@@ -72,7 +85,8 @@ setup(
     package_data={"": ["src/tfc/py.typed"]},
     python_requires=">=3.10",
     include_package_data=True,
-    ext_modules=[BF],
+    ext_modules=[CMakeExtension("BF")],
+    cmdclass={"build_ext": CMakeBuild},
     install_requires=[
         numpy_version,
         "jax ~= 0.6.0",
@@ -94,7 +108,4 @@ setup(
         "Topic :: Scientific/Engineering",
         "Topic :: Education",
     ],
-    cmdclass={
-        "build_py": build_py,
-    },
 )
