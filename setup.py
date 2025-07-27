@@ -105,7 +105,6 @@ setup(
     ],
     classifiers=[
         "Development Status :: 4 - Beta",
-        "License :: OSI Approved :: MIT License",
         "Natural Language :: English",
         "Programming Language :: C++",
         "Programming Language :: Python :: 3 :: Only",
