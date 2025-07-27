@@ -15,7 +15,7 @@ void add1DInit(auto& c) {
         py::arg("nC"),
         py::arg("min"),
         R"(
-            BasisFunc constructor.
+            Constructor.
 
             Parameters:
             x0: Start of domain
@@ -103,4 +103,51 @@ PYBIND11_MODULE(BF, m) {
 
     auto PyFS = py::class_<FS, BasisFunc> (m, "FS", py::multiple_inheritance());
     add1DInit<FS>(PyFS);
+
+    py::class_<ELM, BasisFunc> (m, "ELM")
+        .def_property("b", 
+        [](ELM& self) {
+            double* data = nullptr;
+            int nOut;
+            self.getB(&data, &nOut);
+
+            auto capsule = py::capsule(data, [](void* f) {
+                double* d = reinterpret_cast<double*>(f);
+                free(d);
+            });
+            return py::array_t<double>(self.m, data, capsule);
+        },
+        [](ELM& self, py::array_t<double> b) {
+            self.setB(b.data(), b.size());
+        })
+        .def_property("w", 
+        [](ELM& self) {
+            double* data = nullptr;
+            int nOut;
+            self.getW(&data, &nOut);
+
+            auto capsule = py::capsule(data, [](void* f) {
+                double* d = reinterpret_cast<double*>(f);
+                free(d);
+            });
+            return py::array_t<double>(self.m, data, capsule);
+        },
+        [](ELM& self, py::array_t<double> w) {
+            self.setW(w.data(), w.size());
+        });
+
+    auto PyELMSigmoid = py::class_<ELMSigmoid, ELM> (m, "ELMSigmoid");
+    add1DInit<ELMSigmoid>(PyELMSigmoid);
+
+    auto PyELMReLU = py::class_<ELMReLU, ELM> (m, "ELMReLU");
+    add1DInit<ELMReLU>(PyELMReLU);
+
+    auto PyELMTanh = py::class_<ELMTanh, ELM> (m, "ELMTanh");
+    add1DInit<ELMTanh>(PyELMTanh);
+
+    auto PyELMSin = py::class_<ELMSin, ELM> (m, "ELMSin");
+    add1DInit<ELMSin>(PyELMSin);
+
+    auto PyELMSwish = py::class_<ELMSwish, ELM> (m, "ELMSwish");
+    add1DInit<ELMSwish>(PyELMSwish);
 }

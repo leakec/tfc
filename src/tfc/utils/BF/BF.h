@@ -272,7 +272,7 @@ class ELM: public BasisFunc {
 		double *b; 
 
 		/** ELM class constructor. Calls BasisFunc class constructor and sets up weights and biases for the ELM. See BasisFunc class for more details. */
-		ELM(double x0, double xf, int* nCin, int ncDim0, int min);
+		ELM(double x0, double xf, const int* nCin, int ncDim0, int min);
 
 		/** ELM class destructor.*/
 		virtual ~ELM();
@@ -281,13 +281,13 @@ class ELM: public BasisFunc {
 		void getW(double** arrOut, int* nOut);
 
 		/** Python hook to set ELM weights. */
-		void setW(double* arrIn, int nIn);
+		void setW(const double* arrIn, int nIn);
 
 		/** Python hook to return ELM biases. */
 		void getB(double** arrOut, int* nOut);
 
 		/** Python hook to set ELM biases. */
-		void setB(double* arrIn, int nIn);
+		void setB(const double* arrIn, int nIn);
 
 	protected:
 		/** Function used internally to create the basis function matrices. */
@@ -307,7 +307,7 @@ class ELMSigmoid: public ELM {
 
 	public:
 		/** ELMSigmoid class constructor. Calls ELM class constructor. See ELM class for more details. */
-		ELMSigmoid(double x0, double xf, int* nCin, int ncDim0, int min):
+		ELMSigmoid(double x0, double xf, const int* nCin, int ncDim0, int min):
 		  ELM(x0,xf,nCin,ncDim0,min){};
 
 		/** ELMSigmoid class destructor.*/
@@ -325,7 +325,7 @@ class ELMReLU: public ELM {
 
 	public:
 		/** ELMReLU class constructor. Calls ELM class constructor. See ELM class for more details. */
-		ELMReLU(double x0, double xf, int* nCin, int ncDim0, int min):
+		ELMReLU(double x0, double xf, const int* nCin, int ncDim0, int min):
 		  ELM(x0,xf,nCin,ncDim0,min){};
 
 		/** ELMReLU class destructor.*/
@@ -343,7 +343,7 @@ class ELMTanh: public ELM {
 
 	public:
 		/** ELMTanh class constructor. Calls ELM class constructor. See ELM class for more details. */
-		ELMTanh(double x0, double xf, int* nCin, int ncDim0, int min):
+		ELMTanh(double x0, double xf, const int* nCin, int ncDim0, int min):
 		  ELM(x0,xf,nCin,ncDim0,min){};
 
 		/** ELMTanh class destructor.*/
@@ -361,7 +361,7 @@ class ELMSin: public ELM {
 
 	public:
 		/** ELMSin class constructor. Calls ELM class constructor. See ELM class for more details. */
-		ELMSin(double x0, double xf, int* nCin, int ncDim0, int min):
+		ELMSin(double x0, double xf, const int* nCin, int ncDim0, int min):
 		  ELM(x0,xf,nCin,ncDim0,min){};
 
 		/** ELMSin class destructor.*/
@@ -379,7 +379,7 @@ class ELMSwish: public ELM {
 
 	public:
 		/** ELMSwish class constructor. Calls ELM class constructor. See ELM class for more details. */
-		ELMSwish(double x0, double xf, int* nCin, int ncDim0, int min):
+		ELMSwish(double x0, double xf, const int* nCin, int ncDim0, int min):
 		  ELM(x0,xf,nCin,ncDim0,min){};
 
 		/** ELMSwish class destructor.*/
@@ -552,7 +552,7 @@ class nELM: public nBasisFunc {
 		virtual ~nELM();
 
 		/** Python hook to return nELM weights. */
-		void setW(double* arrIn, int dimIn, int nIn);
+		void setW(const double* arrIn, int dimIn, int nIn);
 
 		/** Python hook to set nELM weights. */
 		void getW(int* dimOut, int* nOut, double** arrOut);
@@ -561,7 +561,7 @@ class nELM: public nBasisFunc {
 		void getB(double** arrOut, int* nOut);
 
 		/** Python hook to set nELM biases. */
-		void setB(double* arrIn, int nIn);
+		void setB(const double* arrIn, int nIn);
 
 	private:
 

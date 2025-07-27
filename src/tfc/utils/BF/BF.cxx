@@ -578,7 +578,7 @@ void FS::Hint(const int d, const double* x, const int nOut, double* dark){
 
 // ELM: **********************************************************************
 // ELM base class
-ELM::ELM(double x0, double xf, int* nCin, int ncDim0, int min):
+ELM::ELM(double x0, double xf, const int* nCin, int ncDim0, int min):
 	BasisFunc(x0,xf,nCin,ncDim0,min,0.,1.){
 
 	int k;
@@ -596,7 +596,7 @@ ELM::~ELM(){
 	delete[] w;
 };
 
-void ELM::setW(double* arrIn, int nIn){
+void ELM::setW(const double* arrIn, int nIn){
 	if (nIn != m){
 		printf("Failure in setW function. Weight vector is the wrong size. Exiting program.\n");
 		exit(EXIT_FAILURE);
@@ -605,7 +605,7 @@ void ELM::setW(double* arrIn, int nIn){
 		w[k] = arrIn[k];
 };
 	
-void ELM::setB(double* arrIn, int nIn){
+void ELM::setB(const double* arrIn, int nIn){
 	if (nIn != m){
 		printf("Failure in setB function. Bias vector is the wrong size. Exiting program.\n");
 		exit(EXIT_FAILURE);
@@ -1238,7 +1238,7 @@ nELM::~nELM(){
 	delete[] w;
 };
 
-void nELM::setW(double* arrIn, int dimIn, int nIn){
+void nELM::setW(const double* arrIn, int dimIn, int nIn){
 	if ((nIn != m)||(dimIn != dim)){
 		printf("Failure in setW function. Weight vector is the wrong size. Exiting program.\n");
 		exit(EXIT_FAILURE);
@@ -1247,7 +1247,7 @@ void nELM::setW(double* arrIn, int dimIn, int nIn){
 		w[k] = arrIn[k];
 };
 	
-void nELM::setB(double* arrIn, int nIn){
+void nELM::setB(const double* arrIn, int nIn){
 	if (nIn != m){
 		printf("Failure in setB function. Bias vector is the wrong size. Exiting program.\n");
 		exit(EXIT_FAILURE);
