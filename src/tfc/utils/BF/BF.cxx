@@ -937,7 +937,7 @@ void ELMSwish::Hint(const int d, const double* x, const int nOut, double* dark){
 };
 
 // Parent n-dimensional basis function class: **********************************************************************
-nBasisFunc::nBasisFunc(double* x0in, int x0Dim0, double* xf, int xfDim0, int* nCin, int ncDim0, int ncDim1, int min, double z0in, double zfin){
+nBasisFunc::nBasisFunc(const double* x0in, int x0Dim0, const double* xf, int xfDim0, const int* nCin, int ncDim0, int ncDim1, int min, double z0in, double zfin){
 
 	// Initialize internal variables based on user givens
 	dim = x0Dim0;
@@ -997,7 +997,7 @@ void nBasisFunc::getC(double** arrOut, int* nOut){
 	return;
 };
 
-void nBasisFunc::H(double* x, int in, int xDim1, int* d, int dDim0, int* nOut, int* mOut, double** F, const bool full){
+void nBasisFunc::H(const double* x, int in, int xDim1, const int* d, int dDim0, int* nOut, int* mOut, double** F, const bool full){
 	int numBasis = full ? numBasisFuncFull : numBasisFunc;
 	*mOut = numBasis;
 	*nOut = xDim1;
@@ -1022,7 +1022,7 @@ void nBasisFunc::xla(void* out, void** in){
 
 };
 
-void nBasisFunc::nHint(double* x, int n, const int* d, int dDim0, int numBasis, double*& F, const bool full){
+void nBasisFunc::nHint(const double* x, int n, const int* d, int dDim0, int numBasis, double*& F, const bool full){
 
 	int j,k;
 	double* dark = new double[n*m]; 
@@ -1273,7 +1273,7 @@ void nELM::getB(double** arrOut, int* nOut){
 	return;
 };
 
-void nELM::nHint(double* x, int n, const int* d, int dDim0, int numBasis, double*& F, const bool full){
+void nELM::nHint(const double* x, int n, const int* d, int dDim0, int numBasis, double*& F, const bool full){
 
 	int j,k;
 	double* z = new double[n*dim];

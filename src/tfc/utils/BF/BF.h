@@ -424,23 +424,13 @@ class nBasisFunc: virtual public BasisFunc{
 
 	public:
 		/** n-D basis function class constructor. */
-		nBasisFunc(double* x0in, int x0Dim0, double* xf, int xfDim0, int* nCin, int ncDim0, int ncDim1, int min, double z0in=0., double zfin=0.);
-
-		/** Dummy nBasisFunc constructor used by nELM only. */
-		nBasisFunc(){};
+		nBasisFunc(const double* x0in, int x0Dim0, const double* xf, int xfDim0, const int* nCin, int ncDim0, int ncDim1, int min, double z0in=0., double zfin=0.);
 
 		/** n-D basis function class destructor. */
 		virtual ~nBasisFunc();
 
-        /**
-         * Including override of BasisFunc so we don't have issues with hidden virtual overloads. 
-         * However, this should never be called from nBasisFunc.
-         * If it is, it will throw an error.
-         */
-        void H(const double* x, int n, const int d, int* nOut, int* mOut, double** F,  bool full) override; 
-
 		/** This function is used to create a basis function matrix and its derivatives. */
-		void H(double* x, int in, int xDim1, int* d, int dDim0, int* nOut, int* mOut, double** F, const bool full);
+		void H(const double* x, int in, int xDim1, const int* d, int dDim0, int* nOut, int* mOut, double** F, const bool full);
 
 		/** This function is an XLA version of the basis function. */
 		void xla(void* out, void** in) override;
@@ -448,7 +438,18 @@ class nBasisFunc: virtual public BasisFunc{
 		/** Python hook to return domain mapping constants. */
 		void getC(double** arrOut, int* nOut);
 
+    protected:
+		/** Dummy nBasisFunc constructor used by nELM only. */
+		nBasisFunc(){};
+
 	private:
+        /**
+         * Including override of BasisFunc so we don't have issues with hidden virtual overloads. 
+         * However, this should never be called from nBasisFunc.
+         * If it is, it will throw an error.
+         */
+        void H(const double* x, int n, const int d, int* nOut, int* mOut, double** F,  bool full) override; 
+
 		/** Recursive function used to perform the tensor product of univarite basis functions to form multivariate basis functions. */
 		void RecurseBasis(int dimCurr, int* vec, int &count, const bool full, const int in, const int numBasis, const double* T, double* out);
 
@@ -456,7 +457,7 @@ class nBasisFunc: virtual public BasisFunc{
 		void NumBasisFunc(int dimCurr, int* vec, int &count, const bool full);
 
 		/** Internal function used to calculate dim sets of univariate basis functions with specified derivatives. Note, that if dDim0 < dim, then 0's will be used for the tail end.*/
-		virtual void nHint(double* x, int in, const int* d, int dDim0, int numBasis, double*& F, const bool full);
+		virtual void nHint(const double* x, int in, const int* d, int dDim0, int numBasis, double*& F, const bool full);
 
 		/** Function used internally to create the basis function matrices. */
 		virtual void Hint(const int d, const double* x, const int nOut, double* dark) override = 0;
@@ -473,7 +474,7 @@ class nCP: public nBasisFunc, public CP {
 	public:
 
 		/** nCP class constructor. Calls nBasisFunc class constructor and dummy constructors of remaining parents. See nBasisFunc class for more details. */
-		nCP(double* x0in, int x0Dim0, double* xf, int xfDim0, int* nCin, int ncDim0, int ncDim1, int min):nBasisFunc(x0in,x0Dim0,xf,xfDim0,nCin,ncDim0,ncDim1,min,-1.,1.){};
+		nCP(const double* x0in, int x0Dim0, const double* xf, int xfDim0, const int* nCin, int ncDim0, int ncDim1, int min):nBasisFunc(x0in,x0Dim0,xf,xfDim0,nCin,ncDim0,ncDim1,min,-1.,1.){};
 
 		/** nCP class destructor.*/
 		~nCP(){};
@@ -494,7 +495,7 @@ class nLeP: public nBasisFunc, public LeP {
 	
 	public:
 		/** nLeP class constructor. Calls nBasisFunc class constructor and dummy constructors of remaining parents. See nBasisFunc class for more details. */
-		nLeP(double* x0in, int x0Dim0, double* xf, int xfDim0, int* nCin, int ncDim0, int ncDim1, int min):nBasisFunc(x0in,x0Dim0,xf,xfDim0,nCin,ncDim0,ncDim1,min,-1.,1.){};
+		nLeP(const double* x0in, int x0Dim0, const double* xf, int xfDim0, const int* nCin, int ncDim0, int ncDim1, int min):nBasisFunc(x0in,x0Dim0,xf,xfDim0,nCin,ncDim0,ncDim1,min,-1.,1.){};
 
 		/** nLeP class destructor.*/
 		~nLeP(){};
@@ -514,7 +515,7 @@ class nFS: public nBasisFunc, public FS {
 	
 	public:
 		/** nFS class constructor. Calls nBasisFunc class constructor and dummy constructors of remaining parents. See nBasisFunc class for more details. */
-		nFS(double* x0in, int x0Dim0, double* xf, int xfDim0, int* nCin, int ncDim0, int ncDim1, int min):nBasisFunc(x0in,x0Dim0,xf,xfDim0,nCin,ncDim0,ncDim1,min,-M_PI,M_PI){};
+		nFS(const double* x0in, int x0Dim0, const double* xf, int xfDim0, const int* nCin, int ncDim0, int ncDim1, int min):nBasisFunc(x0in,x0Dim0,xf,xfDim0,nCin,ncDim0,ncDim1,min,-M_PI,M_PI){};
 
 		/** nFS class destructor.*/
 		~nFS(){};
@@ -566,7 +567,7 @@ class nELM: public nBasisFunc {
 	private:
 
 		/** Internal function used to calculate dim sets of univariate basis functions with specified derivatives. Note, that if dDim0 < dim, then 0's will be used for the tail end.*/
-		void nHint(double* x, int in, const int* d, int dDim0, int numBasis, double*& F, const bool full) override;
+		void nHint(const double* x, int in, const int* d, int dDim0, int numBasis, double*& F, const bool full) override;
 
 		/** This function handles creating a full matrix of nELM basis functions. */
 		virtual void nElmHint(const int* d, int dDim0, const double* x, const int in, double* F) = 0;
