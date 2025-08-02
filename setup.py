@@ -87,7 +87,7 @@ setup(
     packages=find_packages("src"),
     package_dir={"": "src"},
     package_data={"": ["src/tfc/py.typed"]},
-    python_requires=">=3.10",
+    python_requires=">=3.11",
     include_package_data=True,
     ext_modules=[CMakeExtension("BF")],
     cmdclass={"build_ext": CMakeBuild},
