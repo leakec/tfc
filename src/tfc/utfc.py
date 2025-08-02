@@ -344,7 +344,7 @@ class utfc:
                         mlir.ir_constant(np.int32(dim1)),
                     ],
                     has_side_effect=False,
-                    api_version=2,
+                    api_version=3,
                 )
 
                 return custom_call_op.results

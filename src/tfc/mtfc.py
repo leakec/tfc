@@ -604,6 +604,7 @@ class mtfc:
                     result_layouts=[
                         default_layout((dim0, dim1)),
                     ],
+                    api_version=3,
                 ).results
 
             mlir.register_lowering(H_p, H_xla, platform="cpu")
