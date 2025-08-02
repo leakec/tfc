@@ -8,6 +8,9 @@ namespace py = pybind11;
 template <typename T>
 void add1DInit(auto& c) {
     c.def(py::init([](double x0, double xf, py::array_t<int> nC, int min){
+            if (nC.ndim() != 1) {
+                throw py::value_error("The \"nC\" input array must be 1-dimensional.");
+            }
             return std::make_unique<T>(x0, xf, nC.data(), nC.size(), min);
         }),
         py::arg("x0"),
@@ -29,6 +32,15 @@ void add1DInit(auto& c) {
 template <typename T>
 void addNdInit(auto& c) {
     c.def(py::init([](py::array_t<double> x0, py::array_t<double> xf, py::array_t<int> nC, int min){
+            if (x0.ndim() != 1) {
+                throw py::value_error("The \"x0\" input array must be 1-dimensional.");
+            }
+            if (xf.ndim() != 1) {
+                throw py::value_error("The \"xf\" input array must be 1-dimensional.");
+            }
+            if (nC.ndim() != 2) {
+                throw py::value_error("The \"nC\" input array must be 2-dimensional.");
+            }
             return std::make_unique<T>(x0.data(), x0.size(), xf.data(), xf.size(), nC.data(), nC.shape()[0], nC.shape()[1], min);
         }),
         py::arg("x0"),
@@ -42,6 +54,36 @@ void addNdInit(auto& c) {
             x0: Start of domain
             xf: End of domain
             nC: Array of indices to remove (2D numpy array)
+            min: Number of basis functions to use
+        )"
+    );
+}
+
+template <typename T>
+void addNdElmInit(auto& c) {
+    c.def(py::init([](py::array_t<double> x0, py::array_t<double> xf, py::array_t<int> nC, int min){
+            if (x0.ndim() != 1) {
+                throw py::value_error("The \"x0\" input array must be 1-dimensional.");
+            }
+            if (xf.ndim() != 1) {
+                throw py::value_error("The \"xf\" input array must be 1-dimensional.");
+            }
+            if (nC.ndim() != 1) {
+                throw py::value_error("The \"nC\" input array must be 1-dimensional.");
+            }
+            return std::make_unique<T>(x0.data(), x0.size(), xf.data(), xf.size(), nC.data(), nC.size(), min);
+        }),
+        py::arg("x0"),
+        py::arg("xf"),
+        py::arg("nC"),
+        py::arg("min"),
+        R"(
+            Constructor.
+
+            Parameters:
+            x0: Start of domain (1D numpy array)
+            xf: End of domain (1D numpy array)
+            nC: Array of indices to remove (1D numpy array)
             min: Number of basis functions to use
         )"
     );
@@ -185,7 +227,7 @@ PYBIND11_MODULE(BF, m) {
                py::array_t<int, py::array::c_style | py::array::forcecast> d,
                bool full) {
                 if (x.ndim() != 2) {
-                    throw py::value_error("The \"x\" input array must be 1-dimensional.");
+                    throw py::value_error("The \"x\" input array must be 2-dimensional.");
                 }
                 if (d.ndim() != 1) {
                     throw py::value_error("The \"d\" input array must be 1-dimensional.");
@@ -225,4 +267,55 @@ PYBIND11_MODULE(BF, m) {
 
     auto PynFS = py::class_<nFS, nBasisFunc> (m, "nFS");
     addNdInit<nFS>(PynFS);
+
+    py::class_<nELM, nBasisFunc> (m, "nELM")
+        .def_property("b", 
+        [](nELM& self) {
+            double* data = nullptr;
+            int nOut;
+            self.getB(&data, &nOut);
+
+            auto capsule = py::capsule(data, [](void* f) {
+                double* d = reinterpret_cast<double*>(f);
+                free(d);
+            });
+            return py::array_t<double>(self.m, data, capsule);
+        },
+        [](nELM& self, py::array_t<double> b) {
+            self.setB(b.data(), b.size());
+        })
+        .def_property("w", 
+        [](nELM& self) {
+            double* data = nullptr;
+            int nOut;
+            int dimOut;
+            self.getW(&dimOut, &nOut, &data);
+
+            auto capsule = py::capsule(data, [](void* f) {
+                double* d = reinterpret_cast<double*>(f);
+                free(d);
+            });
+            return py::array_t<double>({dimOut, nOut}, data, capsule);
+        },
+        [](nELM& self, py::array_t<double, py::array::c_style | py::array::forcecast> w) {
+            if (w.ndim() != 2) {
+                throw py::value_error("The \"w\" input array must be 2-dimensional.");
+            }
+            self.setW(w.data(), w.shape()[0], w.shape()[1]);
+        });
+
+    auto PynELMSigmoid = py::class_<nELMSigmoid, nELM> (m, "nELMSigmoid");
+    addNdElmInit<nELMSigmoid>(PynELMSigmoid);
+
+    auto PynELMTanh = py::class_<nELMTanh, nELM> (m, "nELMTanh");
+    addNdElmInit<nELMTanh>(PynELMTanh);
+
+    auto PynELMSin = py::class_<nELMSin, nELM> (m, "nELMSin");
+    addNdElmInit<nELMSin>(PynELMSin);
+
+    auto PynELMSwish = py::class_<nELMSwish, nELM> (m, "nELMSwish");
+    addNdElmInit<nELMSwish>(PynELMSwish);
+
+    auto PynELMReLU = py::class_<nELMReLU, nELM> (m, "nELMReLU");
+    addNdElmInit<nELMReLU>(PynELMReLU);
 }

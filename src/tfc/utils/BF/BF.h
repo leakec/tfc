@@ -547,7 +547,7 @@ class nELM: public nBasisFunc {
 		double *b; 
 
 		/** n-D ELM class constructor. */
-		nELM(double* x0in, int x0Dim0, double* xf, int xfDim0, int* nCin, int ncDim0, int min, double z0in=0., double zfin=1.);
+		nELM(const double* x0in, int x0Dim0, const double* xf, int xfDim0, const int* nCin, int ncDim0, int min, double z0in=0., double zfin=1.);
 
 		/** n-D ELM class destructor. */
 		virtual ~nELM();
@@ -592,7 +592,7 @@ class nELMSigmoid: public nELM {
 	
 	public:
 		/** nELMSigmoid class constructor. Calls nELM class constructor. See nELM class for more details. */
-		nELMSigmoid(double* x0in, int x0Dim0, double* xf, int xfDim0, int* nCin, int ncDim0,int min):nELM(x0in,x0Dim0,xf,xfDim0,nCin,ncDim0,min){};
+		nELMSigmoid(const double* x0in, int x0Dim0, const double* xf, int xfDim0, const int* nCin, int ncDim0,int min):nELM(x0in,x0Dim0,xf,xfDim0,nCin,ncDim0,min){};
 
 		/** nELMSigmoid class destructor.*/
 		~nELMSigmoid(){};
@@ -608,7 +608,7 @@ class nELMTanh: public nELM {
 	
 	public:
 		/** nELMTanh class constructor. Calls nELM class constructor. See nELM class for more details. */
-		nELMTanh(double* x0in, int x0Dim0, double* xf, int xfDim0, int* nCin, int ncDim0, int min):nELM(x0in,x0Dim0,xf,xfDim0,nCin,ncDim0,min){};
+		nELMTanh(const double* x0in, int x0Dim0, const double* xf, int xfDim0, const int* nCin, int ncDim0, int min):nELM(x0in,x0Dim0,xf,xfDim0,nCin,ncDim0,min){};
 
 		/** nELMTanh class destructor.*/
 		~nELMTanh(){};
@@ -624,7 +624,7 @@ class nELMSin: public nELM {
 	
 	public:
 		/** nELMSin class constructor. Calls nELM class constructor. See nELM class for more details. */
-		nELMSin(double* x0in, int x0Dim0, double* xf, int xfDim0, int* nCin, int ncDim0, int min):nELM(x0in,x0Dim0,xf,xfDim0,nCin,ncDim0,min){};
+		nELMSin(const double* x0in, int x0Dim0, const double* xf, int xfDim0, const int* nCin, int ncDim0, int min):nELM(x0in,x0Dim0,xf,xfDim0,nCin,ncDim0,min){};
 
 		/** nELMSin class destructor.*/
 		~nELMSin(){};
@@ -640,7 +640,7 @@ class nELMSwish: public nELM {
 	
 	public:
 		/** nELMSwish class constructor. Calls nELM class constructor. See nELM class for more details. */
-		nELMSwish(double* x0in, int x0Dim0, double* xf, int xfDim0, int* nCin, int ncDim0, int min):nELM(x0in,x0Dim0,xf,xfDim0,nCin,ncDim0,min){};
+		nELMSwish(const double* x0in, int x0Dim0, const double* xf, int xfDim0, const int* nCin, int ncDim0, int min):nELM(x0in,x0Dim0,xf,xfDim0,nCin,ncDim0,min){};
 
 		/** nELMSwish class destructor.*/
 		~nELMSwish(){};
@@ -656,7 +656,7 @@ class nELMReLU: public nELM {
 	
 	public:
 		/** nELMReLU class constructor. Calls nELM class constructor. See nELM class for more details. */
-		nELMReLU(double* x0in, int x0Dim0, double* xf, int xfDim0, int* nCin, int ncDim0, int min):nELM(x0in,x0Dim0,xf,xfDim0,nCin,ncDim0,min){};
+		nELMReLU(const double* x0in, int x0Dim0, const double* xf, int xfDim0, const int* nCin, int ncDim0, int min):nELM(x0in,x0Dim0,xf,xfDim0,nCin,ncDim0,min){};
 
 		/** nELMReLU class destructor.*/
 		~nELMReLU(){};

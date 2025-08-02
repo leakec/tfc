@@ -1178,7 +1178,7 @@ void nBasisFunc::RecurseBasis(int dimCurr, int* vec, int &count, const bool full
 };
 
 // nELM base class: ***********************************************************************************
-nELM::nELM(double* x0in, int x0Dim0, double* xf, int xfDim0, int* nCin, int ncDim0, int min, double z0in, double zfin){
+nELM::nELM(const double* x0in, int x0Dim0, const double* xf, int xfDim0, const int* nCin, int ncDim0, int min, double z0in, double zfin){
 
 	int k;
 	bool flag = true;
