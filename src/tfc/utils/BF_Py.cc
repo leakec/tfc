@@ -223,8 +223,8 @@ PYBIND11_MODULE(BF, m) {
                     throw py::value_error("The \"c\" input array must be 1-dimensional.");
                 }
                 if (c.size() != self.dim) {
-                    throw py::value_error(
-                        std::format("The \"c\" input array must be size {}, but got size {}.", self.dim, int(c.size())));
+                    throw py::value_error(std::format(
+                        "The \"c\" input array must be size {}, but got size {}.", self.dim, int(c.size())));
                 }
             })
         .def_readwrite("numBasisFunc", &nBasisFunc::numBasisFunc)

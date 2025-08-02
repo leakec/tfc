@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.25)
 project(tfc)
 
 # TODO: Change for release
-add_compile_options(-Wall -Werror)
+add_compile_options(-Wall -Werror -pedantic)
 
 # Contorl whether we build with shared libraries or static libraries
 option(BUILD_SHARED_LIBS "Build using shared libraries" OFF)
