@@ -551,9 +551,7 @@ class mtfc:
         H_p.def_impl(H_impl)
 
         # Define abstract evaluation
-        def H_abstract_eval(
-            *x, d: tuple[int, ...] = d0, full: bool = False
-        ) -> core.ShapedArray:
+        def H_abstract_eval(*x, d: tuple[int, ...] = d0, full: bool = False) -> core.ShapedArray:
             if full:
                 dim1 = self.basisClass.numBasisFuncFull
             else:
@@ -632,7 +630,7 @@ class mtfc:
                     else:
                         flag = onp.any(arg_tans[k] != 0)
                     if flag:
-                        dark = tuple(d[j]+1 if k == j else d[j] for j in range(len(d)))
+                        dark = tuple(d[j] + 1 if k == j else d[j] for j in range(len(d)))
                         if flat:
                             out_tans += Hjax(*arg_vals, d=dark, full=full) * np.expand_dims(
                                 arg_tans[k], 1
