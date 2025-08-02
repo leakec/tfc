@@ -35,7 +35,7 @@ set(PYBIND11_FINDPYTHON ON)
 find_package(pybind11 3.0 REQUIRED CONFIG)
 
 # Create the bf library
-add_library(bf BF.cxx)
+add_library(bf BF.cc)
 target_link_libraries(bf PUBLIC Python3::Python)
 
 # Create the BF.py Python file
