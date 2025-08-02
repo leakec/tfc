@@ -1,6 +1,5 @@
 import numpy as np
 from numpy import typing as npt
-from .types import List
 from typing import Optional
 
 
@@ -24,13 +23,13 @@ class table:
         return "\\begin{center}\n\\begin{tabular}{" + "|c" * numCols + "|}\n"
 
     @staticmethod
-    def _colHeader(strIn: List[str]) -> str:
+    def _colHeader(strIn: list[str]) -> str:
         """This function creates the column header based on the list of strings that are passed in
         via the input strIn.
 
         Parameters
         ----------
-        strIn : List[str]
+        strIn : list[str]
             List of strings that form the column headers.
 
         Returns
@@ -41,7 +40,7 @@ class table:
         return " & ".join(strIn) + "\\\\\n"
 
     @staticmethod
-    def _Arr2Tab(arrIn: npt.NDArray, form: str = "%.4E", rowHeader: Optional[List[str]] = None):
+    def _Arr2Tab(arrIn: npt.NDArray, form: str = "%.4E", rowHeader: Optional[list[str]] = None):
         """
         This function transforms the 2-D numpy array (arrIn) into latex tabular format. The
         "form" argument specifies the number format to be used in the tabular environment.
@@ -57,7 +56,7 @@ class table:
         form : str, optional
              Format string for the table numbers. (Default value = "%.4E")
 
-        rowHeader : Optional[List[str]]
+        rowHeader : Optional[list[str]]
              List of strings to use as the row headers. (Default value = None)
 
         Returns
@@ -106,8 +105,8 @@ class table:
     def SimpleTable(
         arrIn: npt.NDArray,
         form: str = "%.4E",
-        colHeader: Optional[List[str]] = None,
-        rowHeader: Optional[List[str]] = None,
+        colHeader: Optional[list[str]] = None,
+        rowHeader: Optional[list[str]] = None,
     ) -> str:
         """This function creates a simple latex table for the 2D numpy array arrIn. The
         "form" argument specifies the number format to be used in the tabular environment.
@@ -124,10 +123,10 @@ class table:
         form : str, optional
              Format string for the table numbers. (Default value = "%.4E")
 
-        colHeader : Optional[List[str]]
+        colHeader : Optional[list[str]]
             List of strings that form the column headers. (Default value = None)
 
-        rowHeader : Optional[List[str]]
+        rowHeader : Optional[list[str]]
              List of strings to use as the row headers. (Default value = None)
 
         Returns

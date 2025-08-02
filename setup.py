@@ -36,13 +36,13 @@ else:
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=""):
         super().__init__(name, sources=[])
-        self.sourcedir = str((Path(sourcedir) / "src" / "tfc" / "utils" / "BF").absolute())
+        self.sourcedir = str((Path(sourcedir) / "src" / "tfc" / "utils").absolute())
 
 
 class CMakeBuild(build_ext):
     def build_extension(self, ext):
         extdir = Path(self.get_ext_fullpath(ext.name)).parents[0].absolute()
-        bf_dir = extdir / "tfc" / "utils" / "BF"
+        bf_dir = extdir / "tfc" / "utils"
 
         import pybind11
         dark = Path(pybind11.__file__).parents[0]

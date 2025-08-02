@@ -17,7 +17,7 @@ from tfc.utils import egrad
 
 
 def test_CP():
-    from tfc.utils.BF.BF_Py import CP as pCP
+    from tfc.utils.BF_Py import CP as pCP
 
     x = np.linspace(0, 2, num=10)
 
@@ -36,7 +36,7 @@ def test_CP():
 
 
 def test_LeP():
-    from tfc.utils.BF.BF_Py import LeP as pLeP
+    from tfc.utils.BF_Py import LeP as pLeP
 
     x = np.linspace(0, 2, num=10)
     lep1 = LeP(0.0, 2.0, np.array([], dtype=np.int32), 5)
@@ -54,7 +54,7 @@ def test_LeP():
 
 
 def test_LaP():
-    from tfc.utils.BF.BF_Py import LaP as pLaP
+    from tfc.utils.BF_Py import LaP as pLaP
 
     x = np.linspace(0, 5, num=10)
     lap1 = LaP(0.0, 5.0, np.array([], dtype=np.int32), 5)
@@ -72,7 +72,7 @@ def test_LaP():
 
 
 def test_HoPpro():
-    from tfc.utils.BF.BF_Py import HoPpro as pHoPpro
+    from tfc.utils.BF_Py import HoPpro as pHoPpro
 
     x = np.linspace(0, 5, num=10)
     hoppro1 = HoPpro(0.0, 5.0, np.array([], dtype=np.int32), 5)
@@ -90,7 +90,7 @@ def test_HoPpro():
 
 
 def test_HoPphy():
-    from tfc.utils.BF.BF_Py import HoPphy as pHoPphy
+    from tfc.utils.BF_Py import HoPphy as pHoPphy
 
     x = np.linspace(0, 5, num=10)
     hopphy1 = HoPphy(0.0, 5.0, np.array([], dtype=np.int32), 5)
@@ -108,7 +108,7 @@ def test_HoPphy():
 
 
 def test_FS():
-    from tfc.utils.BF.BF_Py import FS as pFS
+    from tfc.utils.BF_Py import FS as pFS
 
     x = np.linspace(0, 2 * np.pi, num=10)
     fs1 = FS(0.0, 2.0 * np.pi, np.array([], dtype=np.int32), 5)
@@ -135,7 +135,7 @@ def test_FS():
 
 
 def test_ELMReLU():
-    from tfc.utils.BF.BF_Py import ELMReLU as pELMReLU
+    from tfc.utils.BF_Py import ELMReLU as pELMReLU
 
     x = np.linspace(0, 1, num=10)
     elm = ELMReLU(0.0, 1.0, np.array([], dtype=np.int32), 10)
@@ -157,7 +157,7 @@ def test_ELMReLU():
 
 
 def test_ELMSigmoid():
-    from tfc.utils.BF.BF_Py import ELMSigmoid as pELMSigmoid
+    from tfc.utils.BF_Py import ELMSigmoid as pELMSigmoid
 
     x = np.linspace(0, 1, num=10)
     elm = ELMSigmoid(0.0, 1.0, np.array([], dtype=np.int32), 10)
@@ -182,7 +182,7 @@ def test_ELMSigmoid():
 
 
 def test_ELMTanh():
-    from tfc.utils.BF.BF_Py import ELMTanh as pELMTanh
+    from tfc.utils.BF_Py import ELMTanh as pELMTanh
 
     x = np.linspace(0, 1, num=10)
     elm = ELMTanh(0.0, 1.0, np.array([], dtype=np.int32), 10)
@@ -206,7 +206,7 @@ def test_ELMTanh():
 
 
 def test_ELMSin():
-    from tfc.utils.BF.BF_Py import ELMSin as pELMSin
+    from tfc.utils.BF_Py import ELMSin as pELMSin
 
     x = np.linspace(0, 1, num=10)
     elm = ELMSin(0.0, 1.0, np.array([], dtype=np.int32), 10)
@@ -233,7 +233,7 @@ def test_ELMSin():
 
 
 def test_ELMSwish():
-    from tfc.utils.BF.BF_Py import ELMSwish as pELMSwish
+    from tfc.utils.BF_Py import ELMSwish as pELMSwish
 
     x = np.linspace(0, 1, num=10)
     elm = ELMSwish(0.0, 1.0, np.array([], dtype=np.int32), 10)

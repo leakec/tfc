@@ -3,9 +3,8 @@ from sympy import Expr
 from sympy.core.function import AppliedUndef
 from sympy.printing.pycode import PythonCodePrinter
 from sympy.simplify.simplify import nc_simplify
-from .types import ConstraintOperators, Exprs, Union, Any, Literal, ConstraintOperator
+from .tfc_types import ConstraintOperators, Exprs, Union, Any, Literal, ConstraintOperator
 from .TFCUtils import TFCPrint
-from sympy import latex
 
 
 class CeSolver:
@@ -182,7 +181,7 @@ class CeSolver:
             the constrained expression is defined.
         """
 
-        def _applyC(c, s) -> Any:
+        def _applyC(c: ConstraintOperator, s) -> Any:
             """
             Apply the constraint operator to the switching function.
 

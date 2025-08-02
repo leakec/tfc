@@ -2,12 +2,11 @@ from jax._src.config import config
 
 config.update("jax_enable_x64", True)
 
-from copy import copy
 import numpy as onp
 import jax.numpy as np
 from typing import cast
 import numpy.typing as npt
-from .utils.types import (
+from .utils.tfc_types import (
     Literal,
     uint,
     IntListOrArray,
@@ -16,7 +15,6 @@ from .utils.types import (
     JaxOrNumpyArray,
     IntArrayLike,
     Array,
-    Tuple,
 )
 from jax import core
 from jax.extend.core import Primitive
@@ -280,7 +278,7 @@ class mtfc:
         if backend == "C++":
             from .utils import BF
         elif backend == "Python":
-            from .utils.BF import BF_Py as BF
+            from .utils import BF_Py as BF
         else:
             TFCPrint.Error(
                 f'The backend {backend} was specified, but can only be one of "C++" or "Python".'
@@ -354,7 +352,7 @@ class mtfc:
                 x[k][:] = (self.z[k, :] - z0) / self.c[k] + self.x0[k]
 
         self.z: Array = cast(Array, np.array(self.z.tolist()))
-        self.x: Tuple[Array, ...] = tuple(
+        self.x: tuple[Array, ...] = tuple(
             [cast(Array, np.array(x[k].tolist())) for k in range(self.dim)]
         )
 

@@ -6,7 +6,7 @@ import numpy as onp
 import jax.numpy as np
 import numpy.typing as npt
 from typing import Optional, cast
-from .utils.types import Literal, uint, IntArrayLike, JaxOrNumpyArray
+from .utils.tfc_types import Literal, uint, IntArrayLike, JaxOrNumpyArray
 from jax import core
 from jax.extend.core import Primitive
 from jax.interpreters import ad, batching, mlir
@@ -132,7 +132,7 @@ class utfc:
         if backend == "C++":
             from .utils import BF
         elif backend == "Python":
-            from .utils.BF import BF_Py as BF
+            from .utils import BF_Py as BF
         else:
             TFCPrint.Error(
                 f'The backend {backend} was specified, but can only be one of "C++" or "Python".'

@@ -3,7 +3,7 @@ import plotly
 import plotly.graph_objects as go
 
 from .TFCUtils import TFCPrint
-from .types import StrArrayLike, uint, Path, Literal, List
+from .tfc_types import StrArrayLike, uint, Path, Literal
 from typing import Optional
 
 TFCPrint()
@@ -663,7 +663,7 @@ class MakePlot:
 
     def NormalizeColorScale(
         self,
-        types: List[str] = [],
+        types: list[str] = [],
         data: Optional[str] = None,
         cmax: Optional[float] = None,
         cmin: Optional[float] = None,
@@ -680,7 +680,7 @@ class MakePlot:
 
         Parameters
         ----------
-        types: List[str]
+        types: list[str]
             Plot types to set cmax and cmin for.
         data: Optional[str]
             Data type to use to calculate cmax and cmin if not already specified. (Default value = None)

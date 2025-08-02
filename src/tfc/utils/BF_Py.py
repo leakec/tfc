@@ -2,7 +2,7 @@ import numpy as np
 import jax.numpy as jnp
 from abc import ABC, abstractmethod
 from numpy import typing as npt
-from tfc.utils.types import uint, Number
+from tfc.utils.tfc_types import uint, Number
 from typing import Callable, Tuple
 
 

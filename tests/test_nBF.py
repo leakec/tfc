@@ -5,7 +5,7 @@ from tfc.utils.BF import nCP, nLeP, nFS, nELMSigmoid, nELMTanh, nELMSin, nELMSwi
 
 
 def test_nCP():
-    from tfc.utils.BF.BF_Py import nCP as pnCP
+    from tfc.utils.BF_Py import nCP as pnCP
 
     dim = 2
     nC = -1 * np.ones((dim, 1), dtype=np.int32)
@@ -40,7 +40,7 @@ def test_nCP():
 
 
 def test_nLeP():
-    from tfc.utils.BF.BF_Py import nLeP as pnLeP
+    from tfc.utils.BF_Py import nLeP as pnLeP
 
     dim = 2
     nC = -1 * np.ones((dim, 1), dtype=np.int32)
@@ -74,7 +74,7 @@ def test_nLeP():
 
 
 def test_nFS():
-    from tfc.utils.BF.BF_Py import nFS as pnFS
+    from tfc.utils.BF_Py import nFS as pnFS
 
     dim = 2
     nC = -1 * np.ones((dim, 1), dtype=np.int32)
@@ -109,7 +109,7 @@ def test_nFS():
 
 
 def test_nELMSigmoid():
-    from tfc.utils.BF.BF_Py import nELMSigmoid as pnELMSigmoid
+    from tfc.utils.BF_Py import nELMSigmoid as pnELMSigmoid
 
     dim = 2
     nC = -1 * np.ones(1, dtype=np.int32)
@@ -151,7 +151,7 @@ def test_nELMSigmoid():
 
 
 def test_nELMTanh():
-    from tfc.utils.BF.BF_Py import nELMTanh as pnELMTanh
+    from tfc.utils.BF_Py import nELMTanh as pnELMTanh
 
     dim = 2
     nC = -1 * np.ones(1, dtype=np.int32)
@@ -194,7 +194,7 @@ def test_nELMTanh():
 
 
 def test_nELMSin():
-    from tfc.utils.BF.BF_Py import nELMSin as pnELMSin
+    from tfc.utils.BF_Py import nELMSin as pnELMSin
 
     dim = 2
     nC = -1 * np.ones(1, dtype=np.int32)
@@ -238,7 +238,7 @@ def test_nELMSin():
 
 
 def test_nELMSwish():
-    from tfc.utils.BF.BF_Py import nELMSwish as pnELMSwish
+    from tfc.utils.BF_Py import nELMSwish as pnELMSwish
 
     dim = 2
     nC = -1 * np.ones(1, dtype=np.int32)
@@ -281,7 +281,7 @@ def test_nELMSwish():
 
 
 def test_nELMReLU():
-    from tfc.utils.BF.BF_Py import nELMReLU as pnELMReLU
+    from tfc.utils.BF_Py import nELMReLU as pnELMReLU
 
     dim = 2
     nC = -1 * np.ones(1, dtype=np.int32)

@@ -22,15 +22,15 @@ from jax.core import get_aval, eval_jaxpr
 from jax.interpreters.partial_eval import trace_to_jaxpr_nounits, PartialVal
 from jax.experimental import io_callback
 from typing import Any, Callable, Optional, Union, cast
-from .types import uint, List, Literal, Tuple, TypedDict, Path, Dict
+from .tfc_types import uint, Literal, TypedDict, Path
 from jaxtyping import PyTree
 from typing import cast
 
 # Types that can be added to a TFCDict
-TFCDictAddable = Union[np.ndarray, Dict[Any, Any], "TFCDict"]
+TFCDictAddable = Union[np.ndarray, dict[Any, Any], "TFCDict"]
 
 # Types that can be added to a TFCDictRobust
-TFCDictRobustAddable = Union[np.ndarray, Dict[Any, Any], "TFCDictRobust"]
+TFCDictRobustAddable = Union[np.ndarray, dict[Any, Any], "TFCDictRobust"]
 
 
 class TFCPrint:
@@ -204,7 +204,7 @@ def egradRobust(g: Callable[..., Any], j: uint = 0):
     return wrapped
 
 
-def pe(*args: Any, constant_arg_nums: List[int] = []) -> Any:
+def pe(*args: Any, constant_arg_nums: list[int] = []) -> Any:
     """
     Decorator that returns a function evaluated such that the arg numbers specified in constant_arg_nums
     and all functions that utilizes only those arguments are treated as compile time constants.
@@ -213,7 +213,7 @@ def pe(*args: Any, constant_arg_nums: List[int] = []) -> Any:
     ----------
     *args : Any
         Arguments for the function that pe is applied to.
-    constant_arg_nums : List[int], optional
+    constant_arg_nums : list[int], optional
         The arguments whose values and functions that depend only on these values should be
         treated as cached constants.
 
@@ -298,7 +298,7 @@ def pe(*args: Any, constant_arg_nums: List[int] = []) -> Any:
     return wrapper
 
 
-def pejit(*args: Any, constant_arg_nums: List[int] = [], **kwargs) -> Any:
+def pejit(*args: Any, constant_arg_nums: list[int] = [], **kwargs) -> Any:
     """
     Works like :func:`pe <tfc.utils.TFCUtils.pe>`, but also JITs the returned function. See :func:`pe <tfc.utils.TFCUtils.pe>` for more details.
 
@@ -306,7 +306,7 @@ def pejit(*args: Any, constant_arg_nums: List[int] = [], **kwargs) -> Any:
     -----------
     *args: Any
         Arguments for the function that pe is applied to.
-    constant_arg_nums: List[int], optional
+    constant_arg_nums: list[int], optional
         The arguments whose values and functions that depend only on these values should be
         treated as cached constants.
     **kwargs: Any
@@ -746,13 +746,13 @@ def LS(
     zXi: PyTree,
     res: Callable,
     *args: Any,
-    constant_arg_nums: List[int] = [],
+    constant_arg_nums: list[int] = [],
     J: Optional[Callable[..., np.ndarray]] = None,
     method: Literal["pinv", "lstsq"] = "pinv",
     timer: bool = False,
     timerType: str = "process_time",
     holomorphic: bool = False,
-) -> Union[PyTree, Tuple[PyTree, float]]:
+) -> Union[PyTree, tuple[PyTree, float]]:
     """
     JITed least squares.
     This function takes in an initial guess of zeros, zXi, and a residual function, res, and
@@ -771,7 +771,7 @@ def LS(
     *args : Any
         Any additional arguments taken by res other than the first PyTree argument.
 
-    constant_arg_nums: List[int], optional
+    constant_arg_nums: list[int], optional
         These arguments will be removed from the residual function and treated as constant. See :func:`pejit <tfc.utils.TFCUtils.pejit>` for more details.
 
     J : Optional[Callable[...,np.ndarray]]
@@ -839,7 +839,7 @@ def LS(
         # Make arguments constant if desired
         ls = pe(zXi, *args, constant_arg_nums=constant_arg_nums)(ls)
 
-        args: List[Any] = list(args)
+        args: list[Any] = list(args)
         constant_arg_nums.sort()
         constant_arg_nums.reverse()
         for k in constant_arg_nums:
@@ -877,7 +877,7 @@ class LsClass:
         zXi: PyTree,
         res: Callable,
         *args: Any,
-        constant_arg_nums: List[int] = [],
+        constant_arg_nums: list[int] = [],
         J: Optional[Callable[..., np.ndarray]] = None,
         method: Literal["pinv", "lstsq"] = "pinv",
         timer: bool = False,
@@ -902,7 +902,7 @@ class LsClass:
         J : Optional[Callable[...,np.ndarray]]
              User specified Jacobian function. If None, then the Jacobian of res with respect to xi will be calculated via automatic differentiation. (Default value = None)
 
-        constant_arg_nums: List[int], optional
+        constant_arg_nums: list[int], optional
             These arguments will be removed from the residual function and treated as constant. See :func:`pejit <tfc.utils.TFCUtils.pejit>` for more details.
 
         method : Literal["pinv","lstsq"], optional
@@ -966,7 +966,7 @@ class LsClass:
             # Make arguments constant if desired
             ls = pe(zXi, *args, constant_arg_nums=constant_arg_nums)(ls)
 
-            args: List[Any] = list(args)
+            args: list[Any] = list(args)
             constant_arg_nums.sort()
             constant_arg_nums.reverse()
             for k in constant_arg_nums:
@@ -976,7 +976,7 @@ class LsClass:
 
         self._compiled = False
 
-    def run(self, zXi: PyTree, *args: Any) -> Union[PyTree, Tuple[PyTree, float]]:
+    def run(self, zXi: PyTree, *args: Any) -> Union[PyTree, tuple[PyTree, float]]:
         """
         Runs the JIT-ed least-squares function and times it if desired.
 
@@ -1030,7 +1030,7 @@ def NLLS(
     xiInit: PyTree,
     res: Callable,
     *args: Any,
-    constant_arg_nums: List[int] = [],
+    constant_arg_nums: list[int] = [],
     J: Optional[Callable[..., np.ndarray]] = None,
     cond: Optional[Callable[[PyTree], bool]] = None,
     body: Optional[Callable[[PyTree], PyTree]] = None,
@@ -1042,7 +1042,7 @@ def NLLS(
     printOutEnd: str = "\n",
     timerType: str = "process_time",
     holomorphic: bool = False,
-) -> Union[Tuple[PyTree, int], Tuple[PyTree, int, float]]:
+) -> Union[tuple[PyTree, int], tuple[PyTree, int, float]]:
     """
     JIT-ed non-linear least squares.
     This function takes in an initial guess, xiInit (initial values of xi), and a residual function, res, and
@@ -1063,7 +1063,7 @@ def NLLS(
     *args : iterable
         Any additional arguments taken by res other than xi.
 
-    constant_arg_nums: List[int], optional
+    constant_arg_nums: list[int], optional
         These arguments will be removed from the residual function and treated as constant. See :func:`pejit <tfc.utils.TFCUtils.pejit>` for more details.
 
     J : function
@@ -1171,7 +1171,7 @@ def NLLS(
         LS = pe(xiInit, *args, constant_arg_nums=constant_arg_nums)(LS)
         res = pe(xiInit, *args, constant_arg_nums=constant_arg_nums)(res)
 
-        args: List[Any] = list(args)
+        args: list[Any] = list(args)
         constant_arg_nums.sort()
         constant_arg_nums.reverse()
         for k in constant_arg_nums:
@@ -1239,7 +1239,7 @@ class NllsClass:
         xiInit: PyTree,
         res: Callable,
         *args: Any,
-        constant_arg_nums: List[int] = [],
+        constant_arg_nums: list[int] = [],
         J: Optional[Callable[..., np.ndarray]] = None,
         cond: Optional[Callable[[PyTree], bool]] = None,
         body: Optional[Callable[[PyTree], PyTree]] = None,
@@ -1266,7 +1266,7 @@ class NllsClass:
         *args : iterable
             Any additional arguments taken by res other than xi.
 
-        constant_arg_nums: List[int], optional
+        constant_arg_nums: list[int], optional
             These arguments will be removed from the residual function and treated as constant. See :func:`pejit <tfc.utils.TFCUtils.pejit>` for more details.
 
         J : function
@@ -1370,7 +1370,7 @@ class NllsClass:
             LS = pe(xiInit, *args, constant_arg_nums=constant_arg_nums)(LS)
             res = pe(xiInit, *args, constant_arg_nums=constant_arg_nums)(res)
 
-            args: List[Any] = list(args)
+            args: list[Any] = list(args)
             constant_arg_nums.sort()
             constant_arg_nums.reverse()
             for k in constant_arg_nums:
@@ -1404,7 +1404,7 @@ class NllsClass:
 
     def run(
         self, xiInit: PyTree, *args: Any
-    ) -> Union[Tuple[PyTree, int], Tuple[PyTree, int, float]]:
+    ) -> Union[tuple[PyTree, int], tuple[PyTree, int, float]]:
         """Runs the JIT-ed nonlinear least-squares function and times it if desired.
 
         Parameters
@@ -1472,16 +1472,16 @@ class ComponentConstraintGraph:
     Creates a graph of all valid ways in which component constraints can be embedded.
     """
 
-    def __init__(self, N: List[str], E: List[ComponentConstraintDict]) -> None:
+    def __init__(self, N: list[str], E: list[ComponentConstraintDict]) -> None:
         """
         Class constructor.
 
         Parameters
         ----------
-        N : List[str]
+        N : list[str]
             A list of strings that specify the node names. These node names typically coincide with
             the names of the dependent variables.
-        E : List[ComponentConstraintDict]
+        E : list[ComponentConstraintDict]
             The ComponentConstraintDict is a dictionary with the following fields:
             * name - Name of the component constraint.
             * node0 - The name of one of the nodes that makes up the component constraint.  Must correspond with an element of the list given in N.
@@ -1629,7 +1629,7 @@ class ComponentConstraintGraph:
             treeHtml.WriteFile()
 
 
-def ScaledQrLs(A: np.ndarray, B: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+def ScaledQrLs(A: np.ndarray, B: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """This function performs least-squares using a scaled QR method.
 
     Parameters
