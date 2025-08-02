@@ -31,4 +31,6 @@ clean-python:
 
 clean: clean-python
 
-
+format: 
+	@cd ../src/tfc && fd -e cc -e h | xargs clang-format -i --verbose --style="file:../../clang-format.yaml"
+	@cd ../src/tfc && black .
