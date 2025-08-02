@@ -22,7 +22,7 @@ jobs:
         run: "python -m black --line-length 100 --check ./src/tfc"
 
       - run: "sudo apt-get update && sudo apt-get install -y gcc g++"
-      - run: python -m pip install wheel setuptools numpy pytest pybind11
+      - run: python -m pip install wheel setuptools numpy pytest pybind11 mypy
       - run: python setup.py bdist_wheel
       - run: pip install ./dist/*.whl
 
