@@ -18,7 +18,7 @@ line-length = 100
 target-version = ['py311']
 
 [tool.cibuildwheel]
-before-build = "pip install setuptools wheel numpy"
+before-build = "pip install setuptools wheel numpy pybind11 mypy"
 skip = "pp* *-musllinux*"
 manylinux-x86_64-image = "manylinux2014"
 test-requires = ["pytest"]
@@ -26,11 +26,9 @@ test-command = "pytest {package}/tests"
 test-skip = "*-macosx_arm64"
 
 [tool.cibuildwheel.linux]
-before-all = "yum install -y swig"
 archs = ["x86_64"]
 
 [tool.cibuildwheel.macos]
-before-all = "brew install swig"
 archs = ["arm64"]
 
 [tool.cibuildwheel.windows]
@@ -38,5 +36,3 @@ archs = ["AMD64"]
 
 [[tool.cibuildwheel.overrides]]
 select = "*-musllinux*"
-before-all = "apk add swig"
-
