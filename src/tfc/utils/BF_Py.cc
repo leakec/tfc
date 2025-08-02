@@ -1,5 +1,4 @@
 #include "BF.h"
-#include <format>
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -223,8 +222,9 @@ PYBIND11_MODULE(BF, m) {
                     throw py::value_error("The \"c\" input array must be 1-dimensional.");
                 }
                 if (c.size() != self.dim) {
-                    throw py::value_error(std::format(
-                        "The \"c\" input array must be size {}, but got size {}.", self.dim, int(c.size())));
+                    std::stringstream ss;
+                    ss << "The \"c\" input array must be size " << self.dim << ", but got size " << c.size() << "." << std::endl;
+                    throw py::value_error(ss.str());
                 }
             })
         .def_readwrite("numBasisFunc", &nBasisFunc::numBasisFunc)
