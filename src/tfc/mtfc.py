@@ -377,7 +377,7 @@ class mtfc:
         H : NDArray
             Basis function matrix.
         """
-        d = onp.zeros(self.dim, dtype=np.int32)
+        d = tuple(0 for _ in range(self.dim))
         return self._Hjax(*x, d=d, full=full)
 
     def Hx(self, *x: JaxOrNumpyArray, full: bool = False) -> npt.NDArray:
@@ -397,8 +397,7 @@ class mtfc:
         Hx : NDArray
             Derivative of the basis function matrix with respect to the first variable.
         """
-        d = onp.zeros(self.dim, dtype=np.int32)
-        d[0] = 1
+        d = tuple(1 if k == 0 else 0 for k in range(self.dim))
         return self._Hjax(*x, d=d, full=full)
 
     def Hx2(self, *x: JaxOrNumpyArray, full: bool = False) -> npt.NDArray:
@@ -418,8 +417,7 @@ class mtfc:
         Hx2 : NDArray
             Second derivative of the basis function matrix with respect to the first variable.
         """
-        d = onp.zeros(self.dim, dtype=np.int32)
-        d[0] = 2
+        d = tuple(2 if k == 0 else 0 for k in range(self.dim))
         return self._Hjax(*x, d=d, full=full)
 
     def Hy2(self, *x: JaxOrNumpyArray, full: bool = False) -> npt.NDArray:
@@ -439,8 +437,7 @@ class mtfc:
         Hy2 : NDArray
             Second derivative of the basis function matrix with respect to the second variable.
         """
-        d = onp.zeros(self.dim, dtype=np.int32)
-        d[1] = 2
+        d = tuple(2 if k == 1 else 0 for k in range(self.dim))
         return self._Hjax(*x, d=d, full=full)
 
     def Hx2y(self, *x: JaxOrNumpyArray, full: bool = False) -> npt.NDArray:
@@ -461,10 +458,10 @@ class mtfc:
         Hx2y : NDArray
             Mixed derivative of the basis function matrix with respect to the first variable.
         """
-        d = onp.zeros(self.dim, dtype=np.int32)
+        d = [0 for _ in range(self.dim)]
         d[0] = 2
         d[1] = 1
-        return self._Hjax(*x, d=d, full=full)
+        return self._Hjax(*x, d=tuple(d), full=full)
 
     def Hy(self, *x: JaxOrNumpyArray, full: bool = False) -> npt.NDArray:
         """
@@ -483,8 +480,7 @@ class mtfc:
         Hy : NDArray
             Derivative of the basis function matrix with respect to the second variable.
         """
-        d = onp.zeros(self.dim, dtype=np.int32)
-        d[1] = 1
+        d = tuple(1 if k == 1 else 0 for k in range(self.dim))
         return self._Hjax(*x, d=d, full=full)
 
     def Hxy(self, *x: JaxOrNumpyArray, full: bool = False) -> npt.NDArray:
@@ -505,10 +501,10 @@ class mtfc:
         Hxy : NDArray
             Mixed derivative of the basis function matrix with respect to the first variable.
         """
-        d = onp.zeros(self.dim, dtype=np.int32)
+        d = [0 for _ in range(self.dim)]
         d[0] = 1
         d[1] = 1
-        return self._Hjax(*x, d=d, full=full)
+        return self._Hjax(*x, d=tuple(d), full=full)
 
     def Hz(self, *x: JaxOrNumpyArray, full: bool = False) -> npt.NDArray:
         """
@@ -527,15 +523,14 @@ class mtfc:
         Hz : NDArray
             Derivative of the basis function matrix with respect to the third variable.
         """
-        d = onp.zeros(self.dim, dtype=np.int32)
-        d[2] = 1
+        d = tuple(1 if k == 2 else 0 for k in range(self.dim))
         return self._Hjax(*x, d=d, full=full)
 
     def SetupJAX(self):
         """This function is used internally by TFC to setup autograd primatives and create desired behavior when taking derivatives of TFC constrained expressions."""
 
         # Helper variables
-        d0 = onp.zeros(self.dim, dtype=np.int32)
+        d0 = tuple(0 for _ in range(self.dim))
 
         # Regiser XLA function
         if self._backend == "C++":
@@ -546,18 +541,18 @@ class mtfc:
         # Create Primitives
         H_p = Primitive("H")
 
-        def Hjax(*x: JaxOrNumpyArray, d: npt.NDArray[onp.int32] = d0, full: bool = False):
+        def Hjax(*x: JaxOrNumpyArray, d: tuple[int, ...] = d0, full: bool = False):
             return cast(npt.NDArray, H_p.bind(*x, d=d, full=full))
 
         # Implicit translations
-        def H_impl(*x: npt.NDArray, d: npt.NDArray[onp.int32] = d0, full: bool = False):
+        def H_impl(*x: npt.NDArray, d: tuple[int, ...] = d0, full: bool = False):
             return self.basisClass.H(np.array(x), d, full)
 
         H_p.def_impl(H_impl)
 
         # Define abstract evaluation
         def H_abstract_eval(
-            *x, d: npt.NDArray[onp.int32] = d0, full: bool = False
+            *x, d: tuple[int, ...] = d0, full: bool = False
         ) -> core.ShapedArray:
             if full:
                 dim1 = self.basisClass.numBasisFuncFull
@@ -614,13 +609,13 @@ class mtfc:
             mlir.register_lowering(H_p, H_xla, platform="cpu")
 
         # Batching translation
-        def H_batch(vec, batch, d: npt.NDArray[onp.int32] = d0, full: bool = False):
+        def H_batch(vec, batch, d: tuple[int, ...] = d0, full: bool = False):
             return Hjax(*vec, d=d, full=full), batch[0]
 
         batching.primitive_batchers[H_p] = H_batch
 
         # Jacobian vector translation
-        def H_jvp(arg_vals, arg_tans, d: npt.NDArray[onp.int32] = d0, full: bool = False):
+        def H_jvp(arg_vals, arg_tans, d: tuple[int, ...] = d0, full: bool = False):
             n = len(arg_vals)
             flat = len(arg_vals[0].shape) == 1
             dim0 = arg_vals[0].shape[0]
@@ -636,8 +631,7 @@ class mtfc:
                     else:
                         flag = onp.any(arg_tans[k] != 0)
                     if flag:
-                        dark = copy(d)
-                        dark[k] += 1
+                        dark = tuple(d[j]+1 if k == j else d[j] for j in range(len(d)))
                         if flat:
                             out_tans += Hjax(*arg_vals, d=dark, full=full) * np.expand_dims(
                                 arg_tans[k], 1

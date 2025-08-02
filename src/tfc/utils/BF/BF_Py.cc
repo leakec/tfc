@@ -1,3 +1,4 @@
+#include <format>
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
@@ -219,6 +220,21 @@ PYBIND11_MODULE(BF, m) {
         .def_readwrite("z0", &nBasisFunc::z0)
         .def_readwrite("zf", &nBasisFunc::zf)
         .def_readwrite("dim", &nBasisFunc::dim)
+        .def_property("c", 
+            [](nBasisFunc& self){
+                // Return c, and ensure the nBasisFunc stays around as long as c does.
+                return py::array_t<double>(self.dim, self.c, py::cast(self));
+            },
+            [](nBasisFunc& self, py::array_t<double, py::array::c_style | py::array::forcecast> c)
+            {
+                if (c.ndim() != 1) {
+                    throw py::value_error("The \"c\" input array must be 1-dimensional.");
+                }
+                if (c.size() != self.dim) {
+                    throw py::value_error(std::format("The \"c\" input array must be size {}, but got size {}.", self.dim, c.size()));
+                }
+            }
+        )
         .def_readwrite("numBasisFunc", &nBasisFunc::numBasisFunc)
         .def_readwrite("numBasisFuncFull", &nBasisFunc::numBasisFuncFull)
         .def("H",

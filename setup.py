@@ -93,8 +93,8 @@ setup(
     cmdclass={"build_ext": CMakeBuild},
     install_requires=[
         numpy_version,
-        "jax ~= 0.6.0",
-        "jaxlib ~= 0.6.0",
+        "jax >= 0.6.0",
+        "jaxlib >= 0.6.0",
         "jaxtyping",
         "annotated-types",
         "matplotlib",
