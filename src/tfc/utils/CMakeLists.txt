@@ -40,7 +40,11 @@ target_link_libraries(bf PUBLIC Python3::Python)
 
 # Create the BF.py Python file
 pybind11_add_module(BF BF_Py.cc)
-target_link_libraries(BF PRIVATE bf)
+if (MINGW)
+    target_link_libraries(BF PRIVATE bf -static -lpthread -static-libgcc -static-libstdc++)
+else()
+    target_link_libraries(BF PRIVATE bf)
+endif()
 
-install(TARGETS bf BF DESTINATION .)
+install(TARGETS BF DESTINATION .)
 install(CODE [=[execute_process(COMMAND stubgen -m BF -o . --include-docstring WORKING_DIRECTORY $ENV{DESTDIR}${CMAKE_INSTALL_PREFIX})]=])
