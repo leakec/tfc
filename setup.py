@@ -53,7 +53,8 @@ class CMakeBuild(build_ext):
         cmake_args = [
             f"-DCMAKE_BUILD_TYPE={cfg}",
             f"-DCMAKE_INSTALL_PREFIX={bf_dir}",
-            f"-Dpybind11_DIR={pybind11_dir}"
+            f"-Dpybind11_DIR={pybind11_dir}",
+            f"-DPython_EXECUTABLE={sys.executable}"
         ]
 
         # Optional: use Ninja if available
