@@ -8,7 +8,7 @@ std::vector<BasisFunc *> BasisFunc::BasisFuncContainer;
 void xlaWrapper(void *out, void **in) {
     int N = (reinterpret_cast<int *>(in[0]))[0];
     BasisFunc::BasisFuncContainer[N]->xla(out, in);
-};
+}
 
 #ifdef HAS_CUDA
 // xlaGpuWrapper function
@@ -50,9 +50,9 @@ BasisFunc::BasisFunc(double x0in, double xf, const int *nCin, int ncDim0, int mi
 #ifdef HAS_CUDA
     xlaGpuCapsule = GetXlaCapsuleGpu();
 #endif
-};
+}
 
-BasisFunc::~BasisFunc() { delete[] nC; };
+BasisFunc::~BasisFunc() { delete[] nC; }
 
 void BasisFunc::H(const double *x, int n, const int d, int *nOut, int *mOut, double **F, bool full) {
     *nOut = n;
@@ -95,7 +95,7 @@ void BasisFunc::H(const double *x, int n, const int d, int *nOut, int *mOut, dou
     }
     delete[] dark;
     delete[] z;
-};
+}
 
 void BasisFunc::xla(void *out, void **in) {
     double *out_buf = reinterpret_cast<double *>(out);
@@ -141,7 +141,7 @@ void BasisFunc::xla(void *out, void **in) {
     }
     delete[] dark;
     delete[] z;
-};
+}
 
 #ifdef HAS_CUDA
 void BasisFunc::xlaGpu(CUstream stream, void **buffers, const char *opaque, size_t opaque_len) {
@@ -155,7 +155,7 @@ PyObject *BasisFunc::GetXlaCapsule() {
     PyObject *capsule;
     capsule = PyCapsule_New(reinterpret_cast<void *>(xlaFnPtr), name, NULL);
     return capsule;
-};
+}
 
 #ifdef HAS_CUDA
 PyObject *BasisFunc::GetXlaCapsuleGpu() {
@@ -207,7 +207,7 @@ void CP::Hint(const int d, const double *x, const int nOut, double *dark) {
         RecurseDeriv(d, 0, x, nOut, dark, m);
     }
     return;
-};
+}
 
 void CP::RecurseDeriv(const int d, int dCurr, const double *x, const int nOut, double *&F, const int mOut) {
     if (dCurr != d) {
@@ -234,7 +234,7 @@ void CP::RecurseDeriv(const int d, int dCurr, const double *x, const int nOut, d
         RecurseDeriv(d, dCurr, x, nOut, F, mOut);
     }
     return;
-};
+}
 
 // LeP: **********************************************************************
 void LeP::Hint(const int d, const double *x, const int nOut, double *dark) {
@@ -276,7 +276,7 @@ void LeP::Hint(const int d, const double *x, const int nOut, double *dark) {
         RecurseDeriv(d, 0, x, nOut, dark, m);
     }
     return;
-};
+}
 
 void LeP::RecurseDeriv(const int d, int dCurr, const double *x, const int nOut, double *&F, const int mOut) {
 
@@ -305,7 +305,7 @@ void LeP::RecurseDeriv(const int d, int dCurr, const double *x, const int nOut, 
         RecurseDeriv(d, dCurr, x, nOut, F, mOut);
     }
     return;
-};
+}
 
 // LaP: **********************************************************************
 void LaP::Hint(const int d, const double *x, const int nOut, double *dark) {
@@ -347,7 +347,7 @@ void LaP::Hint(const int d, const double *x, const int nOut, double *dark) {
         RecurseDeriv(d, 0, x, nOut, dark, m);
     }
     return;
-};
+}
 
 void LaP::RecurseDeriv(const int d, int dCurr, const double *x, const int nOut, double *&F, const int mOut) {
 
@@ -376,7 +376,7 @@ void LaP::RecurseDeriv(const int d, int dCurr, const double *x, const int nOut, 
         RecurseDeriv(d, dCurr, x, nOut, F, mOut);
     }
     return;
-};
+}
 
 // HoPpro: **********************************************************************
 // Hermite polynomials, probablists
@@ -419,7 +419,7 @@ void HoPpro::Hint(const int d, const double *x, const int nOut, double *dark) {
         RecurseDeriv(d, 0, x, nOut, dark, m);
     }
     return;
-};
+}
 
 void HoPpro::RecurseDeriv(const int d, int dCurr, const double *x, const int nOut, double *&F, const int mOut) {
 
@@ -446,7 +446,7 @@ void HoPpro::RecurseDeriv(const int d, int dCurr, const double *x, const int nOu
         RecurseDeriv(d, dCurr, x, nOut, F, mOut);
     }
     return;
-};
+}
 
 // HoPphy: **********************************************************************
 // Hermite polynomials, physicists
@@ -489,7 +489,7 @@ void HoPphy::Hint(const int d, const double *x, const int nOut, double *dark) {
         RecurseDeriv(d, 0, x, nOut, dark, m);
     }
     return;
-};
+}
 
 void HoPphy::RecurseDeriv(const int d, int dCurr, const double *x, const int nOut, double *&F, const int mOut) {
 
@@ -517,7 +517,7 @@ void HoPphy::RecurseDeriv(const int d, int dCurr, const double *x, const int nOu
         RecurseDeriv(d, dCurr, x, nOut, F, mOut);
     }
     return;
-};
+}
 
 // FS: **********************************************************************
 // Fourier Series
@@ -587,7 +587,7 @@ void FS::Hint(const int d, const double *x, const int nOut, double *dark) {
         }
     }
     return;
-};
+}
 
 // ELM: **********************************************************************
 // ELM base class
@@ -602,12 +602,12 @@ ELM::ELM(double x0, double xf, const int *nCin, int ncDim0, int min)
         w[k] = 20. * ((double)rand() / (double)RAND_MAX) - 10.;
         b[k] = 20. * ((double)rand() / (double)RAND_MAX) - 10.;
     }
-};
+}
 
 ELM::~ELM() {
     delete[] b;
     delete[] w;
-};
+}
 
 void ELM::setW(const double *arrIn, int nIn) {
     if (nIn != m) {
@@ -616,7 +616,7 @@ void ELM::setW(const double *arrIn, int nIn) {
     }
     for (int k = 0; k < m; k++)
         w[k] = arrIn[k];
-};
+}
 
 void ELM::setB(const double *arrIn, int nIn) {
     if (nIn != m) {
@@ -625,7 +625,7 @@ void ELM::setB(const double *arrIn, int nIn) {
     }
     for (int k = 0; k < m; k++)
         b[k] = arrIn[k];
-};
+}
 
 void ELM::getW(double **arrOut, int *nOut) {
     *nOut = m;
@@ -633,7 +633,7 @@ void ELM::getW(double **arrOut, int *nOut) {
     for (int k = 0; k < m; k++)
         (*arrOut)[k] = w[k];
     return;
-};
+}
 
 void ELM::getB(double **arrOut, int *nOut) {
     *nOut = m;
@@ -641,7 +641,7 @@ void ELM::getB(double **arrOut, int *nOut) {
     for (int k = 0; k < m; k++)
         (*arrOut)[k] = b[k];
     return;
-};
+}
 
 // ELM ReLU: **********************************************************************
 void ELMReLU::Hint(const int d, const double *x, const int nOut, double *dark) {
@@ -673,7 +673,7 @@ void ELMReLU::Hint(const int d, const double *x, const int nOut, double *dark) {
         }
     }
     return;
-};
+}
 
 // ELM Sigmoid: **********************************************************************
 void ELMSigmoid::Hint(const int d, const double *x, const int nOut, double *dark) {
@@ -762,7 +762,7 @@ void ELMSigmoid::Hint(const int d, const double *x, const int nOut, double *dark
     }
     }
     return;
-};
+}
 
 // ELM Tanh: **********************************************************************
 
@@ -843,7 +843,7 @@ void ELMTanh::Hint(const int d, const double *x, const int nOut, double *dark) {
     }
     }
     return;
-};
+}
 
 // ELM Sin: **********************************************************************
 
@@ -876,7 +876,7 @@ void ELMSin::Hint(const int d, const double *x, const int nOut, double *dark) {
         }
     }
     return;
-};
+}
 
 // ELM Swish: **********************************************************************
 
@@ -1007,7 +1007,7 @@ void ELMSwish::Hint(const int d, const double *x, const int nOut, double *dark) 
     delete[] zint;
 
     return;
-};
+}
 
 // Parent n-dimensional basis function class: **********************************************************************
 nBasisFunc::nBasisFunc(const double *x0in,
@@ -1061,7 +1061,7 @@ nBasisFunc::nBasisFunc(const double *x0in,
 #endif
 }
 
-nBasisFunc::~nBasisFunc() { delete[] c; };
+nBasisFunc::~nBasisFunc() { delete[] c; }
 
 void nBasisFunc::getC(double **arrOut, int *nOut) {
     *nOut = dim;
@@ -1069,7 +1069,7 @@ void nBasisFunc::getC(double **arrOut, int *nOut) {
     for (int k = 0; k < dim; k++)
         (*arrOut)[k] = c[k];
     return;
-};
+}
 
 void nBasisFunc::H(const double *x,
                    int /*in*/,
@@ -1085,7 +1085,7 @@ void nBasisFunc::H(const double *x,
     *nOut = xDim1;
     *F = (double *)malloc(numBasis * xDim1 * sizeof(double));
     nHint(x, xDim1, d, dDim0, numBasis, *F, full);
-};
+}
 
 void nBasisFunc::H(const double *, int, const int, int *, int *, double **, bool) {
     throw std::runtime_error("This version of \"H\" should never be called from an n-dimensional basis class.");
@@ -1101,7 +1101,7 @@ void nBasisFunc::xla(void *out, void **in) {
     int mOut = (reinterpret_cast<int *>(in[6]))[0];
 
     nHint(x, nOut, d, dDim0, mOut, out_buf, full);
-};
+}
 
 void nBasisFunc::nHint(const double *x, int n, const int *d, int dDim0, int numBasis, double *&F, const bool full) {
 
@@ -1143,7 +1143,7 @@ void nBasisFunc::nHint(const double *x, int n, const int *d, int dDim0, int numB
     delete[] dark;
     delete[] T;
     delete[] z;
-};
+}
 
 void nBasisFunc::NumBasisFunc(int dimCurr, int *vec, int &count, const bool full) {
     int k;
@@ -1193,7 +1193,7 @@ void nBasisFunc::NumBasisFunc(int dimCurr, int *vec, int &count, const bool full
         }
     }
     return;
-};
+}
 
 void nBasisFunc::RecurseBasis(int dimCurr,
                               int *vec,
@@ -1260,7 +1260,7 @@ void nBasisFunc::RecurseBasis(int dimCurr,
         }
     }
     return;
-};
+}
 
 // nELM base class: ***********************************************************************************
 nELM::nELM(const double *x0in,
@@ -1324,12 +1324,12 @@ nELM::nELM(const double *x0in,
         w[k] = 2. * ((double)rand() / (double)RAND_MAX) - 1.;
     for (k = 0; k < m; k++)
         b[k] = 2. * ((double)rand() / (double)RAND_MAX) - 1.;
-};
+}
 
 nELM::~nELM() {
     delete[] b;
     delete[] w;
-};
+}
 
 void nELM::setW(const double *arrIn, int dimIn, int nIn) {
     if ((nIn != m) || (dimIn != dim)) {
@@ -1338,7 +1338,7 @@ void nELM::setW(const double *arrIn, int dimIn, int nIn) {
     }
     for (int k = 0; k < m * dim; k++)
         w[k] = arrIn[k];
-};
+}
 
 void nELM::setB(const double *arrIn, int nIn) {
     if (nIn != m) {
@@ -1347,7 +1347,7 @@ void nELM::setB(const double *arrIn, int nIn) {
     }
     for (int k = 0; k < m; k++)
         b[k] = arrIn[k];
-};
+}
 
 void nELM::getW(int *dimOut, int *nOut, double **arrOut) {
     *dimOut = dim;
@@ -1356,7 +1356,7 @@ void nELM::getW(int *dimOut, int *nOut, double **arrOut) {
     for (int k = 0; k < m * dim; k++)
         (*arrOut)[k] = w[k];
     return;
-};
+}
 
 void nELM::getB(double **arrOut, int *nOut) {
     *nOut = m;
@@ -1364,7 +1364,7 @@ void nELM::getB(double **arrOut, int *nOut) {
     for (int k = 0; k < m; k++)
         (*arrOut)[k] = b[k];
     return;
-};
+}
 
 void nELM::nHint(const double *x, int n, const int *d, int dDim0, int numBasis, double *&F, const bool full) {
 
@@ -1405,7 +1405,7 @@ void nELM::nHint(const double *x, int n, const int *d, int dDim0, int numBasis, 
         delete[] dark;
     }
     delete[] z;
-};
+}
 
 // nELM Sigmoid *******************************************************************************************
 void nELMSigmoid::nElmHint(const int *d, int dDim0, const double *x, const int in, double *F) {
@@ -1539,7 +1539,7 @@ void nELMSigmoid::nElmHint(const int *d, int dDim0, const double *x, const int i
     }
     }
     return;
-};
+}
 
 // nELM Tanh *******************************************************************************************
 void nELMTanh::nElmHint(const int *d, int dDim0, const double *x, const int in, double *F) {
@@ -1663,7 +1663,7 @@ void nELMTanh::nElmHint(const int *d, int dDim0, const double *x, const int in, 
     }
     }
     return;
-};
+}
 
 // nELM Sin *******************************************************************************************
 void nELMSin::nElmHint(const int *d, int dDim0, const double *x, const int in, double *F) {
@@ -1727,7 +1727,7 @@ void nELMSin::nElmHint(const int *d, int dDim0, const double *x, const int in, d
         }
     }
     return;
-};
+}
 
 // nELM Swish *******************************************************************************************
 void nELMSwish::nElmHint(const int *d, int dDim0, const double *x, const int in, double *F) {
@@ -1901,7 +1901,7 @@ void nELMSwish::nElmHint(const int *d, int dDim0, const double *x, const int in,
     delete[] sig;
     delete[] zint;
     return;
-};
+}
 
 // nELM Swish *******************************************************************************************
 void nELMReLU::nElmHint(const int *d, int dDim0, const double *x, const int in, double *F) {
@@ -1945,4 +1945,4 @@ void nELMReLU::nElmHint(const int *d, int dDim0, const double *x, const int in, 
         }
     }
     return;
-};
+}
