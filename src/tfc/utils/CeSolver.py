@@ -3,7 +3,7 @@ from sympy import Expr
 from sympy.core.function import AppliedUndef
 from sympy.printing.pycode import PythonCodePrinter
 from sympy.simplify.simplify import nc_simplify
-from .tfc_types import ConstraintOperators, Exprs, Union, Any, Literal, ConstraintOperator
+from .tfc_types import ConstraintOperators, Exprs, Any, Literal, ConstraintOperator
 from .TFCUtils import TFCPrint
 
 
@@ -31,7 +31,7 @@ class CeSolver:
         in terms of sympy symbols and constants. For example, if we wanted to
         use the constant function x = 1 as a support function, then we would
         use sympy.re(1) in this iterable.
-    g : Union[AppliedUndef, Any]
+    g : AppliedUndef| Any
         This is the free function used in the constrained expression. For example,
         `g(x)`.
 
@@ -62,7 +62,7 @@ class CeSolver:
     In the above code example, `ce` is the constrained expression that satisfies these constraints.
     """
 
-    def __init__(self, C: ConstraintOperators, kappa: Exprs, s: Exprs, g: Union[AppliedUndef, Any]):
+    def __init__(self, C: ConstraintOperators, kappa: Exprs, s: Exprs, g: AppliedUndef| Any):
         self._C = C
         self._K = kappa
         self._s = s
@@ -317,25 +317,25 @@ class CeSolver:
         self._ce_stale = True
 
     @property
-    def g(self) -> Union[AppliedUndef, Any]:
+    def g(self) -> AppliedUndef| Any:
         """
         Free function.
 
         Returns
         -------
-        Union[AppliedUndef, Any]
+        AppliedUndef | Any
             Free function.
         """
         return self._g
 
     @g.setter
-    def g(self, g: Union[AppliedUndef, Any]) -> None:
+    def g(self, g: AppliedUndef| Any) -> None:
         """
         Set the free function.
 
         Parameters
         ----------
-        g : Union[AppliedUndef, Any]
+        g : AppliedUndef | Any
             This is the free function used in the constrained expression. For example,
             `g(x)`.
         """

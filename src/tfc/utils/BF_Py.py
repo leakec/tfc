@@ -1,8 +1,7 @@
 import numpy as np
 import jax.numpy as jnp
 from abc import ABC, abstractmethod
-from numpy import typing as npt
-from tfc.utils.tfc_types import uint, Number
+from tfc.utils.tfc_types import uint, Number, JaxOrNumpyArray
 from typing import Callable, Tuple
 
 
@@ -21,7 +20,7 @@ class BasisFunc(ABC):
         self,
         x0: Number,
         xf: Number,
-        nC: npt.NDArray,
+        nC: JaxOrNumpyArray,
         m: uint,
         z0: Number = 0,
         zf: Number = float("inf"),
@@ -35,7 +34,7 @@ class BasisFunc(ABC):
             Start of the problem domain.
         xf : Number
             End of the problem domain.
-        nC : npt.NDArray
+        nC : JaxOrNumpyArray
             Basis functions to be removed
         m : uint
             Number of basis functions.
@@ -57,7 +56,7 @@ class BasisFunc(ABC):
             self._x0 = x0
             self._c = (zf - z0) / (xf - x0)
 
-    def H(self, x: npt.NDArray, d: uint = 0, full: bool = False) -> npt.NDArray:
+    def H(self, x: JaxOrNumpyArray, d: uint = 0, full: bool = False) -> JaxOrNumpyArray:
         """
         Returns the basis function matrix for the x with a derivative of order d.
 
@@ -87,7 +86,7 @@ class BasisFunc(ABC):
         return F
 
     @abstractmethod
-    def _Hint(self, z: npt.NDArray, d: uint) -> npt.NDArray:
+    def _Hint(self, z: JaxOrNumpyArray, d: uint) -> JaxOrNumpyArray:
         """
         Internal method used to calcualte the basis function value.
 
@@ -130,7 +129,7 @@ class CP(BasisFunc):
         self,
         x0: Number,
         xf: Number,
-        nC: npt.NDArray,
+        nC: JaxOrNumpyArray,
         m: uint,
     ) -> None:
         """
@@ -142,14 +141,14 @@ class CP(BasisFunc):
             Start of the problem domain.
         xf : Number
             End of the problem domain.
-        nC : npt.NDArray
+        nC : JaxOrNumpyArray
             Basis functions to be removed
         m:  uint
             Number of basis functions.
         """
         super().__init__(x0, xf, nC, m, -1.0, 1.0)
 
-    def _Hint(self, z: npt.NDArray, d: uint) -> npt.NDArray:
+    def _Hint(self, z: JaxOrNumpyArray, d: uint) -> JaxOrNumpyArray:
         """
         Internal method used to calcualte the CP basis function values.
 
@@ -187,7 +186,7 @@ class CP(BasisFunc):
             for k in range(2, self._m):
                 F[:, k : k + 1] = 2 * z * F[:, k - 1 : k] - F[:, k - 2 : k - 1]
 
-            def Recurse(dark: npt.NDArray, d: uint, dCurr: uint = 0) -> npt.NDArray:
+            def Recurse(dark: JaxOrNumpyArray, d: uint, dCurr: uint = 0) -> JaxOrNumpyArray:
                 """
                 Take derivative recursively.
                 """
@@ -219,7 +218,7 @@ class LeP(BasisFunc):
         self,
         x0: Number,
         xf: Number,
-        nC: npt.NDArray,
+        nC: JaxOrNumpyArray,
         m: uint,
     ) -> None:
         """
@@ -231,14 +230,14 @@ class LeP(BasisFunc):
             Start of the problem domain.
         xf : Number
             End of the problem domain.
-        nC : npt.NDArray
+        nC : JaxOrNumpyArray
             Basis functions to be removed
         m : uint
             Number of basis functions.
         """
         super().__init__(x0, xf, nC, m, -1.0, 1.0)
 
-    def _Hint(self, z: npt.NDArray, d: uint) -> npt.NDArray:
+    def _Hint(self, z: JaxOrNumpyArray, d: uint) -> JaxOrNumpyArray:
         """
         Internal method used to calcualte the LeP basis function values.
 
@@ -278,7 +277,7 @@ class LeP(BasisFunc):
                     (2.0 * k + 1.0) * z * F[:, k : k + 1] - k * F[:, k - 1 : k]
                 ) / (k + 1.0)
 
-            def Recurse(dark: npt.NDArray, d: uint, dCurr: uint = 0) -> npt.NDArray:
+            def Recurse(dark: JaxOrNumpyArray, d: uint, dCurr: uint = 0) -> JaxOrNumpyArray:
                 """
                 Take derivative recursively.
                 """
@@ -306,7 +305,7 @@ class LaP(BasisFunc):
     Laguerre polynomial basis functions.
     """
 
-    def _Hint(self, z: npt.NDArray, d: uint) -> npt.NDArray:
+    def _Hint(self, z: JaxOrNumpyArray, d: uint) -> JaxOrNumpyArray:
         """
         Internal method used to calcualte the LaP basis function values.
 
@@ -346,7 +345,7 @@ class LaP(BasisFunc):
                     (2.0 * k + 1.0 - z) * F[:, k : k + 1] - k * F[:, k - 1 : k]
                 ) / (k + 1.0)
 
-            def Recurse(dark: npt.NDArray, d: uint, dCurr: uint = 0) -> npt.NDArray:
+            def Recurse(dark: JaxOrNumpyArray, d: uint, dCurr: uint = 0) -> JaxOrNumpyArray:
                 """
                 Take derivative recursively.
                 """
@@ -374,7 +373,7 @@ class HoPpro(BasisFunc):
     Hermite probablist polynomial basis functions.
     """
 
-    def _Hint(self, z: npt.NDArray, d: uint) -> npt.NDArray:
+    def _Hint(self, z: JaxOrNumpyArray, d: uint) -> JaxOrNumpyArray:
         """
         Internal method used to calcualte the HoPpro basis function values.
 
@@ -412,7 +411,7 @@ class HoPpro(BasisFunc):
             for k in range(1, self._m - 1):
                 F[:, k + 1 : k + 2] = z * F[:, k : k + 1] - k * F[:, k - 1 : k]
 
-            def Recurse(dark: npt.NDArray, d: uint, dCurr: uint = 0) -> npt.NDArray:
+            def Recurse(dark: JaxOrNumpyArray, d: uint, dCurr: uint = 0) -> JaxOrNumpyArray:
                 """
                 Take derivative recursively.
                 """
@@ -440,7 +439,7 @@ class HoPphy(BasisFunc):
     Hermite physicist polynomial basis functions.
     """
 
-    def _Hint(self, z: npt.NDArray, d: uint) -> npt.NDArray:
+    def _Hint(self, z: JaxOrNumpyArray, d: uint) -> JaxOrNumpyArray:
         """
         Internal method used to calcualte the HoPpro basis function values.
 
@@ -478,7 +477,7 @@ class HoPphy(BasisFunc):
             for k in range(1, self._m - 1):
                 F[:, k + 1 : k + 2] = 2.0 * z * F[:, k : k + 1] - 2.0 * k * F[:, k - 1 : k]
 
-            def Recurse(dark: npt.NDArray, d: uint, dCurr: uint = 0) -> npt.NDArray:
+            def Recurse(dark: JaxOrNumpyArray, d: uint, dCurr: uint = 0) -> JaxOrNumpyArray:
                 """
                 Take derivative recursively.
                 """
@@ -512,7 +511,7 @@ class FS(BasisFunc):
         self,
         x0: Number,
         xf: Number,
-        nC: npt.NDArray,
+        nC: JaxOrNumpyArray,
         m: uint,
     ) -> None:
         """
@@ -524,14 +523,14 @@ class FS(BasisFunc):
             Start of the problem domain.
         xf : Number
             End of the problem domain.
-        nC : npt.NDArray
+        nC : JaxOrNumpyArray
             Basis functions to be removed
         m : uint
             Number of basis functions.
         """
         super().__init__(x0, xf, nC, m, -np.pi, np.pi)
 
-    def _Hint(self, z: npt.NDArray, d: uint) -> npt.NDArray:
+    def _Hint(self, z: JaxOrNumpyArray, d: uint) -> JaxOrNumpyArray:
         """
         Internal method used to calcualte the CP basis function values.
 
@@ -599,7 +598,7 @@ class ELM(BasisFunc):
         self,
         x0: Number,
         xf: Number,
-        nC: npt.NDArray,
+        nC: JaxOrNumpyArray,
         m: uint,
     ) -> None:
         """
@@ -611,7 +610,7 @@ class ELM(BasisFunc):
             Start of the problem domain.
         xf : Number
             End of the problem domain.
-        nC : npt.NDArray
+        nC : JaxOrNumpyArray
             Basis functions to be removed
         m : uint
             Number of basis functions.
@@ -627,7 +626,7 @@ class ELM(BasisFunc):
         self._b = self._b.reshape((1, self._m))
 
     @property
-    def w(self) -> npt.NDArray:
+    def w(self) -> JaxOrNumpyArray:
         """
         Weights of the ELM
 
@@ -639,7 +638,7 @@ class ELM(BasisFunc):
         return self._w
 
     @property
-    def b(self) -> npt.NDArray:
+    def b(self) -> JaxOrNumpyArray:
         """
         Biases of the ELM
 
@@ -651,7 +650,7 @@ class ELM(BasisFunc):
         return self._b
 
     @w.setter
-    def w(self, val: npt.NDArray) -> None:
+    def w(self, val: JaxOrNumpyArray) -> None:
         """
         Weights of the ELM.
 
@@ -670,7 +669,7 @@ class ELM(BasisFunc):
             )
 
     @b.setter
-    def b(self, val: npt.NDArray) -> None:
+    def b(self, val: JaxOrNumpyArray) -> None:
         """
         Biases of the ELM.
 
@@ -690,7 +689,7 @@ class ELM(BasisFunc):
 
 
 class ELMReLU(ELM):
-    def _Hint(self, z: npt.NDArray, d: uint) -> npt.NDArray:
+    def _Hint(self, z: JaxOrNumpyArray, d: uint) -> JaxOrNumpyArray:
         """
         Internal method used to calcualte the ELMRelu basis function values.
 
@@ -716,7 +715,7 @@ class ELMReLU(ELM):
 
 
 class ELMSigmoid(ELM):
-    def _Hint(self, z: npt.NDArray, d: uint) -> npt.NDArray:
+    def _Hint(self, z: JaxOrNumpyArray, d: uint) -> JaxOrNumpyArray:
         """
         Internal method used to calcualte the ELMSigmoid basis function values.
 
@@ -738,8 +737,8 @@ class ELMSigmoid(ELM):
         f = lambda x: 1.0 / (1.0 + jnp.exp(-self._w * x - self._b))
 
         def Recurse(
-            dark: Callable[[npt.NDArray], jnp.ndarray], d: uint, dCurr: uint = 0
-        ) -> Callable[[npt.NDArray], jnp.ndarray]:
+            dark: Callable[[JaxOrNumpyArray], jnp.ndarray], d: uint, dCurr: uint = 0
+        ) -> Callable[[JaxOrNumpyArray], jnp.ndarray]:
             """
             Take derivative recursively.
             """
@@ -754,7 +753,7 @@ class ELMSigmoid(ELM):
 
 
 class ELMTanh(ELM):
-    def _Hint(self, z: npt.NDArray, d: uint) -> npt.NDArray:
+    def _Hint(self, z: JaxOrNumpyArray, d: uint) -> JaxOrNumpyArray:
         """
         Internal method used to calcualte the ELMTanh basis function values.
 
@@ -776,8 +775,8 @@ class ELMTanh(ELM):
         f = lambda x: jnp.tanh(self._w * x + self._b)
 
         def Recurse(
-            dark: Callable[[npt.NDArray], jnp.ndarray], d: uint, dCurr: uint = 0
-        ) -> Callable[[npt.NDArray], jnp.ndarray]:
+            dark: Callable[[JaxOrNumpyArray], jnp.ndarray], d: uint, dCurr: uint = 0
+        ) -> Callable[[JaxOrNumpyArray], jnp.ndarray]:
             """
             Take derivative recursively.
             """
@@ -792,7 +791,7 @@ class ELMTanh(ELM):
 
 
 class ELMSin(ELM):
-    def _Hint(self, z: npt.NDArray, d: uint) -> npt.NDArray:
+    def _Hint(self, z: JaxOrNumpyArray, d: uint) -> JaxOrNumpyArray:
         """
         Internal method used to calcualte the ELMSin basis function values.
 
@@ -814,8 +813,8 @@ class ELMSin(ELM):
         f = lambda x: jnp.sin(self._w * x + self._b)
 
         def Recurse(
-            dark: Callable[[npt.NDArray], jnp.ndarray], d: uint, dCurr: uint = 0
-        ) -> Callable[[npt.NDArray], jnp.ndarray]:
+            dark: Callable[[JaxOrNumpyArray], jnp.ndarray], d: uint, dCurr: uint = 0
+        ) -> Callable[[JaxOrNumpyArray], jnp.ndarray]:
             """
             Take derivative recursively.
             """
@@ -830,7 +829,7 @@ class ELMSin(ELM):
 
 
 class ELMSwish(ELM):
-    def _Hint(self, z: npt.NDArray, d: uint) -> npt.NDArray:
+    def _Hint(self, z: JaxOrNumpyArray, d: uint) -> JaxOrNumpyArray:
         """
         Internal method used to calcualte the ELMSwish basis function values.
 
@@ -852,8 +851,8 @@ class ELMSwish(ELM):
         f = lambda x: (self._w * x + self._b) / (1.0 + jnp.exp(-self._w * x - self._b))
 
         def Recurse(
-            dark: Callable[[npt.NDArray], jnp.ndarray], d: uint, dCurr: uint = 0
-        ) -> Callable[[npt.NDArray], jnp.ndarray]:
+            dark: Callable[[JaxOrNumpyArray], jnp.ndarray], d: uint, dCurr: uint = 0
+        ) -> Callable[[JaxOrNumpyArray], jnp.ndarray]:
             """
             Take derivative recursively.
             """
@@ -875,9 +874,9 @@ class nBasisFunc(BasisFunc):
 
     def __init__(
         self,
-        x0: npt.NDArray,
-        xf: npt.NDArray,
-        nC: npt.NDArray,
+        x0: JaxOrNumpyArray,
+        xf: JaxOrNumpyArray,
+        nC: JaxOrNumpyArray,
         m: uint,
         z0: Number = 0.0,
         zf: Number = 0.0,
@@ -919,7 +918,7 @@ class nBasisFunc(BasisFunc):
         self._numBasisFunc = self._NumBasisFunc(self._dim - 1, vec, full=False)
         self._numBasisFuncFull = self._NumBasisFunc(self._dim - 1, vec, full=True)
 
-    def _NumBasisFunc(self, dim: int, vec: npt.NDArray, n: int = 0, full: bool = False) -> int:
+    def _NumBasisFunc(self, dim: int, vec: JaxOrNumpyArray, n: int = 0, full: bool = False) -> int:
         """
         Calculate the number of basis functions.
 
@@ -960,14 +959,14 @@ class nBasisFunc(BasisFunc):
         return n
 
     @property
-    def c(self) -> npt.NDArray:
+    def c(self) -> JaxOrNumpyArray:
         """
         Return the constants that map the problem domain to the basis
         function domain.
 
         Returns
         -------
-        npt.NDArray
+        JaxOrNumpyArray
             The constants that map the problem domain to the basis function
             domain.
         """
@@ -1004,7 +1003,7 @@ class nBasisFunc(BasisFunc):
 
         return self._numBasisFuncFull
 
-    def H(self, x: npt.NDArray, d: npt.NDArray, full: bool = False) -> npt.NDArray:
+    def H(self, x: JaxOrNumpyArray, d: JaxOrNumpyArray, full: bool = False) -> JaxOrNumpyArray:
         """
         Returns the basis function matrix for the x with a derivative of order d.
 
@@ -1041,7 +1040,7 @@ class nBasisFunc(BasisFunc):
             T[:, :, k] = self._Hint(z[k : k + 1, :].T, d[k]) * self._c[k] ** d[k]
 
         # Define functions for use in generating the CP sheet
-        def MultT(vec: npt.NDArray) -> npt.NDArray:
+        def MultT(vec: JaxOrNumpyArray) -> JaxOrNumpyArray:
             """
             Creates basis functions for the multidimensional case by mulitplying the basis functions
             for the single dimensional cases together.
@@ -1062,8 +1061,8 @@ class nBasisFunc(BasisFunc):
             return tout
 
         def Recurse(
-            dim: int, out: npt.NDArray, vec: npt.NDArray, n: int = 0, full: bool = False
-        ) -> Tuple[npt.NDArray, int]:
+            dim: int, out: JaxOrNumpyArray, vec: JaxOrNumpyArray, n: int = 0, full: bool = False
+        ) -> Tuple[JaxOrNumpyArray, int]:
             """
             Creates basis functions for the multidimensional case given the basis functions
             for the single dimensional cases.
@@ -1129,9 +1128,9 @@ class nCP(nBasisFunc, CP):
 
     def __init__(
         self,
-        x0: npt.NDArray,
-        xf: npt.NDArray,
-        nC: npt.NDArray,
+        x0: JaxOrNumpyArray,
+        xf: JaxOrNumpyArray,
+        nC: JaxOrNumpyArray,
         m: uint,
     ) -> None:
         """
@@ -1159,9 +1158,9 @@ class nLeP(nBasisFunc, LeP):
 
     def __init__(
         self,
-        x0: npt.NDArray,
-        xf: npt.NDArray,
-        nC: npt.NDArray,
+        x0: JaxOrNumpyArray,
+        xf: JaxOrNumpyArray,
+        nC: JaxOrNumpyArray,
         m: uint,
     ) -> None:
         """
@@ -1189,9 +1188,9 @@ class nFS(nBasisFunc, FS):
 
     def __init__(
         self,
-        x0: npt.NDArray,
-        xf: npt.NDArray,
-        nC: npt.NDArray,
+        x0: JaxOrNumpyArray,
+        xf: JaxOrNumpyArray,
+        nC: JaxOrNumpyArray,
         m: uint,
     ) -> None:
         """
@@ -1219,9 +1218,9 @@ class nELM(nBasisFunc):
 
     def __init__(
         self,
-        x0: npt.NDArray,
-        xf: npt.NDArray,
-        nC: npt.NDArray,
+        x0: JaxOrNumpyArray,
+        xf: JaxOrNumpyArray,
+        nC: JaxOrNumpyArray,
         m: uint,
         z0: Number = 0.0,
         zf: Number = 1.0,
@@ -1273,7 +1272,7 @@ class nELM(nBasisFunc):
         self._b = self._b.reshape((1, self._m))
 
     @property
-    def w(self) -> npt.NDArray:
+    def w(self) -> JaxOrNumpyArray:
         """
         Weights of the nELM
 
@@ -1285,7 +1284,7 @@ class nELM(nBasisFunc):
         return self._w
 
     @property
-    def b(self) -> npt.NDArray:
+    def b(self) -> JaxOrNumpyArray:
         """
         Biases of the nELM
 
@@ -1297,7 +1296,7 @@ class nELM(nBasisFunc):
         return self._b
 
     @w.setter
-    def w(self, val: npt.NDArray) -> None:
+    def w(self, val: JaxOrNumpyArray) -> None:
         """
         Weights of the nELM.
 
@@ -1316,7 +1315,7 @@ class nELM(nBasisFunc):
             )
 
     @b.setter
-    def b(self, val: npt.NDArray) -> None:
+    def b(self, val: JaxOrNumpyArray) -> None:
         """
         Biases of the nELM.
 
@@ -1334,7 +1333,7 @@ class nELM(nBasisFunc):
                 f"Input array of size {val.size} was received, but size {self._m} was expected."
             )
 
-    def H(self, x: npt.NDArray, d: npt.NDArray, full: bool = False) -> npt.NDArray:
+    def H(self, x: JaxOrNumpyArray, d: JaxOrNumpyArray, full: bool = False) -> JaxOrNumpyArray:
         """
         Returns the basis function matrix for the x with a derivative of order d.
 
@@ -1370,7 +1369,7 @@ class nELM(nBasisFunc):
         return F
 
     @abstractmethod
-    def _nHint(self, z: npt.NDArray, d: npt.NDArray) -> npt.NDArray:
+    def _nHint(self, z: JaxOrNumpyArray, d: JaxOrNumpyArray) -> JaxOrNumpyArray:
         """
         Internal method used to calcualte the basis function value.
 
@@ -1388,7 +1387,7 @@ class nELM(nBasisFunc):
         """
         pass
 
-    def _Hint(self, z: npt.NDArray, d: uint) -> npt.NDArray:
+    def _Hint(self, z: JaxOrNumpyArray, d: uint) -> JaxOrNumpyArray:
         """
         Dummy function, this should never be called!
         """
@@ -1400,7 +1399,7 @@ class nELMReLU(nELM):
     n-dimensional ELM ReLU basis functions.
     """
 
-    def _nHint(self, z: npt.NDArray, d: npt.NDArray) -> npt.NDArray:
+    def _nHint(self, z: JaxOrNumpyArray, d: JaxOrNumpyArray) -> JaxOrNumpyArray:
         """
         Internal method used to calcualte the basis function value.
 
@@ -1443,7 +1442,7 @@ class nELMSin(nELM):
     n-dimensional ELM sin basis functions.
     """
 
-    def _nHint(self, z: npt.NDArray, d: npt.NDArray) -> npt.NDArray:
+    def _nHint(self, z: JaxOrNumpyArray, d: JaxOrNumpyArray) -> JaxOrNumpyArray:
         """
         Internal method used to calcualte the basis function value.
 
@@ -1467,8 +1466,8 @@ class nELMSin(nELM):
         z = jnp.split(z, z.shape[1], axis=1)
 
         def Recurse(
-            dark: Callable[[npt.NDArray], jnp.ndarray], d: uint, dim: uint, dCurr: uint = 0
-        ) -> Callable[[npt.NDArray], jnp.ndarray]:
+            dark: Callable[[JaxOrNumpyArray], jnp.ndarray], d: uint, dim: uint, dCurr: uint = 0
+        ) -> Callable[[JaxOrNumpyArray], jnp.ndarray]:
             if dCurr == d:
                 return dark
             else:
@@ -1490,7 +1489,7 @@ class nELMTanh(nELM):
     n-dimensional ELM tanh basis functions.
     """
 
-    def _nHint(self, z: npt.NDArray, d: npt.NDArray) -> npt.NDArray:
+    def _nHint(self, z: JaxOrNumpyArray, d: JaxOrNumpyArray) -> JaxOrNumpyArray:
         """
         Internal method used to calcualte the basis function value.
 
@@ -1514,8 +1513,8 @@ class nELMTanh(nELM):
         z = jnp.split(z, z.shape[1], axis=1)
 
         def Recurse(
-            dark: Callable[[npt.NDArray], jnp.ndarray], d: uint, dim: uint, dCurr: uint = 0
-        ) -> Callable[[npt.NDArray], jnp.ndarray]:
+            dark: Callable[[JaxOrNumpyArray], jnp.ndarray], d: uint, dim: uint, dCurr: uint = 0
+        ) -> Callable[[JaxOrNumpyArray], jnp.ndarray]:
             if dCurr == d:
                 return dark
             else:
@@ -1537,7 +1536,7 @@ class nELMSigmoid(nELM):
     n-dimensional ELM sigmoid basis functions.
     """
 
-    def _nHint(self, z: npt.NDArray, d: npt.NDArray) -> npt.NDArray:
+    def _nHint(self, z: JaxOrNumpyArray, d: JaxOrNumpyArray) -> JaxOrNumpyArray:
         """
         Internal method used to calcualte the basis function value.
 
@@ -1561,8 +1560,8 @@ class nELMSigmoid(nELM):
         z = jnp.split(z, z.shape[1], axis=1)
 
         def Recurse(
-            dark: Callable[[npt.NDArray], jnp.ndarray], d: uint, dim: uint, dCurr: uint = 0
-        ) -> Callable[[npt.NDArray], jnp.ndarray]:
+            dark: Callable[[JaxOrNumpyArray], jnp.ndarray], d: uint, dim: uint, dCurr: uint = 0
+        ) -> Callable[[JaxOrNumpyArray], jnp.ndarray]:
             if dCurr == d:
                 return dark
             else:
@@ -1584,7 +1583,7 @@ class nELMSwish(nELM):
     n-dimensional ELM swish basis functions.
     """
 
-    def _nHint(self, z: npt.NDArray, d: npt.NDArray) -> npt.NDArray:
+    def _nHint(self, z: JaxOrNumpyArray, d: JaxOrNumpyArray) -> JaxOrNumpyArray:
         """
         Internal method used to calcualte the basis function value.
 
@@ -1610,8 +1609,8 @@ class nELMSwish(nELM):
         z = jnp.split(z, z.shape[1], axis=1)
 
         def Recurse(
-            dark: Callable[[npt.NDArray], jnp.ndarray], d: uint, dim: uint, dCurr: uint = 0
-        ) -> Callable[[npt.NDArray], jnp.ndarray]:
+            dark: Callable[[JaxOrNumpyArray], jnp.ndarray], d: uint, dim: uint, dCurr: uint = 0
+        ) -> Callable[[JaxOrNumpyArray], jnp.ndarray]:
             if dCurr == d:
                 return dark
             else:

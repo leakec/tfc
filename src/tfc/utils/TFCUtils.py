@@ -21,16 +21,15 @@ from jax._src.tree_util import tree_flatten
 from jax.core import get_aval, eval_jaxpr
 from jax.interpreters.partial_eval import trace_to_jaxpr_nounits, PartialVal
 from jax.experimental import io_callback
-from typing import Any, Callable, Optional, Union, cast
+from typing import Any, Callable, Optional, cast, Union, overload
 from .tfc_types import uint, Literal, TypedDict, Path
 from jaxtyping import PyTree
-from typing import cast
 
 # Types that can be added to a TFCDict
-TFCDictAddable = Union[np.ndarray, dict[Any, Any], "TFCDict"]
+TFCDictAddable = Union[np.ndarray ,  dict[Any, Any] , "TFCDict"]
 
 # Types that can be added to a TFCDictRobust
-TFCDictRobustAddable = Union[np.ndarray, dict[Any, Any], "TFCDictRobust"]
+TFCDictRobustAddable = Union[np.ndarray , dict[Any, Any] , "TFCDictRobust"]
 
 
 class TFCPrint:
@@ -742,6 +741,30 @@ register_pytree_node(
 )
 
 
+@overload
+def LS(
+    zXi: PyTree,
+    res: Callable,
+    *args: Any,
+    constant_arg_nums: list[int] = [],
+    J: Optional[Callable[..., np.ndarray]] = None,
+    method: Literal["pinv", "lstsq"] = "pinv",
+    timer: Literal[False] = False,
+    timerType: str = "process_time",
+    holomorphic: bool = False,
+) -> PyTree: ...
+@overload
+def LS(
+    zXi: PyTree,
+    res: Callable,
+    *args: Any,
+    constant_arg_nums: list[int] = [],
+    J: Optional[Callable[..., np.ndarray]] = None,
+    method: Literal["pinv", "lstsq"] = "pinv",
+    timer: Literal[True] = True,
+    timerType: str = "process_time",
+    holomorphic: bool = False,
+    ) -> tuple[PyTree, float]: ...
 def LS(
     zXi: PyTree,
     res: Callable,
@@ -752,7 +775,7 @@ def LS(
     timer: bool = False,
     timerType: str = "process_time",
     holomorphic: bool = False,
-) -> Union[PyTree, tuple[PyTree, float]]:
+) -> PyTree | tuple[PyTree, float]:
     """
     JITed least squares.
     This function takes in an initial guess of zeros, zXi, and a residual function, res, and
@@ -976,7 +999,7 @@ class LsClass:
 
         self._compiled = False
 
-    def run(self, zXi: PyTree, *args: Any) -> Union[PyTree, tuple[PyTree, float]]:
+    def run(self, zXi: PyTree, *args: Any) -> PyTree | tuple[PyTree, float]:
         """
         Runs the JIT-ed least-squares function and times it if desired.
 
@@ -1026,6 +1049,42 @@ def nlls_id_print(it: int, x, end: str = "\n"):
     print("Iteration: {0}\tmax(abs(res)): {1}".format(it, x), end=end)
 
 
+@overload
+def NLLS(
+    xiInit: PyTree,
+    res: Callable,
+    *args: Any,
+    constant_arg_nums: list[int] = [],
+    J: Optional[Callable[..., np.ndarray]] = None,
+    cond: Optional[Callable[[PyTree], bool]] = None,
+    body: Optional[Callable[[PyTree], PyTree]] = None,
+    tol: float = 1e-13,
+    maxIter: uint = 50,
+    method: Literal["pinv", "lstsq"] = "pinv",
+    timer: Literal[False] = False,
+    printOut: bool = False,
+    printOutEnd: str = "\n",
+    timerType: str = "process_time",
+    holomorphic: bool = False,
+    ) -> tuple[PyTree, int]: ...
+@overload
+def NLLS(
+    xiInit: PyTree,
+    res: Callable,
+    *args: Any,
+    constant_arg_nums: list[int] = [],
+    J: Optional[Callable[..., np.ndarray]] = None,
+    cond: Optional[Callable[[PyTree], bool]] = None,
+    body: Optional[Callable[[PyTree], PyTree]] = None,
+    tol: float = 1e-13,
+    maxIter: uint = 50,
+    method: Literal["pinv", "lstsq"] = "pinv",
+    timer: Literal[True] = True,
+    printOut: bool = False,
+    printOutEnd: str = "\n",
+    timerType: str = "process_time",
+    holomorphic: bool = False,
+    ) -> tuple[PyTree, int, float]: ...
 def NLLS(
     xiInit: PyTree,
     res: Callable,
@@ -1042,7 +1101,7 @@ def NLLS(
     printOutEnd: str = "\n",
     timerType: str = "process_time",
     holomorphic: bool = False,
-) -> Union[tuple[PyTree, int], tuple[PyTree, int, float]]:
+) -> tuple[PyTree, int] | tuple[PyTree, int, float]:
     """
     JIT-ed non-linear least squares.
     This function takes in an initial guess, xiInit (initial values of xi), and a residual function, res, and
@@ -1203,7 +1262,7 @@ def NLLS(
     nlls = jit(lambda val: lax.while_loop(cond, body, val))
 
     if dictFlag:
-        dxi = np.ones_like(cast(Union[TFCDict, TFCDictRobust], xiInit).toArray())
+        dxi = np.ones_like(cast(TFCDict | TFCDictRobust, xiInit).toArray())
     else:
         dxi = np.ones_like(xiInit)
 
@@ -1404,7 +1463,7 @@ class NllsClass:
 
     def run(
         self, xiInit: PyTree, *args: Any
-    ) -> Union[tuple[PyTree, int], tuple[PyTree, int, float]]:
+    ) -> tuple[PyTree, int] | tuple[PyTree, int, float]:
         """Runs the JIT-ed nonlinear least-squares function and times it if desired.
 
         Parameters
@@ -1429,7 +1488,7 @@ class NllsClass:
         """
 
         if self._dictFlag:
-            dxi = np.ones_like(cast(Union[TFCDict, TFCDictRobust], xiInit).toArray())
+            dxi = np.ones_like(cast(TFCDict | TFCDictRobust, xiInit).toArray())
         else:
             dxi = np.ones_like(xiInit)
 
