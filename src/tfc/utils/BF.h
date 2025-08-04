@@ -262,7 +262,7 @@ class FS : virtual public BasisFunc {
 
     /** This function is unecessary for FS as it is all handled in Hint. Therefore, this is just an empty function that
      * returns a warning. */
-    void RecurseDeriv(const int d, int dCurr, const double *x, const int nOut, double *&F, const int mOut) {
+    void RecurseDeriv(const int, int, const double *, const int, double *&, const int) {
         fprintf(stderr,
                 "Warning, this function from FS should never be called. It seems it has been called by accident. "
                 "Please check that this function was intended to be called.\n");
@@ -307,7 +307,7 @@ class ELM : public BasisFunc {
 
     /** This function is unecessary for ELM as it is all handled in Hint. Therefore, this is just an empty function that
      * returns a warning. */
-    void RecurseDeriv(const int d, int dCurr, const double *x, const int nOut, double *&F, const int mOut) {
+    void RecurseDeriv(const int, int, const double *, const int, double *&, const int) {
         fprintf(stderr,
                 "Warning, this function from ELM should never be called. It seems it has been called by accident. "
                 "Please check that this function was intended to be called.\n");
@@ -627,7 +627,7 @@ class nELM : public nBasisFunc {
 
     /** This function is unecessary for nELM as it is all handled in nElmHint. Therefore, this is just an empty function
      * that returns a warning. */
-    void Hint(const int d, const double *x, const int nOut, double *dark) override {
+    void Hint(const int, const double *, const int, double *) override {
         fprintf(stderr,
                 "Warning, this function from nELM should never be called. It seems it has been called by accident. "
                 "Please check that this function was intended to be called.\n");
@@ -637,7 +637,7 @@ class nELM : public nBasisFunc {
 
     /** This function is unecessary for nELM as it is all handled in nElmHint. Therefore, this is just an empty function
      * that returns a warning. */
-    void RecurseDeriv(const int d, int dCurr, const double *x, const int nOut, double *&F, const int mOut) override {
+    void RecurseDeriv(const int, int, const double *, const int, double *&, const int) override {
         fprintf(stderr,
                 "Warning, this function from nELM should never be called. It seems it has been called by accident. "
                 "Please check that this function was intended to be called.\n");

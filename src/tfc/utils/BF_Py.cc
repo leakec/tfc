@@ -223,7 +223,8 @@ PYBIND11_MODULE(BF, m) {
                 }
                 if (c.size() != self.dim) {
                     std::stringstream ss;
-                    ss << "The \"c\" input array must be size " << self.dim << ", but got size " << c.size() << "." << std::endl;
+                    ss << "The \"c\" input array must be size " << self.dim << ", but got size " << c.size() << "."
+                       << std::endl;
                     throw py::value_error(ss.str());
                 }
             })

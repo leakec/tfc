@@ -1013,7 +1013,7 @@ void ELMSwish::Hint(const int d, const double *x, const int nOut, double *dark) 
 nBasisFunc::nBasisFunc(const double *x0in,
                        int x0Dim0,
                        const double *xf,
-                       int xfDim0,
+                       int /*xfDim0*/,
                        const int *nCin,
                        int ncDim0,
                        int ncDim1,
@@ -1071,8 +1071,15 @@ void nBasisFunc::getC(double **arrOut, int *nOut) {
     return;
 };
 
-void nBasisFunc::H(
-    const double *x, int in, int xDim1, const int *d, int dDim0, int *nOut, int *mOut, double **F, const bool full) {
+void nBasisFunc::H(const double *x,
+                   int /*in*/,
+                   int xDim1,
+                   const int *d,
+                   int dDim0,
+                   int *nOut,
+                   int *mOut,
+                   double **F,
+                   const bool full) {
     int numBasis = full ? numBasisFuncFull : numBasisFunc;
     *mOut = numBasis;
     *nOut = xDim1;
@@ -1080,7 +1087,7 @@ void nBasisFunc::H(
     nHint(x, xDim1, d, dDim0, numBasis, *F, full);
 };
 
-void nBasisFunc::H(const double *x, int n, const int d, int *nOut, int *mOut, double **F, bool full) {
+void nBasisFunc::H(const double *, int, const int, int *, int *, double **, bool) {
     throw std::runtime_error("This version of \"H\" should never be called from an n-dimensional basis class.");
 }
 
@@ -1259,7 +1266,7 @@ void nBasisFunc::RecurseBasis(int dimCurr,
 nELM::nELM(const double *x0in,
            int x0Dim0,
            const double *xf,
-           int xfDim0,
+           int /*xfDim0*/,
            const int *nCin,
            int ncDim0,
            int min,
