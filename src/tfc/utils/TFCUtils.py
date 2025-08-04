@@ -26,10 +26,10 @@ from .tfc_types import uint, Literal, TypedDict, Path
 from jaxtyping import PyTree
 
 # Types that can be added to a TFCDict
-TFCDictAddable = Union[np.ndarray ,  dict[Any, Any] , "TFCDict"]
+TFCDictAddable = Union[np.ndarray, dict[Any, Any], "TFCDict"]
 
 # Types that can be added to a TFCDictRobust
-TFCDictRobustAddable = Union[np.ndarray , dict[Any, Any] , "TFCDictRobust"]
+TFCDictRobustAddable = Union[np.ndarray, dict[Any, Any], "TFCDictRobust"]
 
 
 class TFCPrint:
@@ -764,7 +764,7 @@ def LS(
     timer: Literal[True] = True,
     timerType: str = "process_time",
     holomorphic: bool = False,
-    ) -> tuple[PyTree, float]: ...
+) -> tuple[PyTree, float]: ...
 def LS(
     zXi: PyTree,
     res: Callable,
@@ -1066,7 +1066,7 @@ def NLLS(
     printOutEnd: str = "\n",
     timerType: str = "process_time",
     holomorphic: bool = False,
-    ) -> tuple[PyTree, int]: ...
+) -> tuple[PyTree, int]: ...
 @overload
 def NLLS(
     xiInit: PyTree,
@@ -1084,7 +1084,7 @@ def NLLS(
     printOutEnd: str = "\n",
     timerType: str = "process_time",
     holomorphic: bool = False,
-    ) -> tuple[PyTree, int, float]: ...
+) -> tuple[PyTree, int, float]: ...
 def NLLS(
     xiInit: PyTree,
     res: Callable,
@@ -1461,9 +1461,7 @@ class NllsClass:
         self._nlls = jit(lambda val: lax.while_loop(cond, body, val))
         self._compiled = False
 
-    def run(
-        self, xiInit: PyTree, *args: Any
-    ) -> tuple[PyTree, int] | tuple[PyTree, int, float]:
+    def run(self, xiInit: PyTree, *args: Any) -> tuple[PyTree, int] | tuple[PyTree, int, float]:
         """Runs the JIT-ed nonlinear least-squares function and times it if desired.
 
         Parameters

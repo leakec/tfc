@@ -21,7 +21,7 @@ pint = Annotated[int, Gt(0)]
 uint = Annotated[int, Ge(0)]
 
 # General number type
-Number = int| float| complex
+Number = int | float | complex
 
 from numpy._typing._array_like import _ArrayLikeStr_co
 
@@ -32,7 +32,7 @@ StrArrayLike = _ArrayLikeStr_co
 IntArrayLike = Annotated[npt.ArrayLike, np.int32]
 
 # List or array like
-NumberListOrArray = tuple[Number, ...]| list[Number]| npt.NDArray[Any]| Array
+NumberListOrArray = tuple[Number, ...] | list[Number] | npt.NDArray[Any] | Array
 
 # List or array of integers
 IntListOrArray = IntArrayLike
@@ -46,9 +46,9 @@ TupleOrListOfNumpyArray = tuple[npt.NDArray, ...] | list[npt.NDArray]
 
 # Sympy constraint operator
 # Adding in Any here since sympy types are a bit funky at the moment
-ConstraintOperator = Callable[[AppliedUndef| Expr| Any], AppliedUndef| Any]
-ConstraintOperators = list[ConstraintOperator]| tuple[ConstraintOperator, ...]
+ConstraintOperator = Callable[[AppliedUndef | Expr | Any], AppliedUndef | Any]
+ConstraintOperators = list[ConstraintOperator] | tuple[ConstraintOperator, ...]
 
 # List or tuple of sympy expressions
 # Adding in Any here since sympy types are a bit funky at the moment
-Exprs = list[Expr| Any] | tuple[Expr| Any, ...]
+Exprs = list[Expr | Any] | tuple[Expr | Any, ...]

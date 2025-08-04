@@ -7,7 +7,7 @@ from .tfc_types import Path, Ge, Le, Annotated, Literal
 from typing import Optional, Any, Generator, Callable
 from .TFCUtils import TFCPrint
 
-Color = str| tuple[float| float| float| float]| npt.NDArray[np.float64]
+Color = str | tuple[float | float | float | float] | npt.NDArray[np.float64]
 TFCPrint()
 
 

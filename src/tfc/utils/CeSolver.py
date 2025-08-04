@@ -62,7 +62,7 @@ class CeSolver:
     In the above code example, `ce` is the constrained expression that satisfies these constraints.
     """
 
-    def __init__(self, C: ConstraintOperators, kappa: Exprs, s: Exprs, g: AppliedUndef| Any):
+    def __init__(self, C: ConstraintOperators, kappa: Exprs, s: Exprs, g: AppliedUndef | Any):
         self._C = C
         self._K = kappa
         self._s = s
@@ -317,7 +317,7 @@ class CeSolver:
         self._ce_stale = True
 
     @property
-    def g(self) -> AppliedUndef| Any:
+    def g(self) -> AppliedUndef | Any:
         """
         Free function.
 
@@ -329,7 +329,7 @@ class CeSolver:
         return self._g
 
     @g.setter
-    def g(self, g: AppliedUndef| Any) -> None:
+    def g(self, g: AppliedUndef | Any) -> None:
         """
         Set the free function.
 

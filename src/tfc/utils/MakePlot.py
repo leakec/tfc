@@ -24,7 +24,7 @@ class MakePlot:
         titles: Optional[StrArrayLike] = None,
         twinYlabs: Optional[StrArrayLike] = None,
         zlabs: Optional[StrArrayLike] = None,
-        style: Optional[str| dict| Path| list[str]| list[dict]| list[Path]] = None,
+        style: Optional[str | dict | Path | list[str] | list[dict] | list[Path]] = None,
     ):
         """
         This function initializes the plot/subplots based on the inputs provided.
