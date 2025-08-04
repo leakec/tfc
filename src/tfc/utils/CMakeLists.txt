@@ -25,9 +25,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Turn on colored diagnostics
 set(CMAKE_COLOR_DIAGNOSTICS ON)
 
-# Find Python in the system
-find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
-
 # Find pybind11 in the system
 # This is needed for CMake < 3.27. 
 # After Cmake 3.27+, can remove setting PYBIND11_FINDPYTHON.
@@ -36,7 +33,7 @@ find_package(pybind11 3.0 REQUIRED CONFIG)
 
 # Create the bf library
 add_library(bf BF.cc)
-target_link_libraries(bf PUBLIC Python3::Python)
+target_link_libraries(bf PUBLIC pybind11::pybind11)
 
 # Create the BF.py Python file
 pybind11_add_module(BF BF_Py.cc)
