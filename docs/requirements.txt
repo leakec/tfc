@@ -9,6 +9,8 @@ breathe
 exhale
 nbsphinx
 ipykernel
+pybind11
+mypy
 jax
 jaxlib
 jaxtyping

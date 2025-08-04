@@ -1,3 +1,5 @@
-include src/tfc/utils/BF/BF.h
-include src/tfc/utils/BF/numpy.i
+include src/tfc/utils/BF.h
+include src/tfc/utils/BF.cc
+include src/tfc/utils/BF_Py.cc
+include src/tfc/utils/CMakeLists.txt
 include src/tfc/py.typed

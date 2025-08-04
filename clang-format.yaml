@@ -1,0 +1,14 @@
+BasedOnStyle: LLVM
+IndentWidth: 4
+ColumnLimit: 120
+AllowShortIfStatementsOnASingleLine: false
+
+# Make method/function arguments line up if they are broken onto a new line
+BinPackArguments: false
+BinPackParameters: false
+
+# If we break up constructor initializers, do so before the comma.
+BreakConstructorInitializers: BeforeComma
+
+# Indent all namespaces
+NamespaceIndentation: All

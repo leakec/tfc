@@ -3,11 +3,11 @@ import numpy.typing as npt
 import mayavi
 from mayavi import mlab
 from matplotlib import colors as mcolors
-from .types import Dict, Tuple, Path, Ge, Le, Annotated, Literal
-from typing import Optional, Any, Union, Generator, Callable
+from .tfc_types import Path, Ge, Le, Annotated, Literal
+from typing import Optional, Any, Generator, Callable
 from .TFCUtils import TFCPrint
 
-Color = Union[str, Tuple[float, float, float, float], npt.NDArray[np.float64]]
+Color = str | tuple[float | float | float | float] | npt.NDArray[np.float64]
 TFCPrint()
 
 
@@ -15,7 +15,7 @@ class MakePlot:
     """MakePlot class for Mayavi."""
 
     @staticmethod
-    def _str_to_rgb(color: str) -> Tuple[float, float, float]:
+    def _str_to_rgb(color: str) -> tuple[float, float, float]:
         """Call matplotlib's colorConverter.to_rgb on input string.
 
         Parameters
@@ -25,13 +25,13 @@ class MakePlot:
 
         Returns
         -------
-        color_rgb : Tuple[float, float, float]
+        color_rgb : tuple[float, float, float]
             3-tuple of the RGB for the color
         """
         return mcolors.colorConverter.to_rgb(color)
 
     @staticmethod
-    def _str_to_rgba(color, alpha: Optional[float] = None) -> Tuple[float, float, float, float]:
+    def _str_to_rgba(color, alpha: Optional[float] = None) -> tuple[float, float, float, float]:
         """Call matplotlib's colorConverter.to_rgba on input string.
 
         Parameters
@@ -44,13 +44,13 @@ class MakePlot:
 
         Returns
         -------
-        color_rgba : Tuple[float, float, float, float]
+        color_rgba : tuple[float, float, float, float]
             4-tuple of the RGB for the color
         """
         return mcolors.colorConverter.to_rgba(color, alpha=alpha)
 
     @staticmethod
-    def _ProcessKwargs(**kwargs: Any) -> Dict[str, Any]:
+    def _ProcessKwargs(**kwargs: Any) -> dict[str, Any]:
         """This function effectively extends common mlab keywords.
 
         Parameters
@@ -60,7 +60,7 @@ class MakePlot:
 
         Returns
         -------
-        kwargs : Dict[str, any]
+        kwargs : dict[str, any]
             Same as input keyword arguments but color has been transformed to an RGB if it was a string.
         """
         # Process color argument if it exists

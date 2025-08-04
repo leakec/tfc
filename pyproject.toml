@@ -2,34 +2,34 @@
 requires = ["setuptools>=42", 
             "wheel", 
             "numpy>=2.1",
+            "pybind11~=3.0.0",
 ]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "tfc"
 version = "1.2.1"
-requires-python = ">=3.10"
+requires-python = ">=3.11,<3.14"
 readme = "README.md"
 dynamic = ["dependencies", "classifiers", "authors", "license", "description"]
 
 [tool.black]
 line-length = 100
-target-version = ['py310','py311']
+target-version = ['py311']
 
 [tool.cibuildwheel]
-before-build = "pip install setuptools wheel numpy"
-skip = "pp* *-musllinux*"
+before-build = "pip install setuptools wheel numpy pybind11 mypy"
+skip = "*-musllinux*"
 manylinux-x86_64-image = "manylinux2014"
 test-requires = ["pytest"]
 test-command = "pytest {package}/tests"
 test-skip = "*-macosx_arm64"
 
 [tool.cibuildwheel.linux]
-before-all = "yum install -y swig"
+before-all = "yum install -y ninja-build"
 archs = ["x86_64"]
 
 [tool.cibuildwheel.macos]
-before-all = "brew install swig"
 archs = ["arm64"]
 
 [tool.cibuildwheel.windows]
@@ -37,5 +37,3 @@ archs = ["AMD64"]
 
 [[tool.cibuildwheel.overrides]]
 select = "*-musllinux*"
-before-all = "apk add swig"
-

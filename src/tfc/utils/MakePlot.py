@@ -5,8 +5,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from .TFCUtils import TFCPrint
-from .types import StrArrayLike, Path, List, Dict, Literal, pint
-from typing import Optional, Union, Generator, Callable
+from .tfc_types import StrArrayLike, Path, Literal, pint
+from typing import Optional, Generator, Callable
 
 TFCPrint()
 
@@ -24,7 +24,7 @@ class MakePlot:
         titles: Optional[StrArrayLike] = None,
         twinYlabs: Optional[StrArrayLike] = None,
         zlabs: Optional[StrArrayLike] = None,
-        style: Optional[Union[str, Dict, Path, List[str], List[Dict], List[Path]]] = None,
+        style: Optional[str | dict | Path | list[str] | list[dict] | list[Path]] = None,
     ):
         """
         This function initializes the plot/subplots based on the inputs provided.
@@ -41,7 +41,7 @@ class MakePlot:
             The twin y-axes labels for the plots. Setting this forces twin axis y-axes. (Default value = None)
         zlabs: StrArrayLike, optional
             The z-axes labels of for the plots. Setting this forces subplots to be 3D. (Default value = None)
-        style : Union[str, Dict, Path, List[str], List[Dict], List[Path]]
+        style : str| dict| Path| list[str]| list[dict]| list[Path]
             Matplotlib style. (Default value = None)
         """
 

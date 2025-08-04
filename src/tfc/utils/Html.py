@@ -1,8 +1,7 @@
 import os
 from graphviz import Digraph
 from yattag import Doc, indent
-from .types import List
-from .types import Path
+from .tfc_types import Path
 
 
 class HTML:
@@ -93,13 +92,13 @@ class Dot:
         self._name = name
         self.dot = Digraph(name=self._name)
 
-    def Render(self, formats: List[str] = ["cmapx", "svg"]):
+    def Render(self, formats: list[str] = ["cmapx", "svg"]):
         """
         This function renders the dot graph as a .svg and as a .cmapx.
 
         Parameters
         ----------
-        formats : List[str], optional
+        formats : list[str], optional
             List whose elementts dictate which formats to render the dot graph in. (Default value = ["cmapx", "svg"])
         """
         for f in formats:
