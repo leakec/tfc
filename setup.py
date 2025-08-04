@@ -28,10 +28,7 @@ if os.name == "nt":
 else:
     cxxFlags = ["-O3", "-std=c++17", "-Wall", "-Wextra", "-Wno-unused-parameter", "-fPIC"]
 
-if sys.version_info >= (3, 10):
-    numpy_version = "numpy>=2.1.0"
-else:
-    numpy_version = "numpy>=1.21.0"
+numpy_version = "numpy>=2.1.0"
 
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=""):

@@ -47,7 +47,7 @@ To install via pip run:
 pip install --upgrade pip setuptools wheel numpy
 pip install --upgrade tfc
 ```
-The above will install a binary TFC wheel. The developers have found that installing a source distribution leads to code that is slightly faster on some machines, as the code is compiled using potentially newer versions of compilers and swig. If you would like the source distribution, then you can use the following:
+The above will install a binary TFC wheel. The developers have found that installing a source distribution leads to code that is slightly faster on some machines, as the code is compiled using potentially newer versions of compilers. If you would like the source distribution, then you can use the following:
 ```bash
 pip install tfc --no-binary tfc
 ```
@@ -66,7 +66,7 @@ The authors of this repsitory and the associated theory have gone to lengths to 
     author = {Carl Leake and Hunter Johnston},
     title = {{TFC: A Functional Interpolation Framework}},
     url = {https://github.com/leakec/tfc},
-    version = {1.2.1},
+    version = {1.3.0},
     year = {2025},
 }
 @article{TFC, 
@@ -94,14 +94,18 @@ The authors of this repsitory and the associated theory have gone to lengths to 
 
 Dependencies:
 * System Packages:
-  * swig
+  * cmake
+  * ninja
   * graphviz
 * Python Packages:
-  * matplotlib
-  * jax
-  * jaxlib
   * colorama
   * graphviz
+  * jax
+  * jaxlib
+  * matplotlib
+  * numpy
+  * pybind11
+  * setuptools
   * yattag
 
 ### Testing instructions:
