@@ -26,6 +26,7 @@ test-command = "pytest {package}/tests"
 test-skip = "*-macosx_arm64"
 
 [tool.cibuildwheel.linux]
+before-all = "yum install -y ninja-build"
 archs = ["x86_64"]
 
 [tool.cibuildwheel.macos]
