@@ -13,7 +13,6 @@ from tfc.utils.BF import (
     ELMSin,
     ELMSwish,
 )
-from tfc.utils import egrad
 
 
 def test_CP():

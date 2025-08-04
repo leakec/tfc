@@ -1,7 +1,5 @@
 import jax.numpy as np
 
-from tfc import utfc as TFC
-from tfc import mtfc as nTFC
 from tfc.utils import egrad, step
 
 def test_step():
