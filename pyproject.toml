@@ -20,7 +20,7 @@ target-version = ['py311']
 [tool.cibuildwheel]
 before-build = "pip install setuptools wheel numpy pybind11 mypy"
 skip = "*-musllinux*"
-manylinux-x86_64-image = "manylinux2014"
+manylinux-x86_64-image = "manylinux_2_28"
 test-requires = ["pytest"]
 test-command = "pytest {package}/tests"
 test-skip = "*-macosx_arm64"
