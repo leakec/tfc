@@ -623,10 +623,7 @@ class mtfc:
             out_tans = np.zeros((dim0, dim1))
             for k in range(n):
                 if not (type(arg_tans[k]) is ad.Zero):
-                    if type(arg_tans[k]) is batching.BatchTracer:
-                        flag = onp.any(arg_tans[k].val != 0)
-                    else:
-                        flag = onp.any(arg_tans[k] != 0)
+                    flag = onp.any(arg_tans[k] != 0)
                     if flag:
                         dark = tuple(d[j] + 1 if k == j else d[j] for j in range(len(d)))
                         if flat:
