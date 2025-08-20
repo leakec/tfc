@@ -362,10 +362,7 @@ class utfc:
             x = arg_vals[0]
             dx = arg_tans[0]
             if not (dx is ad.Zero):
-                if type(dx) is batching.BatchTracer:
-                    flag = onp.any(dx.val != 0)
-                else:
-                    flag = onp.any(dx != 0)
+                flag = onp.any(dx != 0)
                 if flag:
                     if len(dx.shape) == 1:
                         out_tans = Hjax(x, d=d + 1, full=full) * onp.expand_dims(dx, 1)
