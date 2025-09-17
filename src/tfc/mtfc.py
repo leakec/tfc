@@ -584,7 +584,7 @@ class mtfc:
                         stablehlo.ConcatenateOp(x, 0).result,
                         mlir.ir_constant(np.int32(d)),
                         mlir.ir_constant(np.int32(self.dim)),
-                        mlir.ir_constant(bool(full)),
+                        mlir.ir_constant(np.bool(full)),
                         mlir.ir_constant(np.int32(dim0)),
                         mlir.ir_constant(np.int32(dim1)),
                     ],
