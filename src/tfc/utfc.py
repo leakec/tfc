@@ -339,7 +339,7 @@ class utfc:
                         mlir.ir_constant(np.int32(self.basisClass.identifier)),
                         x,
                         mlir.ir_constant(np.int32(d)),
-                        mlir.ir_constant(bool(full)),
+                        mlir.ir_constant(np.bool(full)),
                         mlir.ir_constant(np.int32(dim0)),
                         mlir.ir_constant(np.int32(dim1)),
                     ],
