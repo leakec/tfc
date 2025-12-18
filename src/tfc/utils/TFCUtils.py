@@ -12,13 +12,13 @@ config.update("jax_enable_x64", True)
 import numpy as onp
 import numpy.typing as npt
 import jax.numpy as np
-from jax import jvp, jit, lax, jacfwd
+from jax import jvp, jit, lax, jacfwd, typeof
 from jax.extend import linear_util as lu
 from jax.api_util import debug_info
 from jax.tree_util import register_pytree_node, tree_map
 from jax._src.api_util import flatten_fun
 from jax._src.tree_util import tree_flatten
-from jax.core import get_aval, eval_jaxpr
+from jax.core import eval_jaxpr
 from jax.interpreters.partial_eval import trace_to_jaxpr_nounits, PartialVal
 from jax.experimental import io_callback
 from typing import Any, Callable, Optional, cast, Union, overload
@@ -256,9 +256,7 @@ def pe(*args: Any, constant_arg_nums: list[int] = []) -> Any:
                 if unknown:
                     return tree_flatten(
                         (
-                            tree_map(
-                                lambda x: PartialVal.unknown(get_aval(x).at_least_vspace()), a
-                            ),
+                            tree_map(lambda x: PartialVal.unknown(typeof(x).at_least_vspace()), a),
                             {},
                         )
                     )[0]
