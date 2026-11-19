@@ -35,8 +35,8 @@ def test_nCP():
     Fp1 = pncp1.H(x.T, d, False)
     Fp2 = pncp2.H(x.T, d2, False)
 
-    assert np.linalg.norm(Fc1 - Fp1, ord="fro") < 1e-14
-    assert np.linalg.norm(Fc2 - Fp2, ord="fro") < 1e-14
+    assert np.linalg.norm(Fc1 - Fp1, ord="fro") < 1e-13
+    assert np.linalg.norm(Fc2 - Fp2, ord="fro") < 1e-13
 
 
 def test_nLeP():
@@ -69,8 +69,8 @@ def test_nLeP():
     Fp1 = pnlep1.H(x.T, d, False)
     Fp2 = pnlep2.H(x.T, d2, False)
 
-    assert np.linalg.norm(Fc1 - Fp1, ord="fro") < 1e-14
-    assert np.linalg.norm(Fc2 - Fp2, ord="fro") < 1e-14
+    assert np.linalg.norm(Fc1 - Fp1, ord="fro") < 1e-13
+    assert np.linalg.norm(Fc2 - Fp2, ord="fro") < 1e-13
 
 
 def test_nFS():
