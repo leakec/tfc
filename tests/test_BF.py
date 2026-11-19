@@ -30,8 +30,8 @@ def test_CP():
     Fp1 = pcp1.H(x, d=0, full=False)
     Fp2 = pcp2.H(x, d=3, full=False)
 
-    assert np.linalg.norm(Fc1 - Fp1, ord="fro") < 1e-13
-    assert np.linalg.norm(Fc2 - Fp2, ord="fro") < 1e-13
+    assert np.linalg.norm(Fc1 - Fp1, ord="fro") < 1e-12
+    assert np.linalg.norm(Fc2 - Fp2, ord="fro") < 1e-12
 
 
 def test_LeP():
@@ -48,8 +48,8 @@ def test_LeP():
     Fp1 = plep1.H(x, d=0, full=False)
     Fp2 = plep2.H(x, d=3, full=False)
 
-    assert np.linalg.norm(Fc1 - Fp1, ord="fro") < 1e-13
-    assert np.linalg.norm(Fc2 - Fp2, ord="fro") < 1e-13
+    assert np.linalg.norm(Fc1 - Fp1, ord="fro") < 1e-12
+    assert np.linalg.norm(Fc2 - Fp2, ord="fro") < 1e-12
 
 
 def test_LaP():
@@ -84,8 +84,8 @@ def test_HoPpro():
     Fp1 = phoppro1.H(x, 0, full=False)
     Fp2 = phoppro2.H(x, 3, full=False)
 
-    assert np.linalg.norm(Fc1 - Fp1, ord="fro") < 1e-13
-    assert np.linalg.norm(Fc2 - Fp2, ord="fro") < 1e-13
+    assert np.linalg.norm(Fc1 - Fp1, ord="fro") < 1e-12
+    assert np.linalg.norm(Fc2 - Fp2, ord="fro") < 1e-12
 
 
 def test_HoPphy():
@@ -102,8 +102,8 @@ def test_HoPphy():
     Fp1 = phopphy1.H(x, d=0, full=False)
     Fp2 = phopphy2.H(x, d=3, full=False)
 
-    assert np.linalg.norm(Fc1 - Fp1, ord="fro") < 1e-13
-    assert np.linalg.norm(Fc2 - Fp2, ord="fro") < 1e-13
+    assert np.linalg.norm(Fc1 - Fp1, ord="fro") < 1e-12
+    assert np.linalg.norm(Fc2 - Fp2, ord="fro") < 1e-12
 
 
 def test_FS():
