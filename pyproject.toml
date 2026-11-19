@@ -34,8 +34,7 @@ archs = ["arm64"]
 
 [tool.cibuildwheel.windows]
 archs = ["AMD64"]
-skip = "cp314t-*"
-skip = "cp315t-*"
+skip = ["cp314t-*", "cp315t-*"]
 
 [[tool.cibuildwheel.overrides]]
 select = "*-musllinux*"
