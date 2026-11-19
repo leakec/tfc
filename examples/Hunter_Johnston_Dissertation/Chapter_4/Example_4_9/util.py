@@ -339,13 +339,13 @@ def Lagrange(mu):
 
     L = np.zeros((2,5))
     fun = lambda x: x*(x+mu)**2*(x-1.+mu)**2-(1.-mu)*(x-1.+mu)**2+mu*(x+mu)**2
-    L[0,0] = fsolve(fun, 0.)
+    L[0,0] = fsolve(fun, 0.)[0]
 
     fun = lambda x: -x*(x+mu)**2*(x-1.+mu)**2+(1.-mu)*(x-1.+mu)**2+mu*(x+mu)**2
-    L[0,1] = fsolve(fun, 0.)
+    L[0,1] = fsolve(fun, 0.)[0]
 
     fun = lambda x: x*(x+mu)**2*(x-1.+mu)**2+(1.-mu)*(x-1.+mu)**2+mu*(x+mu)**2
-    L[0,2] = fsolve(fun, -1.)
+    L[0,2] = fsolve(fun, -1.)[0]
 
     L[:,3] = np.array([.5-mu, np.sqrt(3)/2])
     L[:,4] = np.array([.5-mu, -np.sqrt(3)/2])

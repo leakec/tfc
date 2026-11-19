@@ -214,8 +214,8 @@ def diff_cor_lyap_p(x0, T, Ax, mu, C_desired):
             b = -np.array([[y[2,-1]],[-C_desired + C]])
 
             q =  np.linalg.pinv(M_2_0) @ b
-            y_init[0] = y_init[0] + q[0]
-            y_init[3] = y_init[3] + q[1]
+            y_init[0] = y_init[0] + q[0,0]
+            y_init[3] = y_init[3] + q[1,0]
 
         x0 = y[:,0]
         period_tau = 2.*t[-1]
