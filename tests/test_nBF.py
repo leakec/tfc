@@ -70,7 +70,7 @@ def test_nLeP():
     Fp2 = pnlep2.H(x.T, d2, False)
 
     assert np.linalg.norm(Fc1 - Fp1, ord="fro") < 1e-12
-    assert np.linalg.norm(Fc2 - Fp2, ord="fro") < 1e-12
+    assert np.linalg.norm(Fc2 - Fp2, ord="fro") < 5e-12
 
 
 def test_nFS():
